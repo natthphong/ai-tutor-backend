@@ -246,7 +246,53 @@ func (t *GeminiTTS) Synthesize(ctx context.Context, req TTSRequest) ([]byte, err
 		return nil, fmt.Errorf("gemini tts: decode error: %w", err)
 	}
 
+	// Add WAV header if it's raw PCM (missing RIFF)
+	if len(audioData) > 4 && string(audioData[:4]) != "RIFF" {
+		audioData = addWavHeader(audioData, 24000, 1, 16)
+	}
+
 	return audioData, nil
+}
+
+func addWavHeader(pcmData []byte, sampleRate, numChannels, bitsPerSample int) []byte {
+	byteRate := sampleRate * numChannels * bitsPerSample / 8
+	blockAlign := numChannels * bitsPerSample / 8
+	dataSize := len(pcmData)
+	chunkSize := 36 + dataSize
+
+	header := make([]byte, 44)
+	copy(header[0:4], []byte("RIFF"))
+	// Intentionally using math logic instead of binary package to avoid adding 'encoding/binary' import overhead if possible, 
+	// but using binary package is safer. Actually, let's use manual bit shifting to avoid import issues.
+	header[4] = byte(chunkSize)
+	header[5] = byte(chunkSize >> 8)
+	header[6] = byte(chunkSize >> 16)
+	header[7] = byte(chunkSize >> 24)
+	copy(header[8:12], []byte("WAVE"))
+	copy(header[12:16], []byte("fmt "))
+	header[16] = 16; header[17] = 0; header[18] = 0; header[19] = 0 // Subchunk1Size
+	header[20] = 1; header[21] = 0 // AudioFormat (PCM = 1)
+	header[22] = byte(numChannels); header[23] = byte(numChannels >> 8)
+	header[24] = byte(sampleRate); header[25] = byte(sampleRate >> 8)
+	header[26] = byte(sampleRate >> 16); header[27] = byte(sampleRate >> 24)
+	header[28] = byte(byteRate); header[29] = byte(byteRate >> 8)
+	header[30] = byte(byteRate >> 16); header[31] = byte(byteRate >> 24)
+	header[32] = byte(blockAlign); header[33] = byte(blockAlign >> 8)
+	header[34] = byte(bitsPerSample); header[35] = byte(bitsPerSample >> 8)
+	copy(header[36:40], []byte("data"))
+	header[40] = byte(dataSize)
+	header[41] = byte(dataSize >> 8)
+	header[42] = byte(dataSize >> 16)
+	header[43] = byte(dataSize >> 24)
+
+	return append(header, pcmData...)
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 // GeminiSTT implements STTProvider using Gemini

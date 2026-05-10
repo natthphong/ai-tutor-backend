@@ -1,26 +1,34 @@
 package tutor
 
 import (
+	"bytes"
 	"context"
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/minio/minio-go/v7"
+	"gitlab.com/home-server7795544/home-server/iam/iam-backend/config"
 	"gitlab.com/home-server7795544/home-server/iam/iam-backend/internal/ai"
 	"go.uber.org/zap"
 )
 
 type Service struct {
-	db     *pgxpool.Pool
-	router *ai.Router
-	logger *zap.Logger
+	db          *pgxpool.Pool
+	router      *ai.Router
+	minioClient *minio.Client
+	cfg         *config.Config
+	logger      *zap.Logger
 }
 
-func NewService(db *pgxpool.Pool, router *ai.Router) *Service {
-	return &Service{db: db, router: router, logger: zap.L()}
+func NewService(db *pgxpool.Pool, router *ai.Router, minioClient *minio.Client, cfg *config.Config) *Service {
+	return &Service{db: db, router: router, minioClient: minioClient, cfg: cfg, logger: zap.L()}
 }
 
 // EnsureUser creates or gets a user by LINE ID
@@ -48,7 +56,7 @@ func (s *Service) GetDueItems(ctx context.Context, userID string) (DueItems, err
 	return d, nil
 }
 
-// StartSession creates a new tutor session and decides next action
+// StartSession creates or resumes a tutor session and decides next action
 func (s *Service) StartSession(ctx context.Context, userID string, preferredMode string) (map[string]interface{}, error) {
 	dueItems, _ := s.GetDueItems(ctx, userID)
 	var currentUnitID int
@@ -63,6 +71,9 @@ func (s *Service) StartSession(ctx context.Context, userID string, preferredMode
 		unitStatus = "not_started"
 	}
 
+	var unitTitle, grammarFocus string
+	s.db.QueryRow(ctx, `SELECT COALESCE(title,''), COALESCE(grammar_focus,'') FROM lesson_units WHERE id = $1`, currentUnitID).Scan(&unitTitle, &grammarFocus)
+
 	var weaknessCount int
 	s.db.QueryRow(ctx, `SELECT COUNT(*) FROM weaknesses WHERE user_id = $1 AND resolved = false`, userID).Scan(&weaknessCount)
 
@@ -72,35 +83,66 @@ func (s *Service) StartSession(ctx context.Context, userID string, preferredMode
 		CurrentStep: currentStep, UnitStatus: unitStatus, WeaknessThreshold: 5,
 	})
 
-	sessionID := uuid.New().String()
-	_, err = s.db.Exec(ctx,
-		`INSERT INTO tutor_sessions (id, user_id, unit_id, mode, status, current_action) VALUES ($1, $2, $3, $4, 'active', $5)`,
-		sessionID, userID, currentUnitID, decision.Mode, decision.Action)
-	if err != nil {
-		return nil, fmt.Errorf("create session: %w", err)
+	// Try to find existing active session
+	var sessionID string
+	var mode, currentAction string
+	err = s.db.QueryRow(ctx, `SELECT id, mode, current_action FROM tutor_sessions WHERE user_id = $1 AND unit_id = $2 AND status = 'active' ORDER BY created_at DESC LIMIT 1`, userID, currentUnitID).Scan(&sessionID, &mode, &currentAction)
+
+	var messages []map[string]interface{}
+
+	if err == nil {
+		// Resume existing session
+		decision.Mode = mode
+		decision.Action = currentAction
+		// Fetch last 5 messages
+		rows, _ := s.db.Query(ctx, `SELECT role, content, content_th, message_type FROM tutor_messages WHERE session_id = $1 ORDER BY created_at DESC LIMIT 5`, sessionID)
+		defer rows.Close()
+		var tempMsgs []map[string]interface{}
+		for rows.Next() {
+			var r, c, cTh, t string
+			rows.Scan(&r, &c, &cTh, &t)
+			tempMsgs = append([]map[string]interface{}{{"role": r, "content": c, "contentTh": cTh, "type": t}}, tempMsgs...)
+		}
+		messages = tempMsgs
+		if len(messages) == 0 {
+			messages = append(messages, map[string]interface{}{
+				"role": "assistant", "content": fmt.Sprintf("Welcome back to Unit %d: %s. We are continuing our lesson on %s. Let's resume!", currentUnitID, unitTitle, grammarFocus), "contentTh": "ยินดีต้อนรับกลับเข้าสู่บทเรียนครับ มาเรียนกันต่อเลย!", "type": "text",
+			})
+		}
+	} else {
+		// Create new session
+		sessionID = uuid.New().String()
+		_, err = s.db.Exec(ctx,
+			`INSERT INTO tutor_sessions (id, user_id, unit_id, mode, status, current_action) VALUES ($1, $2, $3, $4, 'active', $5)`,
+			sessionID, userID, currentUnitID, decision.Mode, decision.Action)
+		if err != nil {
+			return nil, fmt.Errorf("create session: %w", err)
+		}
+
+		if unitStatus == "not_started" {
+			s.db.Exec(ctx, `INSERT INTO user_unit_progress (id, user_id, unit_id, status, current_step) VALUES ($1, $2, $3, 'in_progress', 'intro') ON CONFLICT (user_id, unit_id) DO UPDATE SET status = 'in_progress'`,
+				uuid.New().String(), userID, currentUnitID)
+		}
+
+		introEn := fmt.Sprintf("Welcome to Unit %d: %s. Today we will learn about %s. Let's study together!", currentUnitID, unitTitle, grammarFocus)
+		introTh := fmt.Sprintf("ยินดีต้อนรับสู่บทเรียนที่ %d เรื่อง %s วันนี้เราจะมาเรียนเรื่อง %s กันนะครับ", currentUnitID, unitTitle, grammarFocus)
+
+		// Store assistant opening message
+		msgID := uuid.New().String()
+		s.db.Exec(ctx, `INSERT INTO tutor_messages (id, session_id, user_id, role, content, content_th, message_type) VALUES ($1,$2,$3,'assistant',$4,$5,'text')`,
+			msgID, sessionID, userID, introEn, introTh)
+		
+		messages = []map[string]interface{}{
+			{"role": "assistant", "content": introEn, "contentTh": introTh, "type": "text"},
+		}
 	}
-
-	if unitStatus == "not_started" {
-		s.db.Exec(ctx, `INSERT INTO user_unit_progress (id, user_id, unit_id, status, current_step) VALUES ($1, $2, $3, 'in_progress', 'intro') ON CONFLICT (user_id, unit_id) DO UPDATE SET status = 'in_progress'`,
-			uuid.New().String(), userID, currentUnitID)
-	}
-
-	var unitTitle string
-	s.db.QueryRow(ctx, `SELECT COALESCE(title,'') FROM lesson_units WHERE id = $1`, currentUnitID).Scan(&unitTitle)
-
-	// Store assistant opening message
-	msgID := uuid.New().String()
-	s.db.Exec(ctx, `INSERT INTO tutor_messages (id, session_id, user_id, role, content, content_th, message_type) VALUES ($1,$2,$3,'assistant',$4,$5,'text')`,
-		msgID, sessionID, userID, "Let's study together! "+decision.Instruction, decision.Reason)
 
 	return map[string]interface{}{
 		"sessionId":  sessionID,
 		"nextAction": decision.Action,
 		"mode":       decision.Mode,
 		"unit":       map[string]interface{}{"unitNo": currentUnitID, "title": unitTitle},
-		"message": map[string]interface{}{
-			"role": "assistant", "content": "Let's study together! " + decision.Instruction, "contentTh": decision.Reason,
-		},
+		"messages":   messages, // return array of messages to frontend
 		"dueItems": dueItems,
 	}, nil
 }
@@ -140,14 +182,8 @@ func (s *Service) GetNextStep(ctx context.Context, sessionID string, userID stri
 		result["mode"] = "listening"
 		result["instruction"] = "ฟังแล้วพิมพ์สิ่งที่ได้ยินครับ"
 		result["targetHidden"] = true
-		if sentence != "" {
-			audioData, provider, err := s.router.Synthesize(ctx, ai.TTSRequest{Text: sentence, VoiceStyle: "friendly English teacher"})
-			if err == nil {
-				key := s.saveAudio(ctx, audioData, userID, sessionID)
-				result["audioUrl"] = "/api/v1/files?key=" + key
-				result["audioProvider"] = provider
-			}
-		}
+		result["targetText"] = sentence
+		result["ttsAvailable"] = sentence != ""
 
 	case "speaking_practice":
 		result["nextAction"] = "start_speaking"
@@ -206,28 +242,79 @@ func (s *Service) EvaluateListening(ctx context.Context, sessionID, userID, less
 		isCorrect := score >= 0.85
 		result["isCorrect"] = isCorrect
 		result["score"] = score
-		result["feedbackTh"] = "ลองอีกครั้งนะครับ"
+		result["correction"] = targetText
 		if isCorrect {
 			result["feedbackTh"] = "เก่งมากครับ! ถูกต้อง"
 			result["nextAction"] = "next_step"
-		} else {
+		} else if score >= 0.5 {
+			result["feedbackTh"] = "ใกล้แล้วครับ! ลองฟังอีกครั้งแล้วเทียบกับคำเฉลย"
+			result["hint"] = buildProgressiveHint(targetText, 1)
 			result["nextAction"] = "retry_listening"
-			result["correction"] = targetText
+		} else {
+			result["feedbackTh"] = "ลองอีกครั้งนะครับ ดู hint ด้านล่างเป็นตัวช่วย"
+			result["hint"] = buildProgressiveHint(targetText, 2)
+			result["nextAction"] = "retry_listening"
 		}
 	} else {
 		json.Unmarshal([]byte(resp.Content), &result)
+		// Robust score parsing
+		var score float64
+		if s, ok := result["score"]; ok {
+			switch v := s.(type) {
+			case float64:
+				score = v
+			case int:
+				score = float64(v)
+			case string:
+				fmt.Sscanf(v, "%f", &score)
+			}
+		}
+		
+		// Ensure hint is always present on wrong answer (score < 0.85 or score < 85 if they used 0-100)
+		if score < 0.85 || (score > 1.0 && score < 85.0) {
+			if _, hasHint := result["hint"]; !hasHint || result["hint"] == "" {
+				// Get attempt count to show better hint
+				var failCount int
+				s.db.QueryRow(ctx, `SELECT COUNT(*) FROM listening_attempts WHERE session_id = $1 AND is_correct = false`, sessionID).Scan(&failCount)
+				
+				hintLevel := 1
+				if failCount > 0 {
+					hintLevel = 2
+				}
+				if failCount > 1 {
+					hintLevel = 3
+				}
+				result["hint"] = buildProgressiveHint(targetText, hintLevel)
+			}
+			if _, hasFb := result["feedbackTh"]; !hasFb || result["feedbackTh"] == "" {
+				result["feedbackTh"] = "ลองอีกครั้งนะครับ"
+			}
+		}
 	}
 
 	// Store attempt
 	attemptID := uuid.New().String()
-	score := 0.0
-	if s, ok := result["score"].(float64); ok {
-		score = s
+	var finalScore float64
+	if s, ok := result["score"]; ok {
+		switch v := s.(type) {
+		case float64:
+			finalScore = v
+		case int:
+			finalScore = float64(v)
+		case string:
+			fmt.Sscanf(v, "%f", &finalScore)
+		}
 	}
-	isCorrect := score >= 0.85
+	
+	isCorrect := finalScore >= 0.85 || (finalScore > 1.0 && finalScore >= 85.0)
+	result["isCorrect"] = isCorrect // Make sure to return boolean
+	
+	// Always include targetText so the frontend can replay the audio if needed
+	result["targetText"] = targetText
+	
 	mistakesJSON, _ := json.Marshal(result["mistakes"])
 	s.db.Exec(ctx, `INSERT INTO listening_attempts (id, user_id, session_id, unit_id, target_text, user_text, score, is_correct, mistakes) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
-		attemptID, userID, sessionID, unitID, targetText, answer, score, isCorrect, string(mistakesJSON))
+		attemptID, userID, sessionID, unitID, targetText, answer, finalScore, isCorrect, string(mistakesJSON))
 
 	// Store weaknesses if any
 	if mistakes, ok := result["mistakes"].([]interface{}); ok {
@@ -236,7 +323,7 @@ func (s *Service) EvaluateListening(ctx context.Context, sessionID, userID, less
 				wID := uuid.New().String()
 				wType, _ := mm["type"].(string)
 				wDetail, _ := mm["detail"].(string)
-				nextDue := CalculateNextDue(score, 0, 0)
+				nextDue := CalculateNextDue(finalScore, 0, 0)
 				s.db.Exec(ctx, `INSERT INTO weaknesses (id, user_id, unit_id, source_type, source_id, weakness_type, detail, example_wrong, example_correct, next_due_at) VALUES ($1,$2,$3,'listening',$4,$5,$6,$7,$8,$9)`,
 					wID, userID, unitID, attemptID, wType, wDetail, answer, targetText, nextDue)
 			}
@@ -288,6 +375,11 @@ func (s *Service) EvaluateSpeaking(ctx context.Context, sessionID, userID, trans
 		s.updateStep(ctx, userID, unitID, "reading_practice")
 	}
 	return result, nil
+}
+
+// EvaluateSpeakingText evaluates a text-based speaking answer (user typed instead of recording)
+func (s *Service) EvaluateSpeakingText(ctx context.Context, sessionID, userID, text string) (map[string]interface{}, error) {
+	return s.EvaluateSpeaking(ctx, sessionID, userID, text)
 }
 
 // EvaluateReading evaluates a reading translation
@@ -473,14 +565,60 @@ func (s *Service) generateReadingPassage(ctx context.Context, grammarFocus, leve
 	return resp.Content, nil
 }
 
-func (s *Service) saveAudio(ctx context.Context, data []byte, userID, sessionID string) string {
-	// For MVP, return a placeholder key. MinIO integration added in handler.
-	return fmt.Sprintf("tts/%s/%s/%s.mp3", userID, sessionID, uuid.New().String())
+func (s *Service) GetCachedTTS(ctx context.Context, text string) ([]byte, error) {
+	if s.minioClient == nil {
+		return nil, fmt.Errorf("minio not configured")
+	}
+	hash := md5.Sum([]byte(strings.ToLower(strings.TrimSpace(text))))
+	key := hex.EncodeToString(hash[:])
+	
+	var minioPath string
+	err := s.db.QueryRow(ctx, `SELECT minio_path FROM tts_cache WHERE cache_key = $1`, key).Scan(&minioPath)
+	if err != nil {
+		return nil, err
+	}
+	
+	obj, err := s.minioClient.GetObject(ctx, s.cfg.MinIO.Bucket, minioPath, minio.GetObjectOptions{})
+	if err != nil {
+		return nil, err
+	}
+	defer obj.Close()
+	return io.ReadAll(obj)
+}
+
+func (s *Service) CacheTTS(ctx context.Context, text string, audioData []byte) error {
+	if s.minioClient == nil {
+		return fmt.Errorf("minio not configured")
+	}
+	hash := md5.Sum([]byte(strings.ToLower(strings.TrimSpace(text))))
+	key := hex.EncodeToString(hash[:])
+	
+	minioPath := fmt.Sprintf("%s%s.wav", s.cfg.MinIO.PrefixTTS, key)
+	_, err := s.minioClient.PutObject(ctx, s.cfg.MinIO.Bucket, minioPath, bytes.NewReader(audioData), int64(len(audioData)), minio.PutObjectOptions{ContentType: "audio/wav"})
+	if err != nil {
+		return err
+	}
+	
+	_, err = s.db.Exec(ctx, `INSERT INTO tts_cache (cache_key, original_text, minio_path) VALUES ($1, $2, $3) ON CONFLICT (cache_key) DO NOTHING`, key, text, minioPath)
+	return err
+}
+
+func cleanText(s string) string {
+	s = strings.ToLower(strings.TrimSpace(s))
+	var b strings.Builder
+	for _, r := range s {
+		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') || r == ' ' {
+			b.WriteRune(r)
+		} else {
+			b.WriteRune(' ')
+		}
+	}
+	return strings.Join(strings.Fields(b.String()), " ")
 }
 
 func simpleCompare(target, answer string) float64 {
-	t := strings.ToLower(strings.TrimSpace(target))
-	a := strings.ToLower(strings.TrimSpace(answer))
+	t := cleanText(target)
+	a := cleanText(answer)
 	if t == a {
 		return 1.0
 	}
@@ -499,4 +637,33 @@ func simpleCompare(target, answer string) float64 {
 		}
 	}
 	return float64(matches) / float64(len(tWords))
+}
+
+// buildProgressiveHint gives increasingly revealing hints
+func buildProgressiveHint(target string, level int) string {
+	words := strings.Fields(target)
+	if len(words) == 0 {
+		return target
+	}
+	var initials []string
+	for _, w := range words {
+		cleanWord := strings.Trim(w, ".,!?")
+		if len(cleanWord) > 0 {
+			if level <= 1 {
+				// level 1: just underscores for length
+				initials = append(initials, strings.Repeat("_", len(cleanWord)))
+			} else if level == 2 {
+				// level 2: first letter + underscores
+				initials = append(initials, string(cleanWord[0])+strings.Repeat("_", len(cleanWord)-1))
+			} else {
+				// level 3: first and last letter
+				if len(cleanWord) > 1 {
+					initials = append(initials, string(cleanWord[0])+strings.Repeat("_", len(cleanWord)-2)+string(cleanWord[len(cleanWord)-1]))
+				} else {
+					initials = append(initials, cleanWord)
+				}
+			}
+		}
+	}
+	return strings.Join(initials, " ")
 }

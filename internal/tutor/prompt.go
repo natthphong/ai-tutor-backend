@@ -55,9 +55,9 @@ USER TYPED: "` + userText + `"
 CURRENT HINT LEVEL: ` + string(rune('0'+hintLevel)) + `/5
 
 EVALUATE:
-1. Compare user's answer with target sentence
+1. Compare user's answer with target sentence (IGNORE letter casing, punctuation like periods, commas, etc.)
 2. Check for:
-   - exact_match
+   - exact_match (case-insensitive, ignore punctuation)
    - missing_words
    - extra_words
    - wrong_word_order
@@ -88,12 +88,12 @@ SITUATION: ` + situation + `
 USER SAID (from STT): "` + transcript + `"
 
 EVALUATE:
-1. Check if the user used the grammar pattern correctly
+1. Check if the user used the grammar pattern correctly (IGNORE minor punctuation or casing)
 2. Check grammar accuracy
 3. Check naturalness
 4. Check word order
 5. Check vocabulary
-6. Calculate score 0.0-1.0
+6. Calculate score 0.0-1.0 (Do not penalize for missing periods or wrong casing)
 
 CORRECTION RULES:
 - If score >= 0.85: Pass, move to next
@@ -124,10 +124,10 @@ USER'S THAI TRANSLATION:
 "` + userTranslation + `"
 
 EVALUATE:
-1. Check translation accuracy
+1. Check translation accuracy (Ignore minor punctuation marks or casing)
 2. Check understanding of grammar patterns
 3. Check vocabulary understanding
-4. Calculate score 0.0-1.0
+4. Calculate score 0.0-1.0 (Do not penalize for missing periods)
 5. Provide the ideal Thai translation
 
 Extract vocabulary for flashcards from this passage.

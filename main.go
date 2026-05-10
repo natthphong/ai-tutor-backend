@@ -11,6 +11,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/google/uuid"
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 	"go.uber.org/zap"
 
 	"gitlab.com/home-server7795544/home-server/iam/iam-backend/api"
@@ -47,11 +49,26 @@ func main() {
 	defer dbPool.Close()
 	logger.Info("DB connected")
 
+	// MinIO Client
+	minioClient, err := minio.New(cfg.MinIO.Endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(cfg.MinIO.AccessKey, cfg.MinIO.SecretKey, ""),
+		Secure: cfg.MinIO.UseSSL,
+	})
+	if err != nil {
+		logger.Warn("Failed to initialize MinIO client", zap.Error(err))
+	} else {
+		// Ensure bucket exists
+		exists, err := minioClient.BucketExists(ctx, cfg.MinIO.Bucket)
+		if err == nil && !exists {
+			minioClient.MakeBucket(ctx, cfg.MinIO.Bucket, minio.MakeBucketOptions{})
+		}
+	}
+
 	// AI Router (Gemini → OpenRouter → OpenAI fallback)
 	aiRouter := ai.NewRouter(cfg)
 
 	// Tutor Services
-	tutorSvc := tutor.NewService(dbPool, aiRouter)
+	tutorSvc := tutor.NewService(dbPool, aiRouter, minioClient, cfg)
 	ingestSvc := tutor.NewIngestService(dbPool)
 
 	// Fiber App

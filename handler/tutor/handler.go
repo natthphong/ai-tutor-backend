@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"io"
 
 	"github.com/gofiber/fiber/v2"
@@ -29,6 +30,7 @@ func (h *TutorHandler) Register(group fiber.Router) {
 	t.Post("/sessions/:sessionId/next", h.GetNextStep())
 	t.Post("/sessions/:sessionId/listening/answer", h.SubmitListeningAnswer())
 	t.Post("/sessions/:sessionId/speaking/audio", h.SubmitSpeakingAudio())
+	t.Post("/sessions/:sessionId/speaking/text", h.SubmitSpeakingText())
 	t.Post("/sessions/:sessionId/reading/answer", h.SubmitReadingAnswer())
 	t.Get("/due", h.GetDueReviews())
 	t.Post("/reviews/flashcards/:id/answer", h.ReviewFlashcard())
@@ -147,6 +149,29 @@ func (h *TutorHandler) SubmitSpeakingAudio() fiber.Handler {
 	}
 }
 
+func (h *TutorHandler) SubmitSpeakingText() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		sessionID := c.Params("sessionId")
+		var req struct {
+			UserID string `json:"userId"`
+			Text   string `json:"text"`
+		}
+		if err := c.BodyParser(&req); err != nil {
+			return api.BadRequest(c, "Invalid request body")
+		}
+		if req.Text == "" {
+			return api.BadRequest(c, "text is required")
+		}
+		uid, _ := h.svc.EnsureUser(c.Context(), req.UserID, "")
+		result, err := h.svc.EvaluateSpeakingText(c.Context(), sessionID, uid, req.Text)
+		if err != nil {
+			return api.InternalError(c, err.Error())
+		}
+		result["transcript"] = req.Text
+		return api.OkWithMessage(c, "Speaking text evaluated", result)
+	}
+}
+
 func (h *TutorHandler) SubmitReadingAnswer() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		sessionID := c.Params("sessionId")
@@ -217,13 +242,28 @@ func (h *TutorHandler) TTS() fiber.Handler {
 		if req.Text == "" {
 			return api.BadRequest(c, "text is required")
 		}
+		
+		// Check Cache First
+		cachedAudio, err := h.svc.GetCachedTTS(c.Context(), req.Text)
+		if err == nil && len(cachedAudio) > 0 {
+			c.Set("Content-Type", "audio/wav")
+			c.Set("X-TTS-Cache", "HIT")
+			return c.Send(cachedAudio)
+		}
+
 		audioData, provider, err := h.router.Synthesize(c.Context(), ai.TTSRequest{
 			Text: req.Text, VoiceStyle: req.VoiceStyle, Speed: req.Speed,
 		})
 		if err != nil {
 			return api.InternalError(c, "TTS failed: "+err.Error())
 		}
-		c.Set("Content-Type", "audio/mpeg")
+		
+		// Save to cache asynchronously
+		go func() {
+			_ = h.svc.CacheTTS(context.Background(), req.Text, audioData)
+		}()
+		
+		c.Set("Content-Type", "audio/wav")
 		c.Set("X-TTS-Provider", provider)
 		return c.Send(audioData)
 	}

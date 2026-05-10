@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS tts_cache (
+    cache_key TEXT PRIMARY KEY,
+    original_text TEXT NOT NULL,
+    minio_path TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
