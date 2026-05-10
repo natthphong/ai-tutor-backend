@@ -167,26 +167,16 @@ func NewGeminiTTS(cfg config.GeminiConfig) *GeminiTTS {
 func (t *GeminiTTS) Name() string { return "gemini" }
 
 func (t *GeminiTTS) Synthesize(ctx context.Context, req TTSRequest) ([]byte, error) {
-	model := "gemini-2.5-flash"
+	model := "gemini-3.1-flash-tts-preview"
 	url := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s", model, t.apiKey)
-
-	voiceInstruction := "Speak clearly and naturally as a friendly English teacher."
-	if req.VoiceStyle != "" {
-		voiceInstruction = req.VoiceStyle
-	}
 
 	body := map[string]interface{}{
 		"contents": []map[string]interface{}{
 			{
 				"role": "user",
 				"parts": []map[string]interface{}{
-					{"text": fmt.Sprintf("Please read the following text aloud clearly and naturally: %s", req.Text)},
+					{"text": req.Text},
 				},
-			},
-		},
-		"systemInstruction": map[string]interface{}{
-			"parts": []map[string]interface{}{
-				{"text": voiceInstruction},
 			},
 		},
 		"generationConfig": map[string]interface{}{
@@ -276,7 +266,7 @@ func (s *GeminiSTT) Name() string { return "gemini" }
 
 func (s *GeminiSTT) Transcribe(ctx context.Context, req STTRequest) (*STTResponse, error) {
 	start := time.Now()
-	model := "gemini-2.5-flash"
+	model := "gemini-3.1-flash-lite"
 	url := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s", model, s.apiKey)
 
 	// Encode audio to base64
