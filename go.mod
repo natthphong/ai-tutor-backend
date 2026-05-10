@@ -6,23 +6,19 @@ toolchain go1.22.9
 
 require (
 	github.com/Shopify/sarama v1.36.0
-	github.com/aws/aws-sdk-go v1.49.17
 	github.com/go-redis/redis/v9 v9.0.0-beta.2
 	github.com/gofiber/fiber/v2 v2.52.5
 	github.com/golang-jwt/jwt/v4 v4.5.1
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.5.2
-	github.com/line/line-bot-sdk-go/v8 v8.9.0
 	github.com/pkg/errors v0.9.1
 	github.com/pkg/sftp v1.13.6
-	github.com/shopspring/decimal v1.2.0
 	github.com/spf13/viper v1.12.0
 	github.com/xdg-go/scram v1.1.1
 	go.uber.org/zap v1.21.0
 	golang.org/x/crypto v0.27.0
 	google.golang.org/grpc v1.68.0
 	google.golang.org/protobuf v1.35.1
-
 )
 
 require (
@@ -35,7 +31,6 @@ require (
 	github.com/eapache/queue v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
-	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
@@ -48,7 +43,6 @@ require (
 	github.com/jcmturner/gofork v1.7.6 // indirect
 	github.com/jcmturner/gokrb5/v8 v8.4.3 // indirect
 	github.com/jcmturner/rpc/v2 v2.0.3 // indirect
-	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/klauspost/compress v1.17.0 // indirect
 	github.com/kr/fs v0.1.0 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
