@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package auth;
+
+option go_package = "grpc/auth";
+
+service AuthService {
+  rpc Login (LoginRequest) returns (LoginResponse);
+}
+
+message LoginRequest {
+  string appCode = 1;
+  string username = 2;
+  string password = 3;
+}
+
+message LoginResponse {
+  string accessToken = 1;
+  string refreshToken = 2;
+  JwtBody jwtBody = 3;
+}
+
+message JwtBody {
+  string userId = 1;
+  string firstNameTh = 2;
+  string lastNameTh = 3;
+  string appCode = 4;
+  string companyCode = 5;
+  string accountName = 6;
+  string status = 7;
+  repeated Role roles = 8;
+}
+
+message Role {
+  string roleCode = 1;
+  string roleNameTh = 2;
+  string roleNameEn = 3;
+  repeated string objects = 4;
+}

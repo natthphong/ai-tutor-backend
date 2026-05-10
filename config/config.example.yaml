@@ -1,0 +1,18 @@
+LogConfig:
+  Level: "debug"
+Server:
+  Name: "line-bot"
+  Port: "8080"
+lineConfig:
+  bot-test:
+    ChannelSecret: ""
+    ChannelToken: ""
+Env: DEV
+DBConfig:
+  Host: "localhost"
+  Port: "5432"
+  Username: "postgres"
+  Password: ""
+  Name: "postgres"
+  MaxOpenConn: 4
+  MaxConnLifeTime: 300
