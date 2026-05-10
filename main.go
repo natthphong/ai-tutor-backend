@@ -15,7 +15,8 @@ import (
 
 	"gitlab.com/home-server7795544/home-server/iam/iam-backend/api"
 	"gitlab.com/home-server7795544/home-server/iam/iam-backend/config"
-	handler "gitlab.com/home-server7795544/home-server/iam/iam-backend/handler/tutor"
+	authHandler "gitlab.com/home-server7795544/home-server/iam/iam-backend/handler/auth"
+	tutorHandler "gitlab.com/home-server7795544/home-server/iam/iam-backend/handler/tutor"
 	"gitlab.com/home-server7795544/home-server/iam/iam-backend/internal/ai"
 	"gitlab.com/home-server7795544/home-server/iam/iam-backend/internal/db"
 	"gitlab.com/home-server7795544/home-server/iam/iam-backend/internal/logz"
@@ -65,9 +66,12 @@ func main() {
 	// Metrics
 	group.Get("/metric", metrics())
 
+	// Auth Handler (LINE login → whitelist check → JWT)
+	authHandler.RegisterTutorAuth(group, tutorSvc, cfg)
+
 	// Tutor Handler (registers all tutor routes)
-	tutorHandler := handler.NewTutorHandler(tutorSvc, ingestSvc, aiRouter, cfg)
-	tutorHandler.Register(group)
+	tutor := tutorHandler.NewTutorHandler(tutorSvc, ingestSvc, aiRouter, cfg)
+	tutor.Register(group)
 
 	// LINE Webhook placeholder
 	group.Post("/line/webhook", func(c *fiber.Ctx) error {

@@ -8,6 +8,7 @@
 #
 # Binaries for programs and plugins
 /config/config.yaml
+/config/*.yaml
 *.exe
 *.exe~
 *.dll
