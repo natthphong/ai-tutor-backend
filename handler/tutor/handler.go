@@ -28,17 +28,46 @@ func (h *TutorHandler) Register(group fiber.Router) {
 	t := group.Group("/tutor")
 	t.Post("/sessions/start", h.StartSession())
 	t.Post("/sessions/:sessionId/next", h.GetNextStep())
+	t.Post("/sessions/:sessionId/turn", h.HandleTurn())
 	t.Post("/sessions/:sessionId/listening/answer", h.SubmitListeningAnswer())
 	t.Post("/sessions/:sessionId/speaking/audio", h.SubmitSpeakingAudio())
 	t.Post("/sessions/:sessionId/speaking/text", h.SubmitSpeakingText())
 	t.Post("/sessions/:sessionId/reading/answer", h.SubmitReadingAnswer())
 	t.Get("/due", h.GetDueReviews())
+	t.Get("/units/:unitId/history", h.GetUnitHistory())
+	t.Get("/reviews/flashcards", h.GetDueFlashcards())
 	t.Post("/reviews/flashcards/:id/answer", h.ReviewFlashcard())
+
+	// Lesson chat history + progress (refresh-safe)
+	lessons := group.Group("/lessons")
+	lessons.Get("/:lessonId/chat", h.GetLessonChat())
+	lessons.Post("/:lessonId/chat", h.AppendLessonChat())
+	lessons.Get("/:lessonId/progress", h.GetLessonProgress())
+	lessons.Post("/:lessonId/progress", h.UpdateLessonProgress())
 
 	group.Post("/voice/tts", h.TTS())
 	group.Post("/voice/stt", h.STT())
 	group.Get("/progress", h.GetProgress())
 	group.Post("/admin/lessons/ingest", h.IngestLessons())
+}
+
+func (h *TutorHandler) HandleTurn() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		sessionID := c.Params("sessionId")
+		var req tutor.TurnRequest
+		if err := c.BodyParser(&req); err != nil {
+			return api.BadRequest(c, "Invalid request body")
+		}
+		if req.UserID == "" {
+			return api.BadRequest(c, "userId is required")
+		}
+		userID, _ := h.svc.EnsureUser(c.Context(), req.UserID, "")
+		result, err := h.svc.HandleTurn(c.Context(), sessionID, userID, req)
+		if err != nil {
+			return api.InternalError(c, err.Error())
+		}
+		return api.OkWithMessage(c, "Tutor turn handled", result)
+	}
 }
 
 func (h *TutorHandler) StartSession() fiber.Handler {
@@ -97,9 +126,13 @@ func (h *TutorHandler) SubmitListeningAnswer() fiber.Handler {
 			return api.BadRequest(c, "Invalid request body")
 		}
 		userID, _ := h.svc.EnsureUser(c.Context(), req.UserID, "")
-		result, err := h.svc.EvaluateListening(c.Context(), sessionID, userID, req.LessonItemID, req.Answer)
+		turn, err := h.svc.HandleTurn(c.Context(), sessionID, userID, tutor.TurnRequest{UserID: req.UserID, Text: req.Answer, InputKind: "text", ClientAction: "answer"})
 		if err != nil {
 			return api.InternalError(c, err.Error())
+		}
+		result := turn
+		if nested, ok := turn["result"].(map[string]interface{}); ok {
+			result = nested
 		}
 		return api.OkWithMessage(c, "Listening answer evaluated", result)
 	}
@@ -139,7 +172,7 @@ func (h *TutorHandler) SubmitSpeakingAudio() fiber.Handler {
 		}
 
 		uid, _ := h.svc.EnsureUser(c.Context(), userID, "")
-		result, err := h.svc.EvaluateSpeaking(c.Context(), sessionID, uid, sttResp.Text)
+		result, err := h.svc.HandleTurn(c.Context(), sessionID, uid, tutor.TurnRequest{UserID: userID, Text: sttResp.Text, InputKind: "audio", ClientAction: "answer"})
 		if err != nil {
 			return api.InternalError(c, err.Error())
 		}
@@ -163,9 +196,13 @@ func (h *TutorHandler) SubmitSpeakingText() fiber.Handler {
 			return api.BadRequest(c, "text is required")
 		}
 		uid, _ := h.svc.EnsureUser(c.Context(), req.UserID, "")
-		result, err := h.svc.EvaluateSpeakingText(c.Context(), sessionID, uid, req.Text)
+		turn, err := h.svc.HandleTurn(c.Context(), sessionID, uid, tutor.TurnRequest{UserID: req.UserID, Text: req.Text, InputKind: "text", ClientAction: "answer"})
 		if err != nil {
 			return api.InternalError(c, err.Error())
+		}
+		result := turn
+		if nested, ok := turn["result"].(map[string]interface{}); ok {
+			result = nested
 		}
 		result["transcript"] = req.Text
 		return api.OkWithMessage(c, "Speaking text evaluated", result)
@@ -184,11 +221,50 @@ func (h *TutorHandler) SubmitReadingAnswer() fiber.Handler {
 			return api.BadRequest(c, "Invalid request body")
 		}
 		userID, _ := h.svc.EnsureUser(c.Context(), req.UserID, "")
-		result, err := h.svc.EvaluateReading(c.Context(), sessionID, userID, req.LessonItemID, req.Translation)
+		turn, err := h.svc.HandleTurn(c.Context(), sessionID, userID, tutor.TurnRequest{UserID: req.UserID, Text: req.Translation, InputKind: "text", ClientAction: "answer"})
 		if err != nil {
 			return api.InternalError(c, err.Error())
 		}
+		result := turn
+		if nested, ok := turn["result"].(map[string]interface{}); ok {
+			result = nested
+		}
 		return api.OkWithMessage(c, "Reading translation evaluated", result)
+	}
+}
+
+func (h *TutorHandler) GetUnitHistory() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		lineUserID := c.Query("userId")
+		unitID, err := c.ParamsInt("unitId")
+		if err != nil || unitID <= 0 {
+			return api.BadRequest(c, "unitId is required")
+		}
+		if lineUserID == "" {
+			return api.BadRequest(c, "userId is required")
+		}
+		userID, _ := h.svc.EnsureUser(c.Context(), lineUserID, "")
+		messages, err := h.svc.GetUnitHistory(c.Context(), userID, unitID)
+		if err != nil {
+			return api.InternalError(c, err.Error())
+		}
+		return api.OkWithMessage(c, "Unit history", fiber.Map{"messages": messages})
+	}
+}
+
+func (h *TutorHandler) GetDueFlashcards() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		lineUserID := c.Query("userId")
+		if lineUserID == "" {
+			return api.BadRequest(c, "userId is required")
+		}
+		limit := c.QueryInt("limit", 20)
+		userID, _ := h.svc.EnsureUser(c.Context(), lineUserID, "")
+		cards, err := h.svc.GetDueFlashcards(c.Context(), userID, limit)
+		if err != nil {
+			return api.InternalError(c, err.Error())
+		}
+		return api.OkWithMessage(c, "Due flashcards", fiber.Map{"cards": cards})
 	}
 }
 
@@ -242,7 +318,7 @@ func (h *TutorHandler) TTS() fiber.Handler {
 		if req.Text == "" {
 			return api.BadRequest(c, "text is required")
 		}
-		
+
 		// Check Cache First
 		cachedAudio, err := h.svc.GetCachedTTS(c.Context(), req.Text)
 		if err == nil && len(cachedAudio) > 0 {
@@ -257,12 +333,12 @@ func (h *TutorHandler) TTS() fiber.Handler {
 		if err != nil {
 			return api.InternalError(c, "TTS failed: "+err.Error())
 		}
-		
+
 		// Save to cache asynchronously
 		go func() {
 			_ = h.svc.CacheTTS(context.Background(), req.Text, audioData)
 		}()
-		
+
 		c.Set("Content-Type", "audio/wav")
 		c.Set("X-TTS-Provider", provider)
 		return c.Send(audioData)

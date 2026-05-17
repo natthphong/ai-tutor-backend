@@ -33,8 +33,8 @@ func TestDecideNextAction_ContinueUnit(t *testing.T) {
 		UnitStatus: "in_progress", CurrentStep: "listening_practice",
 	}
 	result := DecideNextAction(input)
-	if result.Action != "start_speaking" {
-		t.Errorf("expected start_speaking, got %s", result.Action)
+	if result.Action != "start_listening" {
+		t.Errorf("expected start_listening, got %s", result.Action)
 	}
 }
 
@@ -88,8 +88,8 @@ func TestUpdateMasteryScore(t *testing.T) {
 		{0.5, 0.95, 0.60},
 		{0.5, 0.80, 0.55},
 		{0.5, 0.40, 0.40},
-		{0.0, 0.30, 0.0},   // clamp at 0
-		{0.95, 0.95, 1.0},  // clamp at 1
+		{0.0, 0.30, 0.0},  // clamp at 0
+		{0.95, 0.95, 1.0}, // clamp at 1
 	}
 	for _, tt := range tests {
 		result := UpdateMasteryScore(tt.current, tt.score)

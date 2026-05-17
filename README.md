@@ -1,93 +1,125 @@
-# go-template
+# AI Tutor Loop — Backend
 
+Go 1.25 + Fiber v2 backend for the AI Tutor Loop project (Thai → English
+self-study tutor with LINE LIFF auth, Gemini/OpenRouter AI, MinIO storage,
+and a parroto.app-style Shadowing Mode).
 
+## Quick start
 
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://gitlab.com/home-server7795544/go-template.git
-git branch -M main
-git push -uf origin main
+```bash
+cd backend
+cp config/config.example.yaml config/config.yaml   # edit DB, AI keys, MinIO
+go run main.go                                     # listens on :8080
 ```
 
-## Integrate with your tools
+The server registers everything under `/{Server.Name}/api/v1`, default
+`/ai-tutor/api/v1`. With the default config the frontend should point
+`NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8080/ai-tutor/api`.
 
-- [ ] [Set up project integrations](https://gitlab.com/home-server7795544/go-template/-/settings/integrations)
+## Database
 
-## Collaborate with your team
+Apply migrations in `sql/` order: `V1_table.sql`, `V002_tutor_tables.sql`,
+`V7_data.sql`, `V9_cache.sql`, `V10_tutor_intelligence.sql`,
+`V011_local_auth_and_shadowing.sql`. V011 adds:
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+- Local username/password fields on `tutor_users` (+ dev seed `test/test1234`)
+- Shadowing tables: `shadowing_clips`, `shadowing_segments`,
+  `shadowing_progress`, `shadowing_recordings`, `shadowing_notes`
 
-## Test and Deploy
+Quick re-apply:
+```bash
+for f in sql/V*.sql; do psql -h localhost -U postgres -d ai_tutor -f "$f"; done
+```
 
-Use the built-in continuous integration in GitLab.
+## Auth
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+Two flows live side-by-side:
 
-***
+| Path | Purpose |
+|------|---------|
+| `POST /v1/auth/line-login` | LINE LIFF (whitelist enforced) |
+| `POST /v1/auth/line-refresh` | refresh access token |
+| `GET  /v1/auth/line-me` | LINE profile (JWT) |
+| `POST /v1/auth/register` | **Local** username/password signup |
+| `POST /v1/auth/login` | **Local** login |
+| `GET  /v1/auth/me` | Current user (JWT, works for both) |
+| `POST /v1/auth/logout` | Stateless logout |
 
-# Editing this README
+`tutor_users` rows have either `line_user_id`, `username`, or both.
+`auth_kind='local'` users skip LINE notifications by design.
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+Dev seed for AI agents:
+```
+username: test
+password: test1234
+```
 
-## Suggestions for a good README
+## Tutor evaluator (deterministic)
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+`internal/tutor/evaluator.go` replaces the old AI-dependent listening grader.
 
-## Name
-Choose a self-explaining name for your project.
+- `NormalizeAnswer` lowercases, trims, collapses spaces, strips terminal
+  punctuation, normalises curly quotes and dashes, keeps intra-word
+  apostrophes.
+- `EvaluateAnswer(expected, user)` → `EvaluationResult` with:
+  - `Score` 1.0 for normalised exact match, else weighted token-overlap +
+    LCS order similarity in [0,1).
+  - `MissingWords` / `ExtraWords` for hint/UX feedback.
+  - `IsCorrect` only when `Score >= 0.95`.
+- `BuildMaskedHint(target, level)` returns a deterministic mask that preserves
+  word count, keeps apostrophes/hyphens, and reveals more letters with higher
+  levels. Level 1 of `"Sarah is in her car"` → `S____ i_ i_ h__ c__`.
+- `IsAnswerRevealRequest` triggers on `เฉลย`, `ขอคำตอบ`, `show answer`, …
+  When matched, the tutor switches to `IntentRevealAnswer` and the AI is
+  forced to reveal target + Thai meaning + grammar note (see prompt.go).
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+## Shadowing Mode
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+`/v1/shadowing/*` endpoints (see `handler/tutor/shadowing.go`). On
+`POST /v1/shadowing/clips` the service:
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+1. Validates the YouTube URL (`ParseYouTubeID`).
+2. Inserts a `shadowing_clips` row with `status='pending'`.
+3. In a goroutine, tries `yt-dlp` for the 720p mp4, uploads to MinIO,
+   asks Gemini to transcribe + segment + translate to Thai, then sets
+   `status='ready'`.
+4. If `yt-dlp` or Gemini is unavailable, it falls back to canned segments
+   pointing at `youtube.com/embed/<id>` so the UI keeps working. Set
+   `SHADOWING_LOCAL_FALLBACK=true` to force fallback.
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+The frontend polls `GET /v1/shadowing/clips/:clipId` until the clip becomes
+`ready` and then renders the segment list / prev / next / replay / record /
+notes UI under `/shadowing/:clipId`.
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+## Environment variables (most often overridden)
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+| Var | Purpose |
+|-----|---------|
+| `DATABASE_URL` | Postgres DSN (used by ops scripts, app reads `config.yaml`) |
+| `JWT_SECRET` | HMAC secret for tutor JWT |
+| `GEMINI_API_KEY` | primary LLM/TTS/STT |
+| `OPENROUTER_API_KEY` / `OPENAI_API_KEY` | fallbacks |
+| `MINIO_ENDPOINT`/`MINIO_ACCESS_KEY`/`MINIO_SECRET_KEY`/`MINIO_BUCKET`/`MINIO_PUBLIC_URL` | object storage |
+| `LOCAL_AUTH_ENABLED` | always true today; the routes are mounted unconditionally |
+| `SHADOWING_LOCAL_FALLBACK` | `true` to skip yt-dlp/Gemini |
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+## Running tests
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+```bash
+cd backend
+go test ./internal/tutor/... -v
+```
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+Notable tests:
+- `evaluator_test.go` — deterministic evaluator + masked hint + reveal regex.
+- `brain_test.go` — intent classification.
+- `decision_engine_test.go` — SRS decision tree.
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+## Running MinIO locally
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+```bash
+docker run -p 9000:9000 -p 9001:9001 \
+  -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin \
+  quay.io/minio/minio server /data --console-address ":9001"
+```
+The backend will auto-create the bucket from `cfg.MinIO.Bucket` if missing.

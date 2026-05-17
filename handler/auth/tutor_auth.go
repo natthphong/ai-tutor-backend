@@ -160,6 +160,21 @@ func validateTutorToken(tokenStr string) (*TutorClaims, error) {
 	return claims, nil
 }
 
+// ParseAuthHeader extracts and validates the Bearer JWT from the incoming
+// request. Returns nil when the header is missing or invalid – callers can
+// then fall back to alternative identification (userId in body/query).
+func ParseAuthHeader(c *fiber.Ctx) *TutorClaims {
+	auth := c.Get("Authorization")
+	if len(auth) < 8 {
+		return nil
+	}
+	claims, err := validateTutorToken(auth[7:])
+	if err != nil {
+		return nil
+	}
+	return claims
+}
+
 func TutorJWTMiddleware() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		auth := c.Get("Authorization")

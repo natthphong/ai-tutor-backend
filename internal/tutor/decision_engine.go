@@ -115,24 +115,24 @@ func decideUnitStep(input DecisionInput) NextAction {
 		}
 	case "listening_practice":
 		return NextAction{
+			Action:      "start_listening",
+			Mode:        "listening",
+			UnitID:      input.CurrentUnitID,
+			Instruction: "ฟังดีๆ แล้วพิมพ์สิ่งที่ได้ยินครับ",
+		}
+	case "speaking_practice":
+		return NextAction{
 			Action:      "start_speaking",
 			Mode:        "speaking",
 			UnitID:      input.CurrentUnitID,
 			Instruction: "ลองพูดตามตัวอย่างครับ",
 		}
-	case "speaking_practice":
+	case "reading_practice":
 		return NextAction{
 			Action:      "start_reading",
 			Mode:        "reading",
 			UnitID:      input.CurrentUnitID,
 			Instruction: "มาอ่านและแปลกันครับ",
-		}
-	case "reading_practice":
-		return NextAction{
-			Action:      "mini_quiz",
-			Mode:        "mixed",
-			UnitID:      input.CurrentUnitID,
-			Instruction: "มาทำแบบทดสอบกันครับ",
 		}
 	case "mini_quiz":
 		return NextAction{

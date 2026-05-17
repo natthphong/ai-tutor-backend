@@ -52,7 +52,7 @@ func (s *Service) GetDueItems(ctx context.Context, userID string) (DueItems, err
 	var d DueItems
 	s.db.QueryRow(ctx, `SELECT COUNT(*) FROM tutor_flashcards WHERE user_id = $1 AND next_due_at <= now()`, userID).Scan(&d.VocabularyDueCount)
 	s.db.QueryRow(ctx, `SELECT COUNT(*) FROM weaknesses WHERE user_id = $1 AND next_due_at <= now() AND resolved = false`, userID).Scan(&d.WeaknessDueCount)
-	s.db.QueryRow(ctx, `SELECT COUNT(*) FROM user_unit_progress WHERE user_id = $1 AND status = 'review_due' AND next_due_at <= now()`, userID).Scan(&d.UnitReviewDueCount)
+	s.db.QueryRow(ctx, `SELECT COUNT(*) FROM user_unit_progress WHERE user_id = $1 AND status IN ('review_due','completed','mastered') AND next_due_at <= now()`, userID).Scan(&d.UnitReviewDueCount)
 	return d, nil
 }
 
@@ -64,6 +64,9 @@ func (s *Service) StartSession(ctx context.Context, userID string, preferredMode
 	err := s.db.QueryRow(ctx, `SELECT current_unit_id FROM tutor_users WHERE id = $1`, userID).Scan(&currentUnitID)
 	if err != nil {
 		currentUnitID = 1
+	}
+	if dueItems.UnitReviewDueCount > 0 {
+		_ = s.db.QueryRow(ctx, `SELECT unit_id FROM user_unit_progress WHERE user_id = $1 AND status IN ('review_due','completed','mastered') AND next_due_at <= now() ORDER BY next_due_at ASC LIMIT 1`, userID).Scan(&currentUnitID)
 	}
 	err = s.db.QueryRow(ctx, `SELECT COALESCE(current_step,'intro'), COALESCE(status,'not_started') FROM user_unit_progress WHERE user_id = $1 AND unit_id = $2`, userID, currentUnitID).Scan(&currentStep, &unitStatus)
 	if err != nil {
@@ -77,10 +80,14 @@ func (s *Service) StartSession(ctx context.Context, userID string, preferredMode
 	var weaknessCount int
 	s.db.QueryRow(ctx, `SELECT COUNT(*) FROM weaknesses WHERE user_id = $1 AND resolved = false`, userID).Scan(&weaknessCount)
 
+	weaknessThreshold := s.cfg.Tutor.WeaknessThreshold
+	if weaknessThreshold <= 0 {
+		weaknessThreshold = 5
+	}
 	decision := DecideNextAction(DecisionInput{
 		UserID: userID, CurrentUnitID: currentUnitID, DueItems: dueItems,
 		RecentWeaknesses: weaknessCount, PreferredMode: preferredMode,
-		CurrentStep: currentStep, UnitStatus: unitStatus, WeaknessThreshold: 5,
+		CurrentStep: currentStep, UnitStatus: unitStatus, WeaknessThreshold: weaknessThreshold,
 	})
 
 	// Try to find existing active session
@@ -94,8 +101,8 @@ func (s *Service) StartSession(ctx context.Context, userID string, preferredMode
 		// Resume existing session
 		decision.Mode = mode
 		decision.Action = currentAction
-		// Fetch last 5 messages
-		rows, _ := s.db.Query(ctx, `SELECT role, content, content_th, message_type FROM tutor_messages WHERE session_id = $1 ORDER BY created_at DESC LIMIT 5`, sessionID)
+		// Fetch the full per-unit history so the chat is restored after a refresh.
+		rows, _ := s.db.Query(ctx, `SELECT role, content, content_th, message_type FROM tutor_messages WHERE user_id = $1 AND unit_id = $2 ORDER BY created_at DESC LIMIT 200`, userID, currentUnitID)
 		defer rows.Close()
 		var tempMsgs []map[string]interface{}
 		for rows.Next() {
@@ -129,21 +136,22 @@ func (s *Service) StartSession(ctx context.Context, userID string, preferredMode
 
 		// Store assistant opening message
 		msgID := uuid.New().String()
-		s.db.Exec(ctx, `INSERT INTO tutor_messages (id, session_id, user_id, role, content, content_th, message_type) VALUES ($1,$2,$3,'assistant',$4,$5,'text')`,
-			msgID, sessionID, userID, introEn, introTh)
-		
+		s.insertTutorMessage(ctx, sessionID, userID, currentUnitID, "assistant", introEn, introTh, "text", "session_start", 0, nil)
+		_ = msgID
+
 		messages = []map[string]interface{}{
 			{"role": "assistant", "content": introEn, "contentTh": introTh, "type": "text"},
 		}
 	}
 
 	return map[string]interface{}{
-		"sessionId":  sessionID,
-		"nextAction": decision.Action,
-		"mode":       decision.Mode,
-		"unit":       map[string]interface{}{"unitNo": currentUnitID, "title": unitTitle},
-		"messages":   messages, // return array of messages to frontend
-		"dueItems": dueItems,
+		"sessionId":        sessionID,
+		"nextAction":       decision.Action,
+		"mode":             decision.Mode,
+		"unit":             map[string]interface{}{"unitNo": currentUnitID, "title": unitTitle},
+		"messages":         messages, // return array of messages to frontend
+		"dueItems":         dueItems,
+		"availableActions": []string{"hint", "repeat", "review", "restart", "continue"},
 	}, nil
 }
 
@@ -173,37 +181,60 @@ func (s *Service) GetNextStep(ctx context.Context, sessionID string, userID stri
 		} else {
 			result["explanation"] = resp
 			result["nextAction"] = "grammar_explained"
+			if pattern, ok := resp["pattern"].(string); ok && pattern != "" {
+				grammarFocus = pattern
+			}
 		}
 		s.updateStep(ctx, userID, unitID, "listening_practice")
+		s.updateSessionPractice(ctx, sessionID, "mixed", "grammar_explained", "", map[string]interface{}{
+			"pattern": grammarFocus,
+		})
 
 	case "listening_practice":
-		sentence := s.getListeningSentence(ctx, unitID)
+		itemID, sentence := s.getCurrentOrNextListening(ctx, sessionID, unitID)
 		result["nextAction"] = "start_listening"
 		result["mode"] = "listening"
 		result["instruction"] = "ฟังแล้วพิมพ์สิ่งที่ได้ยินครับ"
+		result["lessonItemId"] = itemID
 		result["targetHidden"] = true
 		result["targetText"] = sentence
 		result["ttsAvailable"] = sentence != ""
+		s.updateSessionPractice(ctx, sessionID, "listening", "start_listening", itemID, map[string]interface{}{
+			"lessonItemId": itemID,
+			"targetText":   sentence,
+			"pattern":      grammarFocus,
+		})
 
 	case "speaking_practice":
 		result["nextAction"] = "start_speaking"
 		result["mode"] = "speaking"
-		result["instruction"] = "ลองพูดตาม pattern ที่เรียนครับ"
+		result["instruction"] = "ลองพูดหรือพิมพ์ประโยคภาษาอังกฤษโดยใช้ pattern ที่เรียนครับ"
 		result["pattern"] = grammarFocus
-		s.updateStep(ctx, userID, unitID, "reading_practice")
+		result["situation"] = fmt.Sprintf("Make one natural sentence about your life using: %s", grammarFocus)
+		s.updateSessionPractice(ctx, sessionID, "speaking", "start_speaking", "", map[string]interface{}{
+			"pattern":   grammarFocus,
+			"situation": result["situation"],
+		})
 
 	case "reading_practice":
-		passage, _ := s.generateReadingPassage(ctx, grammarFocus, "A1", unitTitle)
+		passage := s.getStoredReadingPassage(ctx, sessionID, unitID, grammarFocus, "A1", unitTitle)
 		result["nextAction"] = "start_reading"
 		result["mode"] = "reading"
 		result["instruction"] = "อ่านแล้วลองแปลเป็นภาษาไทยครับ"
 		result["passage"] = passage
-		s.updateStep(ctx, userID, unitID, "mini_quiz")
+		result["pattern"] = grammarFocus
+		s.updateSessionPractice(ctx, sessionID, "reading", "start_reading", "", map[string]interface{}{
+			"passage": passage,
+			"pattern": grammarFocus,
+		})
 
 	case "mini_quiz":
 		result["nextAction"] = "review_summary"
 		result["instruction"] = "สรุปสิ่งที่เรียนในบทนี้"
 		s.updateStep(ctx, userID, unitID, "review_summary")
+		s.updateSessionPractice(ctx, sessionID, "mixed", "review_summary", "", map[string]interface{}{
+			"pattern": grammarFocus,
+		})
 
 	case "review_summary", "schedule_review":
 		s.completeUnit(ctx, userID, unitID)
@@ -214,126 +245,138 @@ func (s *Service) GetNextStep(ctx context.Context, sessionID string, userID stri
 	return result, nil
 }
 
-// EvaluateListening evaluates a listening answer
+// EvaluateListening evaluates a listening answer using a deterministic
+// evaluator. AI is only used afterwards to enrich feedback text – the score
+// and correctness boolean are always trustworthy.
 func (s *Service) EvaluateListening(ctx context.Context, sessionID, userID, lessonItemID, answer string) (map[string]interface{}, error) {
 	var unitID int
 	s.db.QueryRow(ctx, `SELECT unit_id FROM tutor_sessions WHERE id = $1`, sessionID).Scan(&unitID)
 
-	targetText := s.getListeningSentence(ctx, unitID)
+	currentItemID, targetText := s.getCurrentOrNextListening(ctx, sessionID, unitID)
+	if lessonItemID == "" {
+		lessonItemID = currentItemID
+	}
 	if targetText == "" {
-		targetText = "She is on her way to work."
+		targetText = s.lessonContentExcerpt(ctx, unitID)
 	}
 
-	var unitTitle string
-	s.db.QueryRow(ctx, `SELECT COALESCE(title,'') FROM lesson_units WHERE id = $1`, unitID).Scan(&unitTitle)
+	eval := EvaluateAnswer(targetText, answer)
+	finalScore := eval.Score
+	isCorrect := eval.IsCorrect
 
-	// Use AI to evaluate
-	prompt := BuildListeningPrompt(targetText, answer, 0, unitTitle)
-	resp, err := s.router.Chat(ctx, ai.ChatRequest{
-		SystemPrompt: BuildTutorSystemPrompt(),
-		Messages:     []ai.ChatMessage{{Role: "user", Content: prompt}},
-		UseCase:      "listening_evaluation",
-	})
+	// Determine progressive hint level based on previous failures.
+	var failCount int
+	s.db.QueryRow(ctx, `SELECT COUNT(*) FROM listening_attempts WHERE session_id = $1 AND is_correct = false`, sessionID).Scan(&failCount)
+	hintLevel := 1
+	if failCount >= 1 {
+		hintLevel = 2
+	}
+	if failCount >= 2 {
+		hintLevel = 3
+	}
 
-	result := map[string]interface{}{}
-	if err != nil {
-		// Fallback: simple string comparison
-		score := simpleCompare(targetText, answer)
-		isCorrect := score >= 0.85
-		result["isCorrect"] = isCorrect
-		result["score"] = score
+	result := map[string]interface{}{
+		"score":         finalScore,
+		"isCorrect":     isCorrect,
+		"targetText":    targetText,
+		"normalizedExp": eval.NormalizedExp,
+		"normalizedAns": eval.NormalizedAns,
+		"matchRatio":    eval.MatchRatio,
+	}
+	if !isCorrect {
+		result["hint"] = BuildMaskedHint(targetText, hintLevel)
 		result["correction"] = targetText
-		if isCorrect {
-			result["feedbackTh"] = "เก่งมากครับ! ถูกต้อง"
-			result["nextAction"] = "next_step"
-		} else if score >= 0.5 {
-			result["feedbackTh"] = "ใกล้แล้วครับ! ลองฟังอีกครั้งแล้วเทียบกับคำเฉลย"
-			result["hint"] = buildProgressiveHint(targetText, 1)
-			result["nextAction"] = "retry_listening"
+		if eval.NormalizedAns == "" {
+			result["feedbackTh"] = "ลองพิมพ์คำตอบใหม่นะครับ"
+		} else if finalScore >= 0.6 {
+			result["feedbackTh"] = "ใกล้แล้วครับ! ดูคำใบ้ด้านล่างแล้วลองอีกครั้ง"
 		} else {
-			result["feedbackTh"] = "ลองอีกครั้งนะครับ ดู hint ด้านล่างเป็นตัวช่วย"
-			result["hint"] = buildProgressiveHint(targetText, 2)
-			result["nextAction"] = "retry_listening"
+			result["feedbackTh"] = "ลองอีกครั้งนะครับ ดู hint เป็นตัวช่วยได้"
 		}
+		mistakes := make([]map[string]interface{}, 0)
+		for _, w := range eval.MissingWords {
+			mistakes = append(mistakes, map[string]interface{}{"type": "missing_word", "value": w})
+		}
+		for _, w := range eval.ExtraWords {
+			mistakes = append(mistakes, map[string]interface{}{"type": "extra_word", "value": w})
+		}
+		result["mistakes"] = mistakes
 	} else {
-		json.Unmarshal([]byte(resp.Content), &result)
-		// Robust score parsing
-		var score float64
-		if s, ok := result["score"]; ok {
-			switch v := s.(type) {
-			case float64:
-				score = v
-			case int:
-				score = float64(v)
-			case string:
-				fmt.Sscanf(v, "%f", &score)
-			}
-		}
-		
-		// Ensure hint is always present on wrong answer (score < 0.85 or score < 85 if they used 0-100)
-		if score < 0.85 || (score > 1.0 && score < 85.0) {
-			if _, hasHint := result["hint"]; !hasHint || result["hint"] == "" {
-				// Get attempt count to show better hint
-				var failCount int
-				s.db.QueryRow(ctx, `SELECT COUNT(*) FROM listening_attempts WHERE session_id = $1 AND is_correct = false`, sessionID).Scan(&failCount)
-				
-				hintLevel := 1
-				if failCount > 0 {
-					hintLevel = 2
-				}
-				if failCount > 1 {
-					hintLevel = 3
-				}
-				result["hint"] = buildProgressiveHint(targetText, hintLevel)
-			}
-			if _, hasFb := result["feedbackTh"]; !hasFb || result["feedbackTh"] == "" {
-				result["feedbackTh"] = "ลองอีกครั้งนะครับ"
-			}
-		}
+		result["feedbackTh"] = "เก่งมากครับ! ตอบถูกต้องเป๊ะ"
 	}
 
 	// Store attempt
 	attemptID := uuid.New().String()
-	var finalScore float64
-	if s, ok := result["score"]; ok {
-		switch v := s.(type) {
-		case float64:
-			finalScore = v
-		case int:
-			finalScore = float64(v)
-		case string:
-			fmt.Sscanf(v, "%f", &finalScore)
-		}
-	}
-	
-	isCorrect := finalScore >= 0.85 || (finalScore > 1.0 && finalScore >= 85.0)
-	result["isCorrect"] = isCorrect // Make sure to return boolean
-	
-	// Always include targetText so the frontend can replay the audio if needed
-	result["targetText"] = targetText
-	
 	mistakesJSON, _ := json.Marshal(result["mistakes"])
 	s.db.Exec(ctx, `INSERT INTO listening_attempts (id, user_id, session_id, unit_id, target_text, user_text, score, is_correct, mistakes) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
 		attemptID, userID, sessionID, unitID, targetText, answer, finalScore, isCorrect, string(mistakesJSON))
 
 	// Store weaknesses if any
-	if mistakes, ok := result["mistakes"].([]interface{}); ok {
-		for _, m := range mistakes {
-			if mm, ok := m.(map[string]interface{}); ok {
-				wID := uuid.New().String()
-				wType, _ := mm["type"].(string)
-				wDetail, _ := mm["detail"].(string)
-				nextDue := CalculateNextDue(finalScore, 0, 0)
-				s.db.Exec(ctx, `INSERT INTO weaknesses (id, user_id, unit_id, source_type, source_id, weakness_type, detail, example_wrong, example_correct, next_due_at) VALUES ($1,$2,$3,'listening',$4,$5,$6,$7,$8,$9)`,
-					wID, userID, unitID, attemptID, wType, wDetail, answer, targetText, nextDue)
-			}
-		}
+	for _, m := range listenMistakeIter(result["mistakes"]) {
+		wID := uuid.New().String()
+		wType, _ := m["type"].(string)
+		wDetail, _ := m["value"].(string)
+		nextDue := CalculateNextDue(finalScore, 0, 0)
+		s.db.Exec(ctx, `INSERT INTO weaknesses (id, user_id, unit_id, source_type, source_id, weakness_type, detail, example_wrong, example_correct, next_due_at) VALUES ($1,$2,$3,'listening',$4,$5,$6,$7,$8,$9)`,
+			wID, userID, unitID, attemptID, wType, wDetail, answer, targetText, nextDue)
 	}
 
 	if isCorrect {
-		s.updateStep(ctx, userID, unitID, "speaking_practice")
+		s.markItemUsed(ctx, sessionID, "usedListeningIds", lessonItemID)
+		pass := s.incrementPassCount(ctx, sessionID, "listeningPassCount")
+		result["passCount"] = pass
+		result["passRequired"] = RequiredPassPerSkill
+
+		if pass >= RequiredPassPerSkill {
+			s.updateStep(ctx, userID, unitID, "speaking_practice")
+			s.clearSessionItem(ctx, sessionID, "speaking", "start_speaking", map[string]interface{}{})
+			result["nextAction"] = "start_speaking"
+			result["feedbackTh"] = "เก่งมาก! ผ่าน listening ครบ 3 รอบแล้ว ไปฝึกพูดกันต่อเลย"
+		} else {
+			// Stay in listening, queue up a fresh sentence.
+			nextID, nextText := s.pickNextListeningItem(ctx, sessionID, unitID)
+			if nextText == "" {
+				// no more items – allow advancement so we don't trap the user
+				s.updateStep(ctx, userID, unitID, "speaking_practice")
+				s.clearSessionItem(ctx, sessionID, "speaking", "start_speaking", map[string]interface{}{})
+				result["nextAction"] = "start_speaking"
+			} else {
+				s.updateSessionPractice(ctx, sessionID, "listening", "start_listening", nextID, map[string]interface{}{
+					"lessonItemId": nextID,
+					"targetText":   nextText,
+				})
+				result["nextAction"] = "start_listening"
+				result["nextItemId"] = nextID
+				result["nextTargetText"] = nextText
+				result["feedbackTh"] = "ถูกต้องครับ! รอบที่ " + itoa(pass) + "/3 — มาฟังประโยคถัดไปกัน"
+			}
+		}
+	} else {
+		result["nextAction"] = "retry_listening"
+		s.updateSessionPractice(ctx, sessionID, "listening", "retry_listening", lessonItemID, map[string]interface{}{
+			"lessonItemId": lessonItemID,
+			"targetText":   targetText,
+		})
 	}
+	s.updateUnitSkillScore(ctx, userID, unitID, "listening", finalScore)
 	return result, nil
+}
+
+// listenMistakeIter normalises whatever shape was stored into result["mistakes"].
+func listenMistakeIter(v interface{}) []map[string]interface{} {
+	switch m := v.(type) {
+	case []map[string]interface{}:
+		return m
+	case []interface{}:
+		out := make([]map[string]interface{}, 0, len(m))
+		for _, item := range m {
+			if mm, ok := item.(map[string]interface{}); ok {
+				out = append(out, mm)
+			}
+		}
+		return out
+	}
+	return nil
 }
 
 // EvaluateSpeaking evaluates a speaking transcript
@@ -361,19 +404,58 @@ func (s *Service) EvaluateSpeaking(ctx context.Context, sessionID, userID, trans
 		result["transcript"] = transcript
 	}
 
-	score := 0.0
-	if sc, ok := result["score"].(float64); ok {
-		score = sc
+	score := parseScore(result["score"])
+	result["score"] = score
+	grammarScore := parseScore(result["grammarScore"])
+	if grammarScore == 0 {
+		grammarScore = score
 	}
+	pronunciationScore := parseScore(result["pronunciationScore"])
+	if pronunciationScore == 0 {
+		pronunciationScore = score
+	}
+	fluencyScore := parseScore(result["fluencyScore"])
+	if fluencyScore == 0 {
+		fluencyScore = score
+	}
+	nativeSuggestion, _ := result["nativeSuggestion"].(string)
 
 	attemptID := uuid.New().String()
 	mistakesJSON, _ := json.Marshal(result["mistakes"])
-	s.db.Exec(ctx, `INSERT INTO speaking_attempts (id, user_id, session_id, unit_id, transcript, target_pattern, score, feedback_th, mistakes) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
-		attemptID, userID, sessionID, unitID, transcript, grammarFocus, score, result["feedbackTh"], string(mistakesJSON))
+	_, insertErr := s.db.Exec(ctx, `INSERT INTO speaking_attempts (id, user_id, session_id, unit_id, transcript, target_pattern, score, feedback_th, correction_text, mistakes, pronunciation_score, fluency_score, grammar_score, native_suggestion) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
+		attemptID, userID, sessionID, unitID, transcript, grammarFocus, score, result["feedbackTh"], result["correction"], string(mistakesJSON), pronunciationScore, fluencyScore, grammarScore, nativeSuggestion)
+	if insertErr != nil {
+		s.db.Exec(ctx, `INSERT INTO speaking_attempts (id, user_id, session_id, unit_id, transcript, target_pattern, score, feedback_th, mistakes) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+			attemptID, userID, sessionID, unitID, transcript, grammarFocus, score, result["feedbackTh"], string(mistakesJSON))
+	}
 
 	if score >= 0.85 {
-		s.updateStep(ctx, userID, unitID, "reading_practice")
+		pass := s.incrementPassCount(ctx, sessionID, "speakingPassCount")
+		result["passCount"] = pass
+		result["passRequired"] = RequiredPassPerSkill
+		if pass >= RequiredPassPerSkill {
+			s.updateStep(ctx, userID, unitID, "reading_practice")
+			s.clearSessionItem(ctx, sessionID, "reading", "start_reading", map[string]interface{}{"pattern": grammarFocus})
+			result["nextAction"] = "start_reading"
+			result["feedbackTh"] = "ฝึกพูดครบ 3 รอบแล้ว มาฝึกอ่านกันต่อครับ"
+		} else {
+			// Stay in speaking, request a fresh creative situation next round.
+			s.updateSessionPractice(ctx, sessionID, "speaking", "start_speaking", "", map[string]interface{}{
+				"pattern":     grammarFocus,
+				"situation":   "Tell me a NEW everyday Thai-life moment that uses: " + grammarFocus,
+				"freshPrompt": true,
+			})
+			result["nextAction"] = "start_speaking"
+			result["feedbackTh"] = "เก่งมาก! รอบที่ " + itoa(pass) + "/3 ของพูด — ลองพูดอีกประโยคใหม่ที่ต่างจากเดิม"
+		}
+	} else {
+		result["nextAction"] = "retry_speaking"
+		s.updateSessionPractice(ctx, sessionID, "speaking", "retry_speaking", "", map[string]interface{}{"pattern": grammarFocus})
 	}
+	result["grammarScore"] = grammarScore
+	result["pronunciationScore"] = pronunciationScore
+	result["fluencyScore"] = fluencyScore
+	s.updateUnitSkillScore(ctx, userID, unitID, "speaking", score)
 	return result, nil
 }
 
@@ -387,10 +469,10 @@ func (s *Service) EvaluateReading(ctx context.Context, sessionID, userID, lesson
 	var unitID int
 	s.db.QueryRow(ctx, `SELECT unit_id FROM tutor_sessions WHERE id = $1`, sessionID).Scan(&unitID)
 
-	var unitTitle string
-	s.db.QueryRow(ctx, `SELECT COALESCE(title,'') FROM lesson_units WHERE id = $1`, unitID).Scan(&unitTitle)
+	var unitTitle, grammarFocus, level string
+	s.db.QueryRow(ctx, `SELECT COALESCE(title,''), COALESCE(grammar_focus,''), COALESCE(level,'A1') FROM lesson_units WHERE id = $1`, unitID).Scan(&unitTitle, &grammarFocus, &level)
 
-	passage := "Sarah is in her car. She is on her way to work."
+	passage := s.getStoredReadingPassage(ctx, sessionID, unitID, grammarFocus, level, unitTitle)
 	prompt := BuildReadingEvaluationPrompt(passage, translation, unitTitle)
 	resp, err := s.router.Chat(ctx, ai.ChatRequest{
 		SystemPrompt: BuildTutorSystemPrompt(),
@@ -427,21 +509,44 @@ func (s *Service) EvaluateReading(ctx context.Context, sessionID, userID, lesson
 	}
 	result["createdFlashcards"] = createdCards
 
-	score := 0.0
-	if sc, ok := result["score"].(float64); ok {
-		score = sc
-	}
+	score := parseScore(result["score"])
+	result["score"] = score
 	attemptID := uuid.New().String()
 	vocabJSON, _ := json.Marshal(result["vocabulary"])
-	s.db.Exec(ctx, `INSERT INTO reading_attempts (id, user_id, session_id, unit_id, passage, user_translation, score, feedback_th, vocabulary) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
-		attemptID, userID, sessionID, unitID, passage, translation, score, result["feedbackTh"], string(vocabJSON))
+	mistakesJSON, _ := json.Marshal(result["mistakes"])
+	s.db.Exec(ctx, `INSERT INTO reading_attempts (id, user_id, session_id, unit_id, passage, user_translation, ai_translation, score, feedback_th, vocabulary, mistakes) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+		attemptID, userID, sessionID, unitID, passage, translation, result["aiTranslation"], score, result["feedbackTh"], string(vocabJSON), string(mistakesJSON))
 
-	s.updateStep(ctx, userID, unitID, "mini_quiz")
+	if score >= 0.75 {
+		pass := s.incrementPassCount(ctx, sessionID, "readingPassCount")
+		result["passCount"] = pass
+		result["passRequired"] = RequiredPassPerSkill
+		if pass >= RequiredPassPerSkill {
+			s.updateStep(ctx, userID, unitID, "mini_quiz")
+			s.clearSessionItem(ctx, sessionID, "mixed", "mini_quiz", map[string]interface{}{"pattern": grammarFocus})
+			result["nextAction"] = "mini_quiz"
+			result["feedbackTh"] = "ครบ 3 รอบของอ่านแล้ว ไปสรุปบทเรียนกันต่อ"
+		} else {
+			// Force a new passage next round.
+			s.clearSessionItem(ctx, sessionID, "reading", "start_reading", map[string]interface{}{
+				"pattern":     grammarFocus,
+				"freshPrompt": true,
+			})
+			result["nextAction"] = "start_reading"
+			result["feedbackTh"] = "ดีมาก! รอบที่ " + itoa(pass) + "/3 ของอ่าน — มาลองอีก passage นึง"
+		}
+	} else {
+		result["nextAction"] = "retry_reading"
+		s.updateSessionPractice(ctx, sessionID, "reading", "retry_reading", "", map[string]interface{}{"passage": passage, "pattern": grammarFocus})
+	}
+	result["passage"] = passage
+	s.updateUnitSkillScore(ctx, userID, unitID, "reading", score)
 	return result, nil
 }
 
 // ReviewFlashcard processes a flashcard review
 func (s *Service) ReviewFlashcard(ctx context.Context, userID, flashcardID string, score float64) (map[string]interface{}, error) {
+	score = normalizeScore(score)
 	var currentMastery float64
 	var reviewCount, consecutiveCorrect int
 	err := s.db.QueryRow(ctx, `SELECT mastery_score, review_count, consecutive_correct FROM tutor_flashcards WHERE id = $1 AND user_id = $2`, flashcardID, userID).Scan(&currentMastery, &reviewCount, &consecutiveCorrect)
@@ -498,8 +603,8 @@ func (s *Service) GetProgress(ctx context.Context, userID string) (map[string]in
 
 	return map[string]interface{}{
 		"currentUnit": currentUnit, "completedUnits": completedUnits, "streak": streak,
-		"dueToday": map[string]interface{}{"vocabulary": dueItems.VocabularyDueCount, "weakness": dueItems.WeaknessDueCount, "unit": dueItems.UnitReviewDueCount},
-		"scores":   map[string]interface{}{"listening": lScore, "speaking": sScore, "reading": rScore},
+		"dueToday":      map[string]interface{}{"vocabulary": dueItems.VocabularyDueCount, "weakness": dueItems.WeaknessDueCount, "unit": dueItems.UnitReviewDueCount},
+		"scores":        map[string]interface{}{"listening": lScore, "speaking": sScore, "reading": rScore},
 		"topWeaknesses": topWeaknesses,
 	}, nil
 }
@@ -514,6 +619,7 @@ func (s *Service) completeUnit(ctx context.Context, userID string, unitID int) {
 	nextDue := time.Now().Add(7 * 24 * time.Hour)
 	s.db.Exec(ctx, `UPDATE user_unit_progress SET status = 'completed', completed_at = now(), next_due_at = $1, updated_at = now() WHERE user_id = $2 AND unit_id = $3`, nextDue, userID, unitID)
 	s.db.Exec(ctx, `UPDATE tutor_users SET current_unit_id = current_unit_id + 1, updated_at = now() WHERE id = $1`, userID)
+	s.NotifyLineAsync(fmt.Sprintf("AI Tutor Loop: user completed Unit %d. Review scheduled at %s.", unitID, nextDue.Format(time.RFC3339)))
 }
 
 func (s *Service) getListeningSentence(ctx context.Context, unitID int) string {
@@ -571,13 +677,13 @@ func (s *Service) GetCachedTTS(ctx context.Context, text string) ([]byte, error)
 	}
 	hash := md5.Sum([]byte(strings.ToLower(strings.TrimSpace(text))))
 	key := hex.EncodeToString(hash[:])
-	
+
 	var minioPath string
 	err := s.db.QueryRow(ctx, `SELECT minio_path FROM tts_cache WHERE cache_key = $1`, key).Scan(&minioPath)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	obj, err := s.minioClient.GetObject(ctx, s.cfg.MinIO.Bucket, minioPath, minio.GetObjectOptions{})
 	if err != nil {
 		return nil, err
@@ -592,78 +698,14 @@ func (s *Service) CacheTTS(ctx context.Context, text string, audioData []byte) e
 	}
 	hash := md5.Sum([]byte(strings.ToLower(strings.TrimSpace(text))))
 	key := hex.EncodeToString(hash[:])
-	
+
 	minioPath := fmt.Sprintf("%s%s.wav", s.cfg.MinIO.PrefixTTS, key)
 	_, err := s.minioClient.PutObject(ctx, s.cfg.MinIO.Bucket, minioPath, bytes.NewReader(audioData), int64(len(audioData)), minio.PutObjectOptions{ContentType: "audio/wav"})
 	if err != nil {
 		return err
 	}
-	
+
 	_, err = s.db.Exec(ctx, `INSERT INTO tts_cache (cache_key, original_text, minio_path) VALUES ($1, $2, $3) ON CONFLICT (cache_key) DO NOTHING`, key, text, minioPath)
 	return err
 }
 
-func cleanText(s string) string {
-	s = strings.ToLower(strings.TrimSpace(s))
-	var b strings.Builder
-	for _, r := range s {
-		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') || r == ' ' {
-			b.WriteRune(r)
-		} else {
-			b.WriteRune(' ')
-		}
-	}
-	return strings.Join(strings.Fields(b.String()), " ")
-}
-
-func simpleCompare(target, answer string) float64 {
-	t := cleanText(target)
-	a := cleanText(answer)
-	if t == a {
-		return 1.0
-	}
-	tWords := strings.Fields(t)
-	aWords := strings.Fields(a)
-	if len(tWords) == 0 {
-		return 0
-	}
-	matches := 0
-	for _, tw := range tWords {
-		for _, aw := range aWords {
-			if tw == aw {
-				matches++
-				break
-			}
-		}
-	}
-	return float64(matches) / float64(len(tWords))
-}
-
-// buildProgressiveHint gives increasingly revealing hints
-func buildProgressiveHint(target string, level int) string {
-	words := strings.Fields(target)
-	if len(words) == 0 {
-		return target
-	}
-	var initials []string
-	for _, w := range words {
-		cleanWord := strings.Trim(w, ".,!?")
-		if len(cleanWord) > 0 {
-			if level <= 1 {
-				// level 1: just underscores for length
-				initials = append(initials, strings.Repeat("_", len(cleanWord)))
-			} else if level == 2 {
-				// level 2: first letter + underscores
-				initials = append(initials, string(cleanWord[0])+strings.Repeat("_", len(cleanWord)-1))
-			} else {
-				// level 3: first and last letter
-				if len(cleanWord) > 1 {
-					initials = append(initials, string(cleanWord[0])+strings.Repeat("_", len(cleanWord)-2)+string(cleanWord[len(cleanWord)-1]))
-				} else {
-					initials = append(initials, cleanWord)
-				}
-			}
-		}
-	}
-	return strings.Join(initials, " ")
-}

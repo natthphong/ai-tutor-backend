@@ -86,9 +86,19 @@ func main() {
 	// Auth Handler (LINE login → whitelist check → JWT)
 	authHandler.RegisterTutorAuth(group, tutorSvc, cfg)
 
+	// Local auth (username/password) – enabled when LOCAL_AUTH_ENABLED=true,
+	// always on in dev to keep agent-driven testing simple.
+	authHandler.RegisterLocalAuth(group, dbPool, cfg)
+	authHandler.EnsureLocalSeed(ctx, dbPool)
+
+	// Shadowing Mode (YouTube + Gemini + MinIO)
+	shadowingSvc := tutor.NewShadowingService(dbPool, aiRouter, minioClient, cfg)
+
 	// Tutor Handler (registers all tutor routes)
-	tutor := tutorHandler.NewTutorHandler(tutorSvc, ingestSvc, aiRouter, cfg)
-	tutor.Register(group)
+	tutorH := tutorHandler.NewTutorHandler(tutorSvc, ingestSvc, aiRouter, cfg)
+	tutorH.Register(group)
+
+	tutorHandler.NewShadowingHandler(shadowingSvc, tutorH).Register(group)
 
 	// LINE Webhook placeholder
 	group.Post("/line/webhook", func(c *fiber.Ctx) error {
@@ -118,8 +128,9 @@ func initFiber() *fiber.App {
 
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
-		AllowMethods: "GET,POST,PUT,DELETE,OPTIONS",
-		AllowHeaders: "Origin,Content-Type,Accept,Authorization,traceId,requestId",
+		AllowMethods: "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+		AllowHeaders: "Origin,Content-Type,Accept,Authorization,traceId,requestId,Range,X-Requested-With",
+		ExposeHeaders: "Content-Length,Content-Range,Accept-Ranges",
 	}))
 	app.Use(SetHeaderID())
 	return app
