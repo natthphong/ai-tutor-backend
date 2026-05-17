@@ -1,8 +1,6 @@
-FROM alpine:latest
-RUN apk --no-cache add tzdata
-RUN apk --no-cache add curl
+FROM alpine:3.20
+RUN apk --no-cache add tzdata curl coreutils
 ENV TZ=Asia/Bangkok
 WORKDIR /app
 COPY ./goapp ./goapp
-COPY ./sql ./sql
-ENTRYPOINT [ "./goapp" ]
+CMD ["./goapp"]
