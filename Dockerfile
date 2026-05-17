@@ -36,3 +36,4 @@ COPY ./sql ./sql
 RUN chmod +x ./goapp
 
 CMD ["./goapp"]
+
