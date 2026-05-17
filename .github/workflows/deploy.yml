@@ -1,0 +1,36 @@
+name: Deploy to Portainer
+
+on:
+  push:
+    tags:
+      - "v*"
+      - "*"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Deploy via Portainer
+        env:
+          PORTAINER_URL: ${{ secrets.PORTAINER_URL }}
+          PORTAINER_API_KEY: ${{ secrets.PORTAINER_API_KEY }}
+          ENDPOINT_ID: ${{ secrets.ENDPOINT_ID }}
+          APP_NAME: ${{ secrets.APP_NAME }}
+          EXTERNAL_PORT: ${{ secrets.EXTERNAL_PORT }}
+          IMAGE_TAG: ${{ github.ref_name }}
+          CONFIG_YAML_B64: ${{ secrets.CONFIG_YAML_B64 }}
+          ENV: ${{ secrets.ENV }}
+        run: |
+          chmod +x ci/deploy-portainer.sh
+          ci/deploy-portainer.sh
