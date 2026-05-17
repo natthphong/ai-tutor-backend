@@ -41,20 +41,36 @@ func NewShadowingService(db *pgxpool.Pool, router *ai.Router, mc *minio.Client, 
 // ---- DTOs ----
 
 type ShadowingClipDTO struct {
-	ID              string    `json:"id"`
-	UserID          string    `json:"userId"`
-	YouTubeURL      string    `json:"youtubeUrl"`
-	YouTubeID       string    `json:"youtubeId"`
-	Title           string    `json:"title"`
-	ThumbnailURL    string    `json:"thumbnailUrl"`
-	MinIOObjectKey  string    `json:"minioObjectKey,omitempty"`
-	StreamURL       string    `json:"streamUrl"`
-	ProxyStreamURL  string    `json:"proxyStreamUrl,omitempty"`
-	DurationSeconds int       `json:"durationSeconds"`
-	Status          string    `json:"status"`
-	ErrorMessage    string    `json:"errorMessage,omitempty"`
-	CreatedAt       time.Time `json:"createdAt"`
-	UpdatedAt       time.Time `json:"updatedAt"`
+	ID               string     `json:"id"`
+	UserID           string     `json:"userId"`
+	YouTubeURL       string     `json:"youtubeUrl"`
+	YouTubeID        string     `json:"youtubeId"`
+	Title            string     `json:"title"`
+	ThumbnailURL     string     `json:"thumbnailUrl"`
+	MinIOObjectKey   string     `json:"minioObjectKey,omitempty"`
+	StreamURL        string     `json:"streamUrl"`
+	ProxyStreamURL   string     `json:"proxyStreamUrl,omitempty"`
+	DurationSeconds  int        `json:"durationSeconds"`
+	Status           string     `json:"status"`
+	VideoStatus      string     `json:"videoStatus"`
+	TranscriptStatus string     `json:"transcriptStatus"`
+	ErrorMessage     string     `json:"errorMessage,omitempty"`
+	FolderID         string     `json:"folderId,omitempty"`
+	IsCompleted      bool       `json:"isCompleted"`
+	WatchedAt        *time.Time `json:"watchedAt,omitempty"`
+	LastSegmentIdx   int        `json:"lastSegmentIndex"`
+	LastWatchedTime  float64    `json:"lastWatchedTime"`
+	CreatedAt        time.Time  `json:"createdAt"`
+	UpdatedAt        time.Time  `json:"updatedAt"`
+}
+
+type ShadowingFolderDTO struct {
+	ID        string    `json:"id"`
+	Name      string    `json:"name"`
+	Color     string    `json:"color,omitempty"`
+	ClipCount int       `json:"clipCount"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 type ShadowingSegmentDTO struct {
@@ -116,9 +132,11 @@ func (s *ShadowingService) localFallbackEnabled() bool {
 
 // ---- Public API ----
 
-// CreateClip inserts the clip row and kicks off processing in a background
-// goroutine. It returns immediately with status="pending" so the frontend can
-// poll GetClip until status becomes "ready" or "failed".
+// CreateClip inserts the clip row with the YouTube embed URL ready to play
+// and kicks off transcript generation in the background. video_status is
+// ready the moment we hand back the embed URL, but clip-level `status` stays
+// "processing" until transcript_status flips to ready so the UI can tell the
+// user the clip isn't fully usable for shadowing yet.
 func (s *ShadowingService) CreateClip(ctx context.Context, userID, youtubeURL string) (ShadowingClipDTO, error) {
 	yid := ParseYouTubeID(youtubeURL)
 	if yid == "" {
@@ -126,32 +144,98 @@ func (s *ShadowingService) CreateClip(ctx context.Context, userID, youtubeURL st
 	}
 	id := uuid.New().String()
 	thumb := fmt.Sprintf("https://i.ytimg.com/vi/%s/hqdefault.jpg", yid)
+	streamURL := fmt.Sprintf("https://www.youtube.com/embed/%s", yid)
+	// Placeholder title – replaced once yt-dlp returns the real one. We keep
+	// it user-friendly so the UI never has to display a raw URL.
+	provisionalTitle := fmt.Sprintf("Loading title… (%s)", yid)
 	_, err := s.db.Exec(ctx,
-		`INSERT INTO shadowing_clips (id, user_id, youtube_url, youtube_id, thumbnail_url, status) VALUES ($1,$2,$3,$4,$5,'pending')`,
-		id, userID, youtubeURL, yid, thumb)
+		`INSERT INTO shadowing_clips (id, user_id, youtube_url, youtube_id, title, thumbnail_url, stream_url, status, video_status, transcript_status)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,'processing','ready','pending')`,
+		id, userID, youtubeURL, yid, provisionalTitle, thumb, streamURL)
 	if err != nil {
 		return ShadowingClipDTO{}, fmt.Errorf("insert clip: %w", err)
 	}
+	s.logger.Info("shadowing: clip created",
+		zap.String("clipId", id),
+		zap.String("userId", userID),
+		zap.String("youtubeId", yid))
 
-	// Kick off background processing. We deliberately use a detached context
-	// because the HTTP request's context will be cancelled when we respond.
-	go s.processClipAsync(id, userID, youtubeURL, yid)
+	// Background transcript generation. Detached context because the request
+	// context is cancelled as soon as we respond.
+	go s.processTranscriptAsync(id, yid)
 
 	return s.getClip(ctx, id)
 }
 
-// ListClips returns the user's shadowing clips, most recent first.
-func (s *ShadowingService) ListClips(ctx context.Context, userID string, limit int) ([]ShadowingClipDTO, error) {
+// ReprocessClip re-runs transcript generation for an existing clip. The
+// stream URL, youtube id and title are preserved. Returns the latest clip
+// state. Safe to call multiple times.
+func (s *ShadowingService) ReprocessClip(ctx context.Context, userID, clipID string) (ShadowingClipDTO, error) {
+	clip, err := s.getClip(ctx, clipID)
+	if err != nil {
+		return ShadowingClipDTO{}, err
+	}
+	if clip.UserID != userID {
+		return ShadowingClipDTO{}, fmt.Errorf("forbidden")
+	}
+	if clip.YouTubeID == "" {
+		return ShadowingClipDTO{}, fmt.Errorf("clip has no youtube id")
+	}
+	// Mark transcript pending; keep video/stream untouched.
+	_, _ = s.db.Exec(ctx,
+		`UPDATE shadowing_clips
+		   SET transcript_status = 'pending', status = 'processing',
+		       error_message = '', updated_at = now()
+		 WHERE id = $1`, clipID)
+	s.logger.Info("shadowing: reprocess requested",
+		zap.String("clipId", clipID),
+		zap.String("userId", userID),
+		zap.String("youtubeId", clip.YouTubeID))
+	go s.processTranscriptAsync(clipID, clip.YouTubeID)
+	return s.getClip(ctx, clipID)
+}
+
+// ListClips returns the user's shadowing clips. Sort options:
+//
+//	"recent"  – most recently created (default)
+//	"watched" – most recently watched (resume / continue-watching surface)
+//
+// Filter options:
+//
+//	folderId   – limit to a specific folder (empty string returns all)
+//	unwatched  – when true, only is_completed=false
+func (s *ShadowingService) ListClips(ctx context.Context, userID string, limit int, sort, folderID string, unwatched bool) ([]ShadowingClipDTO, error) {
 	if limit <= 0 || limit > 100 {
 		limit = 30
 	}
-	rows, err := s.db.Query(ctx,
-		`SELECT id::text, user_id::text, youtube_url, COALESCE(youtube_id,''), COALESCE(title,''),
-		        COALESCE(thumbnail_url,''), COALESCE(minio_object_key,''), COALESCE(stream_url,''),
-		        COALESCE(duration_seconds,0), COALESCE(status,'pending'), COALESCE(error_message,''),
-		        created_at, updated_at
-		 FROM shadowing_clips WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2`,
-		userID, limit)
+	orderBy := "c.created_at DESC NULLS LAST"
+	if sort == "watched" {
+		orderBy = "COALESCE(p.updated_at, c.updated_at) DESC NULLS LAST"
+	}
+	folderClause := ""
+	args := []interface{}{userID, limit}
+	if folderID != "" {
+		folderClause = " AND c.folder_id = $3 "
+		args = append(args, folderID)
+	}
+	if unwatched {
+		folderClause += " AND COALESCE(c.is_completed,false) = false "
+	}
+	query := `
+		SELECT c.id::text, c.user_id::text, c.youtube_url, COALESCE(c.youtube_id,''), COALESCE(c.title,''),
+		       COALESCE(c.thumbnail_url,''), COALESCE(c.minio_object_key,''), COALESCE(c.stream_url,''),
+		       COALESCE(c.duration_seconds,0), COALESCE(c.status,'pending'),
+		       COALESCE(c.video_status,'pending'), COALESCE(c.transcript_status,'pending'),
+		       COALESCE(c.error_message,''),
+		       COALESCE(c.folder_id::text,''), COALESCE(c.is_completed,false), c.watched_at,
+		       COALESCE(p.current_segment_index,0), COALESCE(p.last_watched_time,0),
+		       c.created_at, c.updated_at
+		FROM shadowing_clips c
+		LEFT JOIN shadowing_progress p ON p.clip_id = c.id AND p.user_id = c.user_id
+		WHERE c.user_id = $1` + folderClause + `
+		ORDER BY ` + orderBy + `
+		LIMIT $2`
+	rows, err := s.db.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -161,11 +245,120 @@ func (s *ShadowingService) ListClips(ctx context.Context, userID string, limit i
 		var c ShadowingClipDTO
 		if err := rows.Scan(&c.ID, &c.UserID, &c.YouTubeURL, &c.YouTubeID, &c.Title,
 			&c.ThumbnailURL, &c.MinIOObjectKey, &c.StreamURL, &c.DurationSeconds, &c.Status,
-			&c.ErrorMessage, &c.CreatedAt, &c.UpdatedAt); err == nil {
+			&c.VideoStatus, &c.TranscriptStatus, &c.ErrorMessage,
+			&c.FolderID, &c.IsCompleted, &c.WatchedAt,
+			&c.LastSegmentIdx, &c.LastWatchedTime,
+			&c.CreatedAt, &c.UpdatedAt); err == nil {
 			out = append(out, s.enrichClip(ctx, c))
 		}
 	}
 	return out, rows.Err()
+}
+
+// MarkClipWatched flips is_completed on the clip and stamps watched_at.
+func (s *ShadowingService) MarkClipWatched(ctx context.Context, userID, clipID string, completed bool) error {
+	res, err := s.db.Exec(ctx,
+		`UPDATE shadowing_clips
+		    SET is_completed = $1,
+		        watched_at = CASE WHEN $1 THEN now() ELSE watched_at END,
+		        updated_at = now()
+		  WHERE id = $2 AND user_id = $3`,
+		completed, clipID, userID)
+	if err != nil {
+		return err
+	}
+	if res.RowsAffected() == 0 {
+		return fmt.Errorf("clip not found")
+	}
+	s.logger.Info("shadowing: mark watched",
+		zap.String("clipId", clipID),
+		zap.String("userId", userID),
+		zap.Bool("completed", completed))
+	return nil
+}
+
+// MoveClipToFolder sets/clears folder_id on a clip. Pass "" to detach.
+func (s *ShadowingService) MoveClipToFolder(ctx context.Context, userID, clipID, folderID string) error {
+	if folderID == "" {
+		res, err := s.db.Exec(ctx,
+			`UPDATE shadowing_clips SET folder_id = NULL, updated_at = now()
+			  WHERE id = $1 AND user_id = $2`, clipID, userID)
+		if err != nil {
+			return err
+		}
+		if res.RowsAffected() == 0 {
+			return fmt.Errorf("clip not found")
+		}
+		return nil
+	}
+	// Verify folder ownership.
+	var owner string
+	if err := s.db.QueryRow(ctx,
+		`SELECT user_id::text FROM shadowing_folders WHERE id = $1`, folderID).Scan(&owner); err != nil {
+		return fmt.Errorf("folder not found")
+	}
+	if owner != userID {
+		return fmt.Errorf("forbidden")
+	}
+	res, err := s.db.Exec(ctx,
+		`UPDATE shadowing_clips SET folder_id = $1, updated_at = now()
+		  WHERE id = $2 AND user_id = $3`, folderID, clipID, userID)
+	if err != nil {
+		return err
+	}
+	if res.RowsAffected() == 0 {
+		return fmt.Errorf("clip not found")
+	}
+	return nil
+}
+
+// CreateFolder makes a new shadowing folder for the user.
+func (s *ShadowingService) CreateFolder(ctx context.Context, userID, name, color string) (ShadowingFolderDTO, error) {
+	id := uuid.New().String()
+	_, err := s.db.Exec(ctx,
+		`INSERT INTO shadowing_folders (id, user_id, name, color) VALUES ($1,$2,$3,$4)`,
+		id, userID, name, color)
+	if err != nil {
+		return ShadowingFolderDTO{}, err
+	}
+	return ShadowingFolderDTO{ID: id, Name: name, Color: color}, nil
+}
+
+// ListFolders returns the user's folders with clip counts.
+func (s *ShadowingService) ListFolders(ctx context.Context, userID string) ([]ShadowingFolderDTO, error) {
+	rows, err := s.db.Query(ctx, `
+		SELECT f.id::text, f.name, COALESCE(f.color,''),
+		       (SELECT COUNT(*) FROM shadowing_clips c WHERE c.folder_id = f.id) as clip_count,
+		       f.created_at, f.updated_at
+		FROM shadowing_folders f
+		WHERE f.user_id = $1
+		ORDER BY f.created_at DESC`, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []ShadowingFolderDTO
+	for rows.Next() {
+		var f ShadowingFolderDTO
+		if err := rows.Scan(&f.ID, &f.Name, &f.Color, &f.ClipCount, &f.CreatedAt, &f.UpdatedAt); err == nil {
+			out = append(out, f)
+		}
+	}
+	return out, rows.Err()
+}
+
+// DeleteFolder detaches all clips from the folder and removes it.
+func (s *ShadowingService) DeleteFolder(ctx context.Context, userID, folderID string) error {
+	res, err := s.db.Exec(ctx,
+		`DELETE FROM shadowing_folders WHERE id = $1 AND user_id = $2`,
+		folderID, userID)
+	if err != nil {
+		return err
+	}
+	if res.RowsAffected() == 0 {
+		return fmt.Errorf("folder not found")
+	}
+	return nil
 }
 
 // GetClipDetail returns clip + segments + progress for resume.
@@ -190,6 +383,10 @@ func (s *ShadowingService) GetClipDetail(ctx context.Context, userID, clipID str
 // clip has a MinIO object. We always advertise a backend proxy stream URL too
 // so the frontend can fall back if presigned URLs can't reach the browser
 // (e.g. MinIO bound to a private network).
+// enrichClip is a no-op for new YouTube-embed clips: streamUrl already points
+// at youtube.com/embed/<id>. For legacy clips that have a MinIO object key we
+// (a) replace streamUrl with a fresh presigned URL and (b) advertise the
+// backend stream proxy as a fallback when presigned URLs are unreachable.
 func (s *ShadowingService) enrichClip(ctx context.Context, c ShadowingClipDTO) ShadowingClipDTO {
 	if c.MinIOObjectKey == "" {
 		return c
@@ -197,8 +394,6 @@ func (s *ShadowingService) enrichClip(ctx context.Context, c ShadowingClipDTO) S
 	if presigned := s.PresignedGet(ctx, c.MinIOObjectKey); presigned != "" {
 		c.StreamURL = presigned
 	}
-	// Always expose the backend proxy URL so the frontend has a fallback when
-	// the presigned URL can't be reached (private MinIO endpoint, CORS, etc.).
 	c.ProxyStreamURL = fmt.Sprintf("/v1/shadowing/clips/%s/stream", c.ID)
 	return c
 }
@@ -329,58 +524,253 @@ func (s *ShadowingService) ListNotes(ctx context.Context, userID, clipID string)
 
 // ---- Internal ----
 
-func (s *ShadowingService) processClipAsync(clipID, userID, youtubeURL, yid string) {
+// processTranscriptAsync regenerates the per-clip transcript+translation.
+//
+// Flow:
+//  1. Fetch real title + duration from yt-dlp metadata (so we don't keep
+//     showing a raw URL on the UI).
+//  2. Try YouTube auto-captions first — these come with REAL timestamps so
+//     prev/next/auto-stop stay in sync with playback. We then ask Gemini to
+//     produce Thai translations only (much cheaper, much more reliable).
+//  3. If captions are unavailable, fall back to STT-on-audio + Gemini
+//     segmentation. Timings here are estimates.
+//  4. status is set to 'ready' ONLY when segments are actually persisted.
+//     Failures leave segments=[] and transcript_status='failed' with a
+//     retryable error message.
+func (s *ShadowingService) processTranscriptAsync(clipID, yid string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
-	s.setClipStatus(ctx, clipID, "processing", "")
+	logger := s.logger.With(zap.String("clipId", clipID), zap.String("youtubeId", yid))
+	logger.Info("shadowing: transcript start")
+	s.setTranscriptStatus(ctx, clipID, "processing", "")
 
+	// Explicit opt-in for canned segments (CI / agent tests). Default off.
 	if s.localFallbackEnabled() {
-		s.processClipFallback(ctx, clipID, yid)
+		logger.Info("shadowing: local fallback (env flag) — using canned transcript")
+		s.applyFallbackTranscript(ctx, clipID)
+		s.setClipStatus(ctx, clipID, "ready")
 		return
 	}
 
-	// Real path: try yt-dlp → MinIO → Gemini transcript.
+	youtubeURL := fmt.Sprintf("https://www.youtube.com/watch?v=%s", yid)
 	tmpDir, err := os.MkdirTemp("", "shadow-"+clipID+"-*")
 	if err != nil {
-		s.failClip(ctx, clipID, "tmpdir: "+err.Error())
+		logger.Error("shadowing: tmpdir failed", zap.Error(err))
+		s.setTranscriptStatus(ctx, clipID, "failed", "tmpdir: "+err.Error())
+		s.setClipStatus(ctx, clipID, "failed")
 		return
 	}
 	defer os.RemoveAll(tmpDir)
 
-	mediaPath, title, duration, err := s.downloadYouTube(ctx, youtubeURL, tmpDir)
+	// (1) Metadata: title + duration.
+	if title, duration := s.fetchYouTubeMetadata(ctx, youtubeURL); title != "" {
+		logger.Info("shadowing: title resolved", zap.String("title", title), zap.Int("durationSec", duration))
+		s.updateClipMeta(ctx, clipID, title, duration)
+	}
+
+	// (2) Captions-first path. yt-dlp emits a VTT with real timings that
+	// already match the YouTube player, so prev / next / auto-stop will be
+	// aligned with playback.
+	rawCaps, capErr := s.downloadAutoCaptions(ctx, youtubeURL, tmpDir)
+	if capErr == nil && len(rawCaps) > 0 {
+		logger.Info("shadowing: using auto-captions",
+			zap.Int("rawCues", len(rawCaps)))
+		segs := CombineToSentences(rawCaps)
+		if len(segs) > 0 {
+			if tErr := s.translateSegments(ctx, segs); tErr != nil {
+				logger.Warn("shadowing: translation failed (segments saved without Thai)", zap.Error(tErr))
+			}
+			s.replaceSegments(ctx, clipID, segs)
+			duration := 0
+			if last := segs[len(segs)-1]; last.EndTime > 0 {
+				duration = int(last.EndTime)
+			}
+			s.finalizeTranscript(ctx, clipID, duration)
+			logger.Info("shadowing: transcript ready (captions)",
+				zap.Int("segments", len(segs)),
+				zap.Int("durationSec", duration))
+			return
+		}
+		logger.Warn("shadowing: captions combined into 0 segments — trying STT fallback")
+	} else if capErr != nil {
+		logger.Warn("shadowing: auto-captions unavailable — trying STT fallback",
+			zap.Error(capErr))
+	}
+
+	// (3) STT fallback. Timings here are estimated by Gemini.
+	mediaPath, audioDur, err := s.downloadYouTubeAudio(ctx, youtubeURL, tmpDir)
 	if err != nil {
-		s.logger.Warn("shadowing download failed; using fallback",
-			zap.String("clipId", clipID), zap.Error(err))
-		s.processClipFallback(ctx, clipID, yid)
+		logger.Error("shadowing: yt-dlp audio failed", zap.Error(err))
+		s.clearSegments(ctx, clipID)
+		s.setTranscriptStatus(ctx, clipID, "failed",
+			"Could not download YouTube media. You can retry.")
+		s.setClipStatus(ctx, clipID, "failed")
 		return
 	}
 
-	objectKey, streamURL, err := s.uploadToMinIO(ctx, clipID, mediaPath)
-	if err != nil {
-		s.failClip(ctx, clipID, "minio: "+err.Error())
-		return
-	}
-
-	segs, err := s.transcribeWithGemini(ctx, mediaPath)
+	segs, err := s.transcribeAudioFile(ctx, mediaPath, audioDur)
 	if err != nil || len(segs) == 0 {
-		s.logger.Warn("Gemini transcript failed; storing media without segments",
-			zap.String("clipId", clipID), zap.Error(err))
-	} else {
-		s.replaceSegments(ctx, clipID, segs)
+		logger.Error("shadowing: STT/segment failed", zap.Error(err))
+		s.clearSegments(ctx, clipID)
+		s.setTranscriptStatus(ctx, clipID, "failed",
+			"Transcript generation failed. Please retry.")
+		s.setClipStatus(ctx, clipID, "failed")
+		return
 	}
-
-	_, _ = s.db.Exec(ctx,
-		`UPDATE shadowing_clips SET status = 'ready', minio_object_key = $1, stream_url = $2,
-		   title = COALESCE(NULLIF(title,''), $3), duration_seconds = COALESCE(NULLIF(duration_seconds,0), $4),
-		   error_message = '', updated_at = now() WHERE id = $5`,
-		objectKey, streamURL, title, duration, clipID)
+	s.replaceSegments(ctx, clipID, segs)
+	if audioDur <= 0 && len(segs) > 0 {
+		audioDur = int(segs[len(segs)-1].EndTime)
+	}
+	s.finalizeTranscript(ctx, clipID, audioDur)
+	logger.Info("shadowing: transcript ready (STT)",
+		zap.Int("segments", len(segs)),
+		zap.Int("durationSec", audioDur))
 }
 
-// processClipFallback creates canned segments so the UI works during dev / CI
-// without yt-dlp or a Gemini key.
-func (s *ShadowingService) processClipFallback(ctx context.Context, clipID, yid string) {
-	streamURL := fmt.Sprintf("https://www.youtube.com/embed/%s", yid)
-	title := fmt.Sprintf("YouTube clip %s", yid)
+// finalizeTranscript flips the clip + transcript to ready.
+func (s *ShadowingService) finalizeTranscript(ctx context.Context, clipID string, duration int) {
+	_, _ = s.db.Exec(ctx, `
+		UPDATE shadowing_clips
+		SET transcript_status = 'ready',
+		    status = 'ready',
+		    duration_seconds = COALESCE(NULLIF(duration_seconds,0), $1),
+		    error_message = '', updated_at = now()
+		WHERE id = $2`, duration, clipID)
+}
+
+// setClipStatus updates the clip-level status only.
+func (s *ShadowingService) setClipStatus(ctx context.Context, clipID, status string) {
+	_, _ = s.db.Exec(ctx,
+		`UPDATE shadowing_clips SET status = $1, updated_at = now() WHERE id = $2`,
+		status, clipID)
+}
+
+func (s *ShadowingService) clearSegments(ctx context.Context, clipID string) {
+	_, _ = s.db.Exec(ctx, `DELETE FROM shadowing_segments WHERE clip_id = $1`, clipID)
+}
+
+func (s *ShadowingService) updateClipMeta(ctx context.Context, clipID, title string, duration int) {
+	_, _ = s.db.Exec(ctx,
+		`UPDATE shadowing_clips
+		    SET title = COALESCE(NULLIF($1,''), title),
+		        duration_seconds = COALESCE(NULLIF($2,0), duration_seconds),
+		        updated_at = now()
+		  WHERE id = $3`, title, duration, clipID)
+}
+
+// fetchYouTubeMetadata returns (title, durationSeconds). Best-effort — empty
+// title means we couldn't read it.
+func (s *ShadowingService) fetchYouTubeMetadata(ctx context.Context, ytURL string) (string, int) {
+	if _, err := exec.LookPath("yt-dlp"); err != nil {
+		return "", 0
+	}
+	cmd := exec.CommandContext(ctx, "yt-dlp",
+		"--no-playlist", "--no-warnings",
+		"--print", "%(title)s",
+		"--print", "%(duration)s",
+		ytURL)
+	out, err := cmd.Output()
+	if err != nil {
+		return "", 0
+	}
+	lines := strings.Split(strings.TrimSpace(string(out)), "\n")
+	title := ""
+	duration := 0
+	if len(lines) >= 1 {
+		title = strings.TrimSpace(lines[0])
+	}
+	if len(lines) >= 2 {
+		duration, _ = strconv.Atoi(strings.TrimSpace(lines[1]))
+	}
+	return title, duration
+}
+
+// downloadAutoCaptions fetches the English VTT subtitles (manual or auto)
+// using yt-dlp and returns the parsed cues. Returns an error when captions
+// are unavailable — the caller should fall back to STT in that case.
+func (s *ShadowingService) downloadAutoCaptions(ctx context.Context, ytURL, tmpDir string) ([]RawCaption, error) {
+	if _, err := exec.LookPath("yt-dlp"); err != nil {
+		return nil, fmt.Errorf("yt-dlp not installed")
+	}
+	outTemplate := filepath.Join(tmpDir, "captions.%(ext)s")
+	cmd := exec.CommandContext(ctx, "yt-dlp",
+		"--no-playlist", "--no-warnings",
+		"--skip-download",
+		"--write-auto-subs", "--write-subs",
+		"--sub-langs", "en.*,en",
+		"--sub-format", "vtt/best",
+		"--convert-subs", "vtt",
+		"-o", outTemplate,
+		ytURL,
+	)
+	cmd.Stdout = io.Discard
+	cmd.Stderr = io.Discard
+	if err := cmd.Run(); err != nil {
+		return nil, fmt.Errorf("yt-dlp captions: %w", err)
+	}
+	entries, _ := os.ReadDir(tmpDir)
+	var vttPath string
+	for _, e := range entries {
+		if !e.IsDir() && strings.HasSuffix(e.Name(), ".vtt") {
+			vttPath = filepath.Join(tmpDir, e.Name())
+			break
+		}
+	}
+	if vttPath == "" {
+		return nil, fmt.Errorf("no .vtt produced (video may have captions disabled)")
+	}
+	data, err := os.ReadFile(vttPath)
+	if err != nil {
+		return nil, err
+	}
+	return ParseVTT(string(data))
+}
+
+// translateSegments asks Gemini for Thai translations of pre-timed segments.
+// Times are NOT changed — only thai_translation is populated. The segments
+// slice is mutated in place.
+func (s *ShadowingService) translateSegments(ctx context.Context, segs []ShadowingSegmentDTO) error {
+	if len(segs) == 0 {
+		return nil
+	}
+	var b strings.Builder
+	for i, seg := range segs {
+		b.WriteString(fmt.Sprintf("%d. %s\n", i, seg.Text))
+	}
+	prompt := fmt.Sprintf(`Translate each numbered English segment into natural
+Thai for a learner. Keep the count and order EXACTLY the same. Respond in
+STRICT JSON only, no markdown fence:
+{"translations": ["thai for segment 0", "thai for segment 1", ...]}
+
+SEGMENTS:
+%s`, b.String())
+
+	chat, err := s.router.Chat(ctx, ai.ChatRequest{
+		SystemPrompt: "You only output strict JSON. Never include markdown fences.",
+		Messages:     []ai.ChatMessage{{Role: "user", Content: prompt}},
+		UseCase:      "shadowing_translate",
+	})
+	if err != nil {
+		return err
+	}
+	var parsed struct {
+		Translations []string `json:"translations"`
+	}
+	if err := json.Unmarshal([]byte(stripCodeFences(chat.Content)), &parsed); err != nil {
+		return err
+	}
+	for i := range segs {
+		if i < len(parsed.Translations) {
+			segs[i].ThaiTranslation = strings.TrimSpace(parsed.Translations[i])
+		}
+	}
+	return nil
+}
+
+// applyFallbackTranscript inserts a 3-line canned transcript. Only runs when
+// the operator opts in with SHADOWING_LOCAL_FALLBACK=true (CI / agent tests
+// without yt-dlp or Gemini). Never auto-runs on production failures.
+func (s *ShadowingService) applyFallbackTranscript(ctx context.Context, clipID string) {
 	segs := []ShadowingSegmentDTO{
 		{Index: 0, StartTime: 0, EndTime: 4.2, Text: "Look at this city.", ThaiTranslation: "ดูเมืองนี้สิ"},
 		{Index: 1, StartTime: 4.2, EndTime: 7.8, Text: "My name's Kiki and I'm a witch.", ThaiTranslation: "ฉันชื่อกิกิ และฉันเป็นแม่มด"},
@@ -388,79 +778,178 @@ func (s *ShadowingService) processClipFallback(ctx context.Context, clipID, yid 
 	}
 	s.replaceSegments(ctx, clipID, segs)
 	_, _ = s.db.Exec(ctx,
-		`UPDATE shadowing_clips SET status = 'ready', stream_url = $1, title = $2,
-		   duration_seconds = 12, error_message = '(fallback) yt-dlp/Gemini unavailable',
-		   updated_at = now() WHERE id = $3`,
-		streamURL, title, clipID)
+		`UPDATE shadowing_clips
+		   SET transcript_status = 'ready', duration_seconds = 12,
+		       error_message = '(fallback transcript, dev only)', updated_at = now()
+		 WHERE id = $1`, clipID)
 }
 
-func (s *ShadowingService) setClipStatus(ctx context.Context, clipID, status, errMsg string) {
-	_, _ = s.db.Exec(ctx,
-		`UPDATE shadowing_clips SET status = $1, error_message = $2, updated_at = now() WHERE id = $3`,
-		status, errMsg, clipID)
-}
-
-func (s *ShadowingService) failClip(ctx context.Context, clipID, msg string) {
-	s.logger.Warn("shadowing clip failed", zap.String("clipId", clipID), zap.String("reason", msg))
-	s.setClipStatus(ctx, clipID, "failed", msg)
-}
-
-func (s *ShadowingService) downloadYouTube(ctx context.Context, ytURL, tmpDir string) (string, string, int, error) {
-	// Prefer yt-dlp if available. We pick mp4 up to 720p.
+// downloadYouTubeAudio extracts the best-available audio track using yt-dlp.
+// Returns the local file path and the video duration in seconds (0 if unknown).
+func (s *ShadowingService) downloadYouTubeAudio(ctx context.Context, ytURL, tmpDir string) (string, int, error) {
 	if _, err := exec.LookPath("yt-dlp"); err != nil {
-		return "", "", 0, fmt.Errorf("yt-dlp not installed")
+		return "", 0, fmt.Errorf("yt-dlp not installed")
 	}
-	out := filepath.Join(tmpDir, "video.mp4")
+
+	// Audio-only download → tmpDir/audio.m4a (or .webm, .opus, … depending on
+	// what YouTube serves). The output template lets yt-dlp pick the right
+	// extension; we pick the resulting file by listing the directory.
+	outTemplate := filepath.Join(tmpDir, "audio.%(ext)s")
 	cmd := exec.CommandContext(ctx, "yt-dlp",
-		"-f", "bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]/best",
-		"--merge-output-format", "mp4",
+		"-f", "bestaudio[ext=m4a]/bestaudio[ext=webm]/bestaudio",
 		"--no-playlist",
-		"-o", out,
+		"-o", outTemplate,
 		ytURL,
 	)
 	cmd.Stdout = io.Discard
 	cmd.Stderr = io.Discard
 	if err := cmd.Run(); err != nil {
-		return "", "", 0, fmt.Errorf("yt-dlp run: %w", err)
+		return "", 0, fmt.Errorf("yt-dlp run: %w", err)
 	}
-	// Get title + duration with --print
-	meta := exec.CommandContext(ctx, "yt-dlp", "--no-playlist", "--print", "%(title)s\n%(duration)s", ytURL)
-	b, err := meta.Output()
-	title := ""
+
+	// Locate whichever extension yt-dlp settled on.
+	var mediaPath string
+	entries, _ := os.ReadDir(tmpDir)
+	for _, e := range entries {
+		if !e.IsDir() && strings.HasPrefix(e.Name(), "audio.") {
+			mediaPath = filepath.Join(tmpDir, e.Name())
+			break
+		}
+	}
+	if mediaPath == "" {
+		return "", 0, fmt.Errorf("yt-dlp output not found in tmp dir")
+	}
+
+	// Best-effort duration from yt-dlp metadata.
 	duration := 0
-	if err == nil {
-		lines := strings.Split(strings.TrimSpace(string(b)), "\n")
-		if len(lines) >= 1 {
-			title = lines[0]
-		}
-		if len(lines) >= 2 {
-			duration, _ = strconv.Atoi(lines[1])
-		}
+	meta := exec.CommandContext(ctx, "yt-dlp", "--no-playlist", "--print", "%(duration)s", ytURL)
+	if b, err := meta.Output(); err == nil {
+		duration, _ = strconv.Atoi(strings.TrimSpace(string(b)))
 	}
-	return out, title, duration, nil
+	return mediaPath, duration, nil
 }
 
-func (s *ShadowingService) uploadToMinIO(ctx context.Context, clipID, mediaPath string) (string, string, error) {
-	if s.minioClient == nil {
-		return "", "", fmt.Errorf("minio not configured")
-	}
-	bucket := s.cfg.MinIO.Bucket
-	key := fmt.Sprintf("shadowing/clips/%s/video.mp4", clipID)
-	f, err := os.Open(mediaPath)
+// transcribeAudioFile sends the local audio bytes to the AI router for STT,
+// then asks Gemini to split the transcript into sentence-aligned segments
+// with Thai translation. The audio file is read once and discarded; nothing
+// is written to MinIO.
+func (s *ShadowingService) transcribeAudioFile(ctx context.Context, mediaPath string, durationSec int) ([]ShadowingSegmentDTO, error) {
+	audio, err := os.ReadFile(mediaPath)
 	if err != nil {
-		return "", "", err
+		return nil, fmt.Errorf("read media: %w", err)
 	}
-	defer f.Close()
-	stat, err := f.Stat()
+	if len(audio) == 0 {
+		return nil, fmt.Errorf("empty audio file")
+	}
+
+	mediaType := mediaMIME(mediaPath)
+	stt, err := s.router.Transcribe(ctx, ai.STTRequest{
+		AudioData: audio,
+		Filename:  filepath.Base(mediaPath),
+		MediaType: mediaType,
+	})
 	if err != nil {
-		return "", "", err
+		return nil, fmt.Errorf("stt: %w", err)
 	}
-	_, err = s.minioClient.PutObject(ctx, bucket, key, f, stat.Size(),
-		minio.PutObjectOptions{ContentType: "video/mp4"})
+	transcript := strings.TrimSpace(stt.Text)
+	if transcript == "" {
+		return nil, fmt.Errorf("empty stt transcript")
+	}
+
+	durationHint := durationSec
+	if durationHint <= 0 {
+		durationHint = 60
+	}
+	prompt := fmt.Sprintf(`You are preparing a parroto.app-style shadowing transcript for a Thai
+learner. Below is the literal English transcript of the audio. Split it into
+8-25 SHORT sentence-aligned segments. Distribute start/end times in seconds
+across the total media duration (~%d s). Translate each segment into natural
+Thai for the cache.
+
+TRANSCRIPT:
+"""
+%s
+"""
+
+Respond in STRICT JSON ONLY, no markdown fence, no commentary:
+{
+  "segments": [
+    {"index": 0, "start_time": 0.0, "end_time": 4.2,
+     "text": "First sentence verbatim from the transcript.",
+     "thai_translation": "คำแปลเป็นภาษาไทย"}
+  ]
+}`, durationHint, transcript)
+
+	chat, err := s.router.Chat(ctx, ai.ChatRequest{
+		SystemPrompt: "You only output strict JSON. Never include markdown fences.",
+		Messages:     []ai.ChatMessage{{Role: "user", Content: prompt}},
+		UseCase:      "shadowing_transcript",
+	})
 	if err != nil {
-		return "", "", err
+		return nil, fmt.Errorf("segment chat: %w", err)
 	}
-	return key, s.objectURL(bucket, key), nil
+
+	var parsed struct {
+		Segments []struct {
+			Index           int     `json:"index"`
+			StartTime       float64 `json:"start_time"`
+			EndTime         float64 `json:"end_time"`
+			Text            string  `json:"text"`
+			ThaiTranslation string  `json:"thai_translation"`
+		} `json:"segments"`
+	}
+	if err := json.Unmarshal([]byte(stripCodeFences(chat.Content)), &parsed); err != nil {
+		return nil, fmt.Errorf("parse segments: %w", err)
+	}
+	out := make([]ShadowingSegmentDTO, 0, len(parsed.Segments))
+	for i, p := range parsed.Segments {
+		text := strings.TrimSpace(p.Text)
+		if text == "" {
+			continue
+		}
+		idx := p.Index
+		if idx == 0 && i > 0 {
+			idx = i
+		}
+		out = append(out, ShadowingSegmentDTO{
+			Index:           idx,
+			StartTime:       p.StartTime,
+			EndTime:         p.EndTime,
+			Text:            text,
+			ThaiTranslation: p.ThaiTranslation,
+		})
+	}
+	if len(out) == 0 {
+		return nil, fmt.Errorf("no segments returned")
+	}
+	return out, nil
+}
+
+func mediaMIME(path string) string {
+	switch strings.ToLower(filepath.Ext(path)) {
+	case ".m4a", ".mp4":
+		return "audio/mp4"
+	case ".webm":
+		return "audio/webm"
+	case ".mp3":
+		return "audio/mpeg"
+	case ".opus":
+		return "audio/ogg"
+	case ".wav":
+		return "audio/wav"
+	default:
+		return "application/octet-stream"
+	}
+}
+
+// setTranscriptStatus updates transcript_status (and error_message) without
+// touching the clip-level status / stream URL.
+func (s *ShadowingService) setTranscriptStatus(ctx context.Context, clipID, status, errMsg string) {
+	_, _ = s.db.Exec(ctx,
+		`UPDATE shadowing_clips
+		   SET transcript_status = $1, error_message = $2, updated_at = now()
+		 WHERE id = $3`,
+		status, errMsg, clipID)
 }
 
 func (s *ShadowingService) objectURL(bucket, key string) string {
@@ -537,81 +1026,6 @@ func (s *ShadowingService) LookupClipForOwner(ctx context.Context, userID, clipI
 		return ShadowingClipDTO{}, fmt.Errorf("forbidden")
 	}
 	return clip, nil
-}
-
-func (s *ShadowingService) transcribeWithGemini(ctx context.Context, mediaPath string) ([]ShadowingSegmentDTO, error) {
-	// Step 1: get raw transcript via STT (Gemini or fallback).
-	audio, err := os.ReadFile(mediaPath)
-	if err != nil {
-		return nil, fmt.Errorf("read media: %w", err)
-	}
-	resp, err := s.router.Transcribe(ctx, ai.STTRequest{
-		AudioData: audio,
-		Filename:  filepath.Base(mediaPath),
-		MediaType: "video/mp4",
-	})
-	if err != nil || strings.TrimSpace(resp.Text) == "" {
-		return nil, fmt.Errorf("stt failed: %v", err)
-	}
-
-	// Step 2: ask Gemini to (a) split into 8–15 short sentence segments aligned
-	// to natural pauses, (b) estimate start/end times across the total media
-	// duration, (c) include a Thai translation of each segment so the
-	// translate-on-click flow can pull from the DB cache.
-	prompt := fmt.Sprintf(`You are preparing a parroto.app-style shadowing transcript
-for a Thai learner. The English transcript is given verbatim below. Split it
-into 8-15 SHORT segments (one sentence each), distribute start/end times
-evenly across the clip, and translate each segment into natural Thai.
-
-TRANSCRIPT:
-"""
-%s
-"""
-
-Respond in strict JSON only, NO markdown fence:
-{
-  "segments": [
-    {"index": 0, "start_time": 0.0, "end_time": 4.2,
-     "text": "Look at this city, my name's Kiki and I'm a witch.",
-     "thai_translation": "ดูเมืองนี้สิ ฉันชื่อกิกิ และฉันเป็นแม่มด"}
-  ]
-}`, resp.Text)
-
-	chat, err := s.router.Chat(ctx, ai.ChatRequest{
-		SystemPrompt: "You only output strict JSON.",
-		Messages:     []ai.ChatMessage{{Role: "user", Content: prompt}},
-		UseCase:      "shadowing_transcript",
-	})
-	if err != nil {
-		return nil, err
-	}
-	var parsed struct {
-		Segments []struct {
-			Index           int     `json:"index"`
-			StartTime       float64 `json:"start_time"`
-			EndTime         float64 `json:"end_time"`
-			Text            string  `json:"text"`
-			ThaiTranslation string  `json:"thai_translation"`
-		} `json:"segments"`
-	}
-	if err := json.Unmarshal([]byte(stripCodeFences(chat.Content)), &parsed); err != nil {
-		return nil, err
-	}
-	out := make([]ShadowingSegmentDTO, 0, len(parsed.Segments))
-	for i, p := range parsed.Segments {
-		idx := p.Index
-		if idx == 0 && i > 0 {
-			idx = i
-		}
-		out = append(out, ShadowingSegmentDTO{
-			Index:           idx,
-			StartTime:       p.StartTime,
-			EndTime:         p.EndTime,
-			Text:            p.Text,
-			ThaiTranslation: p.ThaiTranslation,
-		})
-	}
-	return out, nil
 }
 
 // ScoreRecording asks STT to transcribe the user's audio, compares it to the
@@ -693,13 +1107,23 @@ func (s *ShadowingService) replaceSegments(ctx context.Context, clipID string, s
 func (s *ShadowingService) getClip(ctx context.Context, clipID string) (ShadowingClipDTO, error) {
 	var c ShadowingClipDTO
 	err := s.db.QueryRow(ctx,
-		`SELECT id::text, user_id::text, youtube_url, COALESCE(youtube_id,''), COALESCE(title,''),
-		        COALESCE(thumbnail_url,''), COALESCE(minio_object_key,''), COALESCE(stream_url,''),
-		        COALESCE(duration_seconds,0), COALESCE(status,'pending'), COALESCE(error_message,''),
-		        created_at, updated_at
-		 FROM shadowing_clips WHERE id = $1`,
+		`SELECT c.id::text, c.user_id::text, c.youtube_url, COALESCE(c.youtube_id,''), COALESCE(c.title,''),
+		        COALESCE(c.thumbnail_url,''), COALESCE(c.minio_object_key,''), COALESCE(c.stream_url,''),
+		        COALESCE(c.duration_seconds,0), COALESCE(c.status,'pending'),
+		        COALESCE(c.video_status,'pending'), COALESCE(c.transcript_status,'pending'),
+		        COALESCE(c.error_message,''),
+		        COALESCE(c.folder_id::text,''), COALESCE(c.is_completed,false), c.watched_at,
+		        COALESCE(p.current_segment_index,0), COALESCE(p.last_watched_time,0),
+		        c.created_at, c.updated_at
+		 FROM shadowing_clips c
+		 LEFT JOIN shadowing_progress p ON p.clip_id = c.id AND p.user_id = c.user_id
+		 WHERE c.id = $1`,
 		clipID).Scan(&c.ID, &c.UserID, &c.YouTubeURL, &c.YouTubeID, &c.Title, &c.ThumbnailURL,
-		&c.MinIOObjectKey, &c.StreamURL, &c.DurationSeconds, &c.Status, &c.ErrorMessage, &c.CreatedAt, &c.UpdatedAt)
+		&c.MinIOObjectKey, &c.StreamURL, &c.DurationSeconds, &c.Status,
+		&c.VideoStatus, &c.TranscriptStatus, &c.ErrorMessage,
+		&c.FolderID, &c.IsCompleted, &c.WatchedAt,
+		&c.LastSegmentIdx, &c.LastWatchedTime,
+		&c.CreatedAt, &c.UpdatedAt)
 	return c, err
 }
 

@@ -35,6 +35,117 @@ func (h *ShadowingHandler) Register(group fiber.Router) {
 	// Stream proxy. Accepts `?token=<jwt>` so the <video> tag works without
 	// custom Authorization headers (HTML5 video can't send them).
 	g.Get("/clips/:clipId/stream", h.StreamClip())
+	// Retry transcript generation when the first attempt failed (or to refresh).
+	g.Post("/clips/:clipId/retry", h.RetryClip())
+	g.Post("/clips/:clipId/reprocess", h.RetryClip()) // alias
+
+	// Watched + folder organisation.
+	g.Post("/clips/:clipId/mark-watched", h.MarkWatched())
+	g.Post("/clips/:clipId/folder", h.MoveToFolder())
+	g.Get("/folders", h.ListFolders())
+	g.Post("/folders", h.CreateFolder())
+	g.Delete("/folders/:folderId", h.DeleteFolder())
+}
+
+func (h *ShadowingHandler) MarkWatched() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		userID, err := h.app.resolveUserID(c, "")
+		if err != nil {
+			return api.BadRequest(c, err.Error())
+		}
+		var req struct {
+			Completed bool `json:"completed"`
+		}
+		_ = c.BodyParser(&req)
+		if err := h.svc.MarkClipWatched(c.Context(), userID, c.Params("clipId"), req.Completed); err != nil {
+			return api.BadRequest(c, err.Error())
+		}
+		return api.OkWithMessage(c, "Updated", fiber.Map{"ok": true})
+	}
+}
+
+func (h *ShadowingHandler) MoveToFolder() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		userID, err := h.app.resolveUserID(c, "")
+		if err != nil {
+			return api.BadRequest(c, err.Error())
+		}
+		var req struct {
+			FolderID string `json:"folderId"`
+		}
+		_ = c.BodyParser(&req)
+		if err := h.svc.MoveClipToFolder(c.Context(), userID, c.Params("clipId"), req.FolderID); err != nil {
+			return api.BadRequest(c, err.Error())
+		}
+		return api.OkWithMessage(c, "Moved", fiber.Map{"ok": true})
+	}
+}
+
+func (h *ShadowingHandler) ListFolders() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		userID, err := h.app.resolveUserID(c, "")
+		if err != nil {
+			return api.BadRequest(c, err.Error())
+		}
+		folders, err := h.svc.ListFolders(c.Context(), userID)
+		if err != nil {
+			return api.InternalError(c, err.Error())
+		}
+		return api.OkWithMessage(c, "Folders", fiber.Map{"folders": folders})
+	}
+}
+
+func (h *ShadowingHandler) CreateFolder() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		userID, err := h.app.resolveUserID(c, "")
+		if err != nil {
+			return api.BadRequest(c, err.Error())
+		}
+		var req struct {
+			Name  string `json:"name"`
+			Color string `json:"color"`
+		}
+		if err := c.BodyParser(&req); err != nil || req.Name == "" {
+			return api.BadRequest(c, "name required")
+		}
+		folder, err := h.svc.CreateFolder(c.Context(), userID, req.Name, req.Color)
+		if err != nil {
+			return api.InternalError(c, err.Error())
+		}
+		return api.OkWithMessage(c, "Folder created", folder)
+	}
+}
+
+func (h *ShadowingHandler) DeleteFolder() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		userID, err := h.app.resolveUserID(c, "")
+		if err != nil {
+			return api.BadRequest(c, err.Error())
+		}
+		if err := h.svc.DeleteFolder(c.Context(), userID, c.Params("folderId")); err != nil {
+			return api.BadRequest(c, err.Error())
+		}
+		return api.OkWithMessage(c, "Folder deleted", fiber.Map{"ok": true})
+	}
+}
+
+// RetryClip re-runs Gemini transcript generation for an existing clip while
+// keeping the same id / stream URL / progress / recordings / notes.
+func (h *ShadowingHandler) RetryClip() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		userID, err := h.app.resolveUserID(c, "")
+		if err != nil {
+			return api.BadRequest(c, err.Error())
+		}
+		clip, err := h.svc.ReprocessClip(c.Context(), userID, c.Params("clipId"))
+		if err != nil {
+			return api.BadRequest(c, err.Error())
+		}
+		return api.OkWithMessage(c, "Reprocess started", fiber.Map{
+			"ok":   true,
+			"clip": clip,
+		})
+	}
 }
 
 // StreamClip proxies the MinIO video bytes back to the browser. Accepts the
@@ -140,7 +251,10 @@ func (h *ShadowingHandler) ListClips() fiber.Handler {
 			return api.BadRequest(c, err.Error())
 		}
 		limit, _ := strconv.Atoi(c.Query("limit", "30"))
-		clips, err := h.svc.ListClips(c.Context(), userID, limit)
+		sort := c.Query("sort", "recent") // "recent" | "watched"
+		folderID := c.Query("folderId", "")
+		unwatched := c.Query("unwatched", "false") == "true"
+		clips, err := h.svc.ListClips(c.Context(), userID, limit, sort, folderID, unwatched)
 		if err != nil {
 			return api.InternalError(c, err.Error())
 		}

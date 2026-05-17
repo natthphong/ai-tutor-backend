@@ -47,6 +47,10 @@ CREATE TABLE IF NOT EXISTS shadowing_clips (
     stream_url TEXT,
     duration_seconds INT DEFAULT 0,
     status TEXT NOT NULL DEFAULT 'pending',
+    -- video_status / transcript_status are reported independently so that a
+    -- failed transcript does not mask a usable YouTube embed.
+    video_status TEXT NOT NULL DEFAULT 'pending',
+    transcript_status TEXT NOT NULL DEFAULT 'pending',
     error_message TEXT,
     metadata JSONB DEFAULT '{}',
     created_at TIMESTAMPTZ DEFAULT now(),
@@ -54,8 +58,15 @@ CREATE TABLE IF NOT EXISTS shadowing_clips (
 );
 
 -- status values: pending, processing, ready, failed
+-- video_status values: pending, processing, ready, failed
+-- transcript_status values: pending, processing, ready, failed
 CREATE INDEX IF NOT EXISTS idx_shadowing_clips_user ON shadowing_clips(user_id);
 CREATE INDEX IF NOT EXISTS idx_shadowing_clips_status ON shadowing_clips(status);
+
+-- Idempotent upgrade for an already-deployed V011.
+ALTER TABLE shadowing_clips
+    ADD COLUMN IF NOT EXISTS video_status TEXT NOT NULL DEFAULT 'pending',
+    ADD COLUMN IF NOT EXISTS transcript_status TEXT NOT NULL DEFAULT 'pending';
 
 CREATE TABLE IF NOT EXISTS shadowing_segments (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
