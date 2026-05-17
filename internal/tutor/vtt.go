@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 // RawCaption is one cue from a WEBVTT subtitle file, with start/end in seconds.
@@ -195,18 +196,27 @@ func dedupRollingCaptions(captions []RawCaption) []RawCaption {
 // segment is one shadowing unit. Heuristic: combine consecutive cues until we
 // see a sentence terminator (`. ! ?`) at the end of a cue, hit a long pause
 // (> sentenceGapSec), or reach the maxSegmentSec / maxSegmentChars cap.
+//
+// When appending consecutive cue text we strip the maximal trailing-word
+// overlap from the buffer so YouTube auto-caption sentences like:
+//
+//	prev:  "X Y Z"
+//	next:  "Y Z W"
+//
+// merge into "X Y Z W" instead of "X Y Z Y Z W". This fixes the duplicated
+// phrases users saw before this change.
 func CombineToSentences(raw []RawCaption) []ShadowingSegmentDTO {
 	const (
 		sentenceGapSec  = 1.0
 		maxSegmentSec   = 8.0
-		maxSegmentChars = 180
+		maxSegmentChars = 220
 	)
 	if len(raw) == 0 {
 		return nil
 	}
 	segs := make([]ShadowingSegmentDTO, 0, len(raw))
 	var (
-		buf     strings.Builder
+		curText string
 		start   float64
 		end     float64
 		hasAny  bool
@@ -216,7 +226,7 @@ func CombineToSentences(raw []RawCaption) []ShadowingSegmentDTO {
 		if !hasAny {
 			return
 		}
-		text := strings.TrimSpace(buf.String())
+		text := strings.TrimSpace(curText)
 		if text != "" {
 			segs = append(segs, ShadowingSegmentDTO{
 				Index:     segIdx,
@@ -226,18 +236,18 @@ func CombineToSentences(raw []RawCaption) []ShadowingSegmentDTO {
 			})
 			segIdx++
 		}
-		buf.Reset()
+		curText = ""
 		hasAny = false
 	}
 
 	for i, c := range raw {
 		if !hasAny {
 			start = c.StartTime
+			curText = c.Text
 			hasAny = true
 		} else {
-			buf.WriteRune(' ')
+			curText = mergeTextOverlap(curText, c.Text)
 		}
-		buf.WriteString(c.Text)
 		end = c.EndTime
 
 		endsSentence := false
@@ -253,11 +263,59 @@ func CombineToSentences(raw []RawCaption) []ShadowingSegmentDTO {
 		}
 		duration := end - start
 		if endsSentence || nextGap >= sentenceGapSec ||
-			duration >= maxSegmentSec || buf.Len() >= maxSegmentChars ||
+			duration >= maxSegmentSec || len(curText) >= maxSegmentChars ||
 			i == len(raw)-1 {
 			flush()
 		}
 	}
 	flush()
 	return segs
+}
+
+// mergeTextOverlap appends `next` to `existing`, stripping the maximal suffix
+// of `existing` that matches a prefix of `next` (case-insensitive, punctuation
+// tolerated). Powers the YouTube auto-caption sentence merge.
+func mergeTextOverlap(existing, next string) string {
+	existing = strings.TrimSpace(existing)
+	next = strings.TrimSpace(next)
+	if existing == "" {
+		return next
+	}
+	if next == "" {
+		return existing
+	}
+	eWords := strings.Fields(existing)
+	nWords := strings.Fields(next)
+	maxK := len(nWords)
+	if len(eWords) < maxK {
+		maxK = len(eWords)
+	}
+	for k := maxK; k > 0; k-- {
+		match := true
+		for i := 0; i < k; i++ {
+			if !tokenEqualFold(eWords[len(eWords)-k+i], nWords[i]) {
+				match = false
+				break
+			}
+		}
+		if match {
+			tail := nWords[k:]
+			if len(tail) == 0 {
+				return existing
+			}
+			return existing + " " + strings.Join(tail, " ")
+		}
+	}
+	return existing + " " + next
+}
+
+// tokenEqualFold compares two tokens ignoring case and surrounding punctuation.
+func tokenEqualFold(a, b string) bool {
+	return strings.EqualFold(stripWordPunct(a), stripWordPunct(b))
+}
+
+func stripWordPunct(s string) string {
+	return strings.TrimFunc(s, func(r rune) bool {
+		return !unicode.IsLetter(r) && !unicode.IsDigit(r)
+	})
 }

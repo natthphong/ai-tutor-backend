@@ -123,6 +123,55 @@ func TestCombineToSentences(t *testing.T) {
 	}
 }
 
+func TestMergeTextOverlap(t *testing.T) {
+	cases := []struct {
+		a, b string
+		want string
+	}{
+		{"X Y Z", "Y Z W", "X Y Z W"},
+		{"hello world", "world peace", "hello world peace"},
+		{"There weren't really punishments", "There weren't really punishments not really",
+			"There weren't really punishments not really"},
+		{"not really for doing bad things", "for doing bad things unless you did something.",
+			"not really for doing bad things unless you did something."},
+		{"foo bar", "baz", "foo bar baz"},
+		{"", "alone", "alone"},
+		{"alone", "", "alone"},
+	}
+	for _, c := range cases {
+		got := mergeTextOverlap(c.a, c.b)
+		if got != c.want {
+			t.Errorf("mergeTextOverlap(%q, %q) = %q, want %q", c.a, c.b, got, c.want)
+		}
+	}
+}
+
+func TestCombineToSentences_OverlapMerge(t *testing.T) {
+	// Mirrors the bug report: YouTube auto-captions with rolling phrase
+	// overlaps were producing duplicated text in the final segments.
+	raw := []RawCaption{
+		{StartTime: 0, EndTime: 2, Text: "There weren't really punishments"},
+		{StartTime: 2, EndTime: 4, Text: "There weren't really punishments not really"},
+		{StartTime: 4, EndTime: 6, Text: "not really for doing bad things"},
+		{StartTime: 6, EndTime: 8, Text: "for doing bad things unless you did something."},
+	}
+	// dedupRollingCaptions collapses the first two via HasPrefix; the
+	// remaining captions overlap by trailing words and must be merged with
+	// overlap-stripping inside CombineToSentences.
+	deduped := dedupRollingCaptions(raw)
+	segs := CombineToSentences(deduped)
+	if len(segs) != 1 {
+		t.Fatalf("want 1 segment, got %d: %+v", len(segs), segs)
+	}
+	wantText := "There weren't really punishments not really for doing bad things unless you did something."
+	if segs[0].Text != wantText {
+		t.Errorf("merged text wrong:\n got: %q\nwant: %q", segs[0].Text, wantText)
+	}
+	if segs[0].StartTime != 0 || segs[0].EndTime != 8 {
+		t.Errorf("timing wrong: %+v", segs[0])
+	}
+}
+
 func TestCombineToSentences_GapBreaks(t *testing.T) {
 	raw := []RawCaption{
 		{StartTime: 0, EndTime: 2, Text: "first phrase"},

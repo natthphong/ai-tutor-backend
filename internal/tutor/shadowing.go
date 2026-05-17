@@ -577,6 +577,16 @@ func (s *ShadowingService) processTranscriptAsync(clipID, yid string) {
 			zap.Int("rawCues", len(rawCaps)))
 		segs := CombineToSentences(rawCaps)
 		if len(segs) > 0 {
+			// AI cleanup pass: rewrites text only (preserves index/startTime/
+			// endTime) to remove residual phrase duplicates that overlap-merge
+			// couldn't catch. Failure is non-fatal – the local-merge text is
+			// still usable.
+			if cErr := s.cleanSegmentsWithAI(ctx, segs); cErr != nil {
+				logger.Warn("shadowing: text cleanup failed (using local-merge text)",
+					zap.Error(cErr))
+			} else {
+				logger.Info("shadowing: text cleanup ok", zap.Int("segments", len(segs)))
+			}
 			if tErr := s.translateSegments(ctx, segs); tErr != nil {
 				logger.Warn("shadowing: translation failed (segments saved without Thai)", zap.Error(tErr))
 			}
@@ -616,6 +626,11 @@ func (s *ShadowingService) processTranscriptAsync(clipID, yid string) {
 			"Transcript generation failed. Please retry.")
 		s.setClipStatus(ctx, clipID, "failed")
 		return
+	}
+	// Same defensive cleanup as the captions path.
+	if cErr := s.cleanSegmentsWithAI(ctx, segs); cErr != nil {
+		logger.Warn("shadowing: STT text cleanup failed",
+			zap.Error(cErr))
 	}
 	s.replaceSegments(ctx, clipID, segs)
 	if audioDur <= 0 && len(segs) > 0 {
@@ -724,6 +739,63 @@ func (s *ShadowingService) downloadAutoCaptions(ctx context.Context, ytURL, tmpD
 		return nil, err
 	}
 	return ParseVTT(string(data))
+}
+
+// cleanSegmentsWithAI rewrites each segment's English text to remove the
+// duplicated phrases produced by overlapping YouTube auto-captions. Timing
+// (startTime / endTime / index) is preserved – only segs[i].Text may change.
+// Returns nil on success, an error if the model output couldn't be parsed
+// (in which case the caller keeps the local-merge result, which is already
+// usable).
+func (s *ShadowingService) cleanSegmentsWithAI(ctx context.Context, segs []ShadowingSegmentDTO) error {
+	if len(segs) == 0 {
+		return nil
+	}
+	var b strings.Builder
+	for i, seg := range segs {
+		b.WriteString(fmt.Sprintf("%d. %s\n", i, seg.Text))
+	}
+	prompt := fmt.Sprintf(`The following English segments came from YouTube auto-
+captions and may contain duplicated phrases caused by overlapping caption
+windows. Clean each segment so it reads naturally for a Thai English learner.
+
+RULES:
+- Preserve the original meaning. Do NOT add new information.
+- Remove duplicated phrases caused by overlapping captions.
+- Keep wording natural; do NOT summarize aggressively.
+- Keep the text in English.
+- Return EXACTLY the same number of segments, in the same order.
+- Do NOT change segment index, start_time, or end_time – we will keep ours.
+
+Respond in STRICT JSON only, no markdown fence:
+{"texts": ["cleaned text for segment 0", "cleaned text for segment 1", ...]}
+
+SEGMENTS:
+%s`, b.String())
+
+	chat, err := s.router.Chat(ctx, ai.ChatRequest{
+		SystemPrompt: "You only output strict JSON. Never include markdown fences.",
+		Messages:     []ai.ChatMessage{{Role: "user", Content: prompt}},
+		UseCase:      "shadowing_clean_text",
+	})
+	if err != nil {
+		return err
+	}
+	var parsed struct {
+		Texts []string `json:"texts"`
+	}
+	if err := json.Unmarshal([]byte(stripCodeFences(chat.Content)), &parsed); err != nil {
+		return err
+	}
+	if len(parsed.Texts) != len(segs) {
+		return fmt.Errorf("cleanup returned %d texts, expected %d", len(parsed.Texts), len(segs))
+	}
+	for i := range segs {
+		if t := strings.TrimSpace(parsed.Texts[i]); t != "" {
+			segs[i].Text = t
+		}
+	}
+	return nil
 }
 
 // translateSegments asks Gemini for Thai translations of pre-timed segments.
