@@ -1,99 +1,43 @@
-LogConfig:
-  Level: "debug"
-Server:
-  Name: "ai-tutor"
-  Port: "8080"
-Env: DEV
-
-DBConfig:
-  Host: "localhost"
-  Port: "5432"
-  Username: "postgres"
-  Password: ""
-  Name: "ai_tutor"
-  MaxOpenConn: 10
-  MaxConnLifeTime: 300
-
-Gemini:
-  api_key: ""
-
-OpenRouter:
-  api_key: ""
-  base_url: "https://openrouter.ai/api/v1"
-
-OpenAI:
-  api_key: ""
-  stt_model: "whisper-1"
-  tts_model: "gpt-4o-mini-tts"
-
-LLM:
-  primary_provider: "gemini"
-  primary_model: "gemini-2.5-flash"
-  deep_model: "gemini-2.5-pro"
-  fallback_provider: "openrouter"
-  fallback_models:
-    - "google/gemini-2.5-flash"
-    - "google/gemini-2.5-pro"
-    - "openai/gpt-4o-mini"
-  timeout_seconds: 60
-
-TTS:
-  primary_provider: "gemini"
-  fallback_provider: "openai"
-  fallback_model: "gpt-4o-mini-tts"
-  enabled: true
-  max_text_chars: 700
-  voice_style: "friendly Thai-English teacher"
-
-STT:
-  primary_provider: "gemini"
-  fallback_provider: "openai"
-  fallback_model: "whisper-1"
-  save_transcript: true
-
-Embedding:
-  provider: "openai"
-  model: "text-embedding-3-small"
-  dimensions: 1536
-  batch_size: 32
-  cache_by_content_hash: true
-
-MinIO:
-  endpoint: "localhost:9000"
-  access_key: "minioadmin"
-  secret_key: "minioadmin"
-  bucket: "ai-tutor"
-  use_ssl: false
-  prefix_tts: "tts/"
-  prefix_user_audio: "user-audio/"
-  public_base: "http://localhost:8080/ai-tutor/api/v1"
-
-Redis:
-  enabled: false
-  addr: "localhost:6379"
-  password: ""
-  db: 0
-
-Queue:
-  driver: "memory_channel"
-
-Cache:
-  driver: "memory"
-  ttl_seconds: 3600
-
-Line:
-  channel_secret: ""
-  channel_token: ""
-  liff_id: ""
-  allowed_user_ids:
-    - "Ufa2dce3870921d4d4604bf39024bab7f"
-  notify_url: "http://192.168.1.122:8100/home-proxy/api/v1/line/notification"
-
-Tavily:
-  api_key: ""
-
-Tutor:
-  lecture_path: "../lecture"
-  max_hint_level: 5
-  weakness_threshold: 5
-  default_mode: "mixed"
+version: '2026-09-05.2'
+price_date: '2026-09-05'
+usd_thb: 35
+monthly_budget: 600
+live_minutes: 10
+retention_days: 30
+voice: Kore
+timeout_seconds: 45
+# USD / million tokens. Match updated prices to model IDs when changing them.
+models:
+  helper:
+    capability: text_audio
+    id: gemini-2.5-flash-lite
+    input: 0.10
+    audio_input: 0.30
+    output: 0.40
+    max_tokens: 512
+    thinking_budget: 0
+  tutor:
+    capability: text_audio
+    id: gemini-3.1-flash-lite
+    input: 0.25
+    audio_input: 0.50
+    output: 1.50
+    max_tokens: 2048
+    temperature: 0.5
+  tts:
+    capability: tts
+    id: gemini-2.5-flash-preview-tts
+    input: 0.50
+    output: 10
+    audio_output: 10
+    max_tokens: 4096
+    temperature: 1
+    timeout_seconds: 75
+  live:
+    capability: live
+    id: gemini-3.1-flash-live-preview
+    input: 0.75
+    audio_input: 3.00
+    output: 4.50
+    audio_output: 12.00
+    max_tokens: 1024

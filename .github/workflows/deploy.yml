@@ -1,36 +1,24 @@
-name: Deploy to Portainer
-
-on:
-  push:
-    tags:
-      - "v*"
-      - "*"
-
+name: Verify backend
+on: [push, pull_request]
 jobs:
-  deploy:
+  verify:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "1.22"
-
-      - name: Install jq
-        run: sudo apt-get update && sudo apt-get install -y jq
-
-      - name: Deploy via Portainer
+    services:
+      postgres:
+        image: postgres:17-alpine
         env:
-          PORTAINER_URL: ${{ secrets.PORTAINER_URL }}
-          PORTAINER_API_KEY: ${{ secrets.PORTAINER_API_KEY }}
-          ENDPOINT_ID: ${{ secrets.ENDPOINT_ID }}
-          APP_NAME: ${{ secrets.APP_NAME }}
-          EXTERNAL_PORT: ${{ secrets.EXTERNAL_PORT }}
-          IMAGE_TAG: ${{ github.ref_name }}
-          CONFIG_YAML_B64: ${{ secrets.CONFIG_YAML_B64 }}
-          ENV: ${{ secrets.ENV }}
-        run: |
-          chmod +x ci/deploy-portainer.sh
-          ci/deploy-portainer.sh
+          POSTGRES_USER: toko
+          POSTGRES_PASSWORD: test-only
+          POSTGRES_DB: toko_loop_test
+        ports: ['5432:5432']
+        options: --health-cmd='pg_isready -U toko' --health-interval=5s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: go test -race -timeout 120s ./...
+        env:
+          TEST_DATABASE_URL: postgres://toko:test-only@localhost:5432/toko_loop_test?sslmode=disable
+      - run: go vet ./...

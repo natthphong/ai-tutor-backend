@@ -1,0 +1,9 @@
+.git
+.env*
+.toko-*
+config/config.yaml
+data
+reports
+*.tar
+*.log
+goapp

@@ -127,3 +127,16 @@ fabric.properties
 
 # End of https://www.toptal.com/developers/gitignore/api/go,goland+all
 
+
+# Toko Loop local runtime
+.env*
+!.env.example
+.toko-*
+data/
+coverage/
+playwright-report/
+test-results/
+
+__pycache__/
+*.pyc
+*.tsbuildinfo

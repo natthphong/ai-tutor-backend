@@ -1,0 +1,108 @@
+{
+  "target": "http://localhost:8080/ai-tutor/api/v2",
+  "synthetic_only": true,
+  "started_at": "2026-09-05T19:43:15+0700",
+  "checks": [
+    {
+      "name": "health/readiness",
+      "ok": true,
+      "detail": "2026-09-05.2"
+    },
+    {
+      "name": "app TTS asset reused after bounded generation",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "tts job produces WAV",
+      "ok": true,
+      "detail": "bytes=96570"
+    },
+    {
+      "name": "invitation can be used once",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "TTS audio owner isolation",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "valid alternative accepted",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "duplicate answer request is not billed",
+      "ok": true,
+      "detail": "calls=19"
+    },
+    {
+      "name": "TTS to multipart speech feedback",
+      "ok": true,
+      "detail": "Hello, I'm Pim."
+    },
+    {
+      "name": "attempt audio owner isolation",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "speech retry links to prior attempt",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "audio review reschedules",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "progress/session persist after reload",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "grammar and goal are separated",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "custom scenario job and edit",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "scenario roleplay returns grammar feedback",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "post-scene review generated",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "post-scene retry can be practiced",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "new Gemini spend stays within QA budget",
+      "ok": true,
+      "detail": "THB=0.2314"
+    }
+  ],
+  "status": "passed",
+  "duration_seconds": 21.7,
+  "new_spend_thb": 0.2314,
+  "calls_delta": 10,
+  "tts_fixture": "/tmp/toko-qa-tts.wav",
+  "session_ids": {
+    "lesson": "427dcc79-a792-432b-bec1-195f4b652a32",
+    "goal_separation": "892739ae-0e00-4f6d-b2c1-d5bb9f887687",
+    "scenario": "2172cb51-be2f-4e2c-a4c2-8acb414a2b5e",
+    "post_scene_retry": "86fd6891-2d72-46b1-a694-37b6db74d44f"
+  }
+}

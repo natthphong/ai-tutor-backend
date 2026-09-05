@@ -1,0 +1,19 @@
+{
+  "audio_received": true,
+  "calls_delta": 2,
+  "fixture": "/tmp/toko-qa-tts.wav",
+  "input_transcription": true,
+  "ledger_stable_after_stop": true,
+  "live_seconds_delta": 4,
+  "output_transcription": true,
+  "ready": true,
+  "reconnect_clears_active": true,
+  "reconnect_ready": true,
+  "session_id": "f15fa261-d83c-41a0-9149-7bad7b246455",
+  "status": "passed",
+  "stop_clears_active": true,
+  "synthetic_only": true,
+  "target": "http://localhost:8080/ai-tutor/api/v2",
+  "ticket_one_use": true,
+  "wrong_origin_blocked": true
+}

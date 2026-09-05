@@ -1,0 +1,1334 @@
+[
+  {
+    "id": "tech-01",
+    "title": "Daily standup",
+    "category": "Tech",
+    "level": "A2",
+    "goal": "อัปเดตงาน สิ่งที่จะทำต่อ และ blocker",
+    "roles": [
+      "Developer",
+      "Scrum master"
+    ],
+    "brief": "ฝึกอัปเดตงาน สิ่งที่จะทำต่อ และ blocker ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Engineer; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: อัปเดตงาน สิ่งที่จะทำต่อ และ blocker",
+    "opening": "Let’s discuss daily standup. Could you start with a brief update?",
+    "success_criteria": [
+      "อัปเดตงาน สิ่งที่จะทำต่อ และ blocker",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "tech-02",
+    "title": "API walkthrough",
+    "category": "Tech",
+    "level": "A2",
+    "goal": "อธิบาย input output และ error ของ API",
+    "roles": [
+      "Developer",
+      "Integration engineer"
+    ],
+    "brief": "ฝึกอธิบาย input output และ error ของ API ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Engineer; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: อธิบาย input output และ error ของ API",
+    "opening": "Let’s discuss api walkthrough. Could you start with a brief update?",
+    "success_criteria": [
+      "อธิบาย input output และ error ของ API",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "tech-03",
+    "title": "Design review",
+    "category": "Tech",
+    "level": "B2",
+    "goal": "เสนอแบบระบบและชั่ง trade-off",
+    "roles": [
+      "Engineer",
+      "Architect"
+    ],
+    "brief": "ฝึกเสนอแบบระบบและชั่ง trade-off ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Engineer; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: เสนอแบบระบบและชั่ง trade-off",
+    "opening": "Let’s discuss design review. Could you start with a brief update?",
+    "success_criteria": [
+      "เสนอแบบระบบและชั่ง trade-off",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "tech-04",
+    "title": "Production incident",
+    "category": "Tech",
+    "level": "B1",
+    "goal": "แจ้งขอบเขตปัญหา ข้อเท็จจริง และการบรรเทา",
+    "roles": [
+      "Engineer",
+      "Incident lead"
+    ],
+    "brief": "ฝึกแจ้งขอบเขตปัญหา ข้อเท็จจริง และการบรรเทา ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Engineer; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: แจ้งขอบเขตปัญหา ข้อเท็จจริง และการบรรเทา",
+    "opening": "Let’s discuss production incident. Could you start with a brief update?",
+    "success_criteria": [
+      "แจ้งขอบเขตปัญหา ข้อเท็จจริง และการบรรเทา",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "tech-05",
+    "title": "Code review discussion",
+    "category": "Tech",
+    "level": "B1",
+    "goal": "อธิบายเหตุผลการแก้โค้ดและรับข้อเสนอ",
+    "roles": [
+      "Developer",
+      "Reviewer"
+    ],
+    "brief": "ฝึกอธิบายเหตุผลการแก้โค้ดและรับข้อเสนอ ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Engineer; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: อธิบายเหตุผลการแก้โค้ดและรับข้อเสนอ",
+    "opening": "Let’s discuss code review discussion. Could you start with a brief update?",
+    "success_criteria": [
+      "อธิบายเหตุผลการแก้โค้ดและรับข้อเสนอ",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "tech-06",
+    "title": "Release readiness",
+    "category": "Tech",
+    "level": "B1",
+    "goal": "ยืนยันผลทดสอบ ความเสี่ยง และ rollback",
+    "roles": [
+      "Engineer",
+      "Release manager"
+    ],
+    "brief": "ฝึกยืนยันผลทดสอบ ความเสี่ยง และ rollback ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Engineer; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: ยืนยันผลทดสอบ ความเสี่ยง และ rollback",
+    "opening": "Let’s discuss release readiness. Could you start with a brief update?",
+    "success_criteria": [
+      "ยืนยันผลทดสอบ ความเสี่ยง และ rollback",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "tech-07",
+    "title": "Performance investigation",
+    "category": "Tech",
+    "level": "B1",
+    "goal": "แยกหลักฐานจากสมมติฐานของระบบช้า",
+    "roles": [
+      "Engineer",
+      "SRE"
+    ],
+    "brief": "ฝึกแยกหลักฐานจากสมมติฐานของระบบช้า ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Engineer; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: แยกหลักฐานจากสมมติฐานของระบบช้า",
+    "opening": "Let’s discuss performance investigation. Could you start with a brief update?",
+    "success_criteria": [
+      "แยกหลักฐานจากสมมติฐานของระบบช้า",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "tech-08",
+    "title": "Database migration",
+    "category": "Tech",
+    "level": "B2",
+    "goal": "อธิบายการย้ายข้อมูลและตรวจความถูกต้อง",
+    "roles": [
+      "Engineer",
+      "DBA"
+    ],
+    "brief": "ฝึกอธิบายการย้ายข้อมูลและตรวจความถูกต้อง ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Engineer; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: อธิบายการย้ายข้อมูลและตรวจความถูกต้อง",
+    "opening": "Let’s discuss database migration. Could you start with a brief update?",
+    "success_criteria": [
+      "อธิบายการย้ายข้อมูลและตรวจความถูกต้อง",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "tech-09",
+    "title": "Security finding",
+    "category": "Tech",
+    "level": "B2",
+    "goal": "อธิบายผลกระทบและแผนแก้ช่องโหว่",
+    "roles": [
+      "Developer",
+      "Security reviewer"
+    ],
+    "brief": "ฝึกอธิบายผลกระทบและแผนแก้ช่องโหว่ ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Engineer; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: อธิบายผลกระทบและแผนแก้ช่องโหว่",
+    "opening": "Let’s discuss security finding. Could you start with a brief update?",
+    "success_criteria": [
+      "อธิบายผลกระทบและแผนแก้ช่องโหว่",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "tech-10",
+    "title": "Technical handover",
+    "category": "Tech",
+    "level": "B2",
+    "goal": "ส่งต่องานและชี้สิ่งที่ต้องติดตาม",
+    "roles": [
+      "Engineer",
+      "New teammate"
+    ],
+    "brief": "ฝึกส่งต่องานและชี้สิ่งที่ต้องติดตาม ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Engineer; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: ส่งต่องานและชี้สิ่งที่ต้องติดตาม",
+    "opening": "Let’s discuss technical handover. Could you start with a brief update?",
+    "success_criteria": [
+      "ส่งต่องานและชี้สิ่งที่ต้องติดตาม",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "banking-01",
+    "title": "Account opening",
+    "category": "Banking",
+    "level": "A2",
+    "goal": "อธิบายขั้นตอนเปิดบัญชีและยืนยันตัวตน",
+    "roles": [
+      "Product engineer",
+      "Operations"
+    ],
+    "brief": "ฝึกอธิบายขั้นตอนเปิดบัญชีและยืนยันตัวตน ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Banking specialist; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: อธิบายขั้นตอนเปิดบัญชีและยืนยันตัวตน",
+    "opening": "Let’s discuss account opening. Could you start with a brief update?",
+    "success_criteria": [
+      "อธิบายขั้นตอนเปิดบัญชีและยืนยันตัวตน",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "banking-02",
+    "title": "Transfer pending",
+    "category": "Banking",
+    "level": "A2",
+    "goal": "อธิบายรายการโอนที่ยังรอและสิ่งที่ตรวจได้",
+    "roles": [
+      "Support engineer",
+      "Customer support"
+    ],
+    "brief": "ฝึกอธิบายรายการโอนที่ยังรอและสิ่งที่ตรวจได้ ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Banking specialist; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: อธิบายรายการโอนที่ยังรอและสิ่งที่ตรวจได้",
+    "opening": "Let’s discuss transfer pending. Could you start with a brief update?",
+    "success_criteria": [
+      "อธิบายรายการโอนที่ยังรอและสิ่งที่ตรวจได้",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "banking-03",
+    "title": "Duplicate payment",
+    "category": "Banking",
+    "level": "B2",
+    "goal": "อธิบาย idempotency และการตรวจรายการซ้ำ",
+    "roles": [
+      "Payment engineer",
+      "Banking operations"
+    ],
+    "brief": "ฝึกอธิบาย idempotency และการตรวจรายการซ้ำ ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Banking specialist; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: อธิบาย idempotency และการตรวจรายการซ้ำ",
+    "opening": "Let’s discuss duplicate payment. Could you start with a brief update?",
+    "success_criteria": [
+      "อธิบาย idempotency และการตรวจรายการซ้ำ",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "banking-04",
+    "title": "Ledger reconciliation",
+    "category": "Banking",
+    "level": "B1",
+    "goal": "สรุปยอดไม่ตรงและแผนตรวจ reconciliation",
+    "roles": [
+      "Ledger engineer",
+      "Finance"
+    ],
+    "brief": "ฝึกสรุปยอดไม่ตรงและแผนตรวจ reconciliation ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Banking specialist; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: สรุปยอดไม่ตรงและแผนตรวจ reconciliation",
+    "opening": "Let’s discuss ledger reconciliation. Could you start with a brief update?",
+    "success_criteria": [
+      "สรุปยอดไม่ตรงและแผนตรวจ reconciliation",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "banking-05",
+    "title": "Settlement delay",
+    "category": "Banking",
+    "level": "B1",
+    "goal": "แยก authorization และ settlement ให้ชัด",
+    "roles": [
+      "Payment engineer",
+      "Business lead"
+    ],
+    "brief": "ฝึกแยก authorization และ settlement ให้ชัด ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Banking specialist; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: แยก authorization และ settlement ให้ชัด",
+    "opening": "Let’s discuss settlement delay. Could you start with a brief update?",
+    "success_criteria": [
+      "แยก authorization และ settlement ให้ชัด",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "banking-06",
+    "title": "Interest calculation",
+    "category": "Banking",
+    "level": "B1",
+    "goal": "อธิบายสมมติฐานการคำนวณโดยไม่เดากฎจริง",
+    "roles": [
+      "Engineer",
+      "Product analyst"
+    ],
+    "brief": "ฝึกอธิบายสมมติฐานการคำนวณโดยไม่เดากฎจริง ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Banking specialist; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: อธิบายสมมติฐานการคำนวณโดยไม่เดากฎจริง",
+    "opening": "Let’s discuss interest calculation. Could you start with a brief update?",
+    "success_criteria": [
+      "อธิบายสมมติฐานการคำนวณโดยไม่เดากฎจริง",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "banking-07",
+    "title": "Transaction limits",
+    "category": "Banking",
+    "level": "B1",
+    "goal": "ทวน requirement วงเงินและกรณีขอบ",
+    "roles": [
+      "Engineer",
+      "BA"
+    ],
+    "brief": "ฝึกทวน requirement วงเงินและกรณีขอบ ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Banking specialist; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: ทวน requirement วงเงินและกรณีขอบ",
+    "opening": "Let’s discuss transaction limits. Could you start with a brief update?",
+    "success_criteria": [
+      "ทวน requirement วงเงินและกรณีขอบ",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "banking-08",
+    "title": "Audit evidence",
+    "category": "Banking",
+    "level": "B2",
+    "goal": "อธิบายหลักฐานและการตรวจย้อนรายการ",
+    "roles": [
+      "Engineer",
+      "Auditor"
+    ],
+    "brief": "ฝึกอธิบายหลักฐานและการตรวจย้อนรายการ ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Banking specialist; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: อธิบายหลักฐานและการตรวจย้อนรายการ",
+    "opening": "Let’s discuss audit evidence. Could you start with a brief update?",
+    "success_criteria": [
+      "อธิบายหลักฐานและการตรวจย้อนรายการ",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "banking-09",
+    "title": "Banking outage update",
+    "category": "Banking",
+    "level": "B2",
+    "goal": "แจ้งผลกระทบผู้ใช้โดยไม่สรุปเกินหลักฐาน",
+    "roles": [
+      "Incident lead",
+      "Operations"
+    ],
+    "brief": "ฝึกแจ้งผลกระทบผู้ใช้โดยไม่สรุปเกินหลักฐาน ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Banking specialist; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: แจ้งผลกระทบผู้ใช้โดยไม่สรุปเกินหลักฐาน",
+    "opening": "Let’s discuss banking outage update. Could you start with a brief update?",
+    "success_criteria": [
+      "แจ้งผลกระทบผู้ใช้โดยไม่สรุปเกินหลักฐาน",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "banking-10",
+    "title": "Core banking integration",
+    "category": "Banking",
+    "level": "B2",
+    "goal": "อธิบายสัญญา API ความผิดพลาด และการกู้คืน",
+    "roles": [
+      "Integration engineer",
+      "Vendor"
+    ],
+    "brief": "ฝึกอธิบายสัญญา API ความผิดพลาด และการกู้คืน ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Banking specialist; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: อธิบายสัญญา API ความผิดพลาด และการกู้คืน",
+    "opening": "Let’s discuss core banking integration. Could you start with a brief update?",
+    "success_criteria": [
+      "อธิบายสัญญา API ความผิดพลาด และการกู้คืน",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "business-01",
+    "title": "Product proposal",
+    "category": "Business",
+    "level": "A2",
+    "goal": "เสนอคุณค่า ปัญหาผู้ใช้ และวิธีวัดผล",
+    "roles": [
+      "Product contributor",
+      "Sponsor"
+    ],
+    "brief": "ฝึกเสนอคุณค่า ปัญหาผู้ใช้ และวิธีวัดผล ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Project owner; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: เสนอคุณค่า ปัญหาผู้ใช้ และวิธีวัดผล",
+    "opening": "Let’s discuss product proposal. Could you start with a brief update?",
+    "success_criteria": [
+      "เสนอคุณค่า ปัญหาผู้ใช้ และวิธีวัดผล",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "business-02",
+    "title": "Scope negotiation",
+    "category": "Business",
+    "level": "B2",
+    "goal": "เจรจาขอบเขตให้เหมาะกับเวลา",
+    "roles": [
+      "Team lead",
+      "Stakeholder"
+    ],
+    "brief": "ฝึกเจรจาขอบเขตให้เหมาะกับเวลา ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Project owner; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: เจรจาขอบเขตให้เหมาะกับเวลา",
+    "opening": "Let’s discuss scope negotiation. Could you start with a brief update?",
+    "success_criteria": [
+      "เจรจาขอบเขตให้เหมาะกับเวลา",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "business-03",
+    "title": "Requirements workshop",
+    "category": "Business",
+    "level": "A2",
+    "goal": "ถามข้อมูลที่ขาดและทวน acceptance criteria",
+    "roles": [
+      "BA",
+      "Product owner"
+    ],
+    "brief": "ฝึกถามข้อมูลที่ขาดและทวน acceptance criteria ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Project owner; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: ถามข้อมูลที่ขาดและทวน acceptance criteria",
+    "opening": "Let’s discuss requirements workshop. Could you start with a brief update?",
+    "success_criteria": [
+      "ถามข้อมูลที่ขาดและทวน acceptance criteria",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "business-04",
+    "title": "Project delay",
+    "category": "Business",
+    "level": "B1",
+    "goal": "อธิบายเหตุล่าช้าและเสนอทางเลือก",
+    "roles": [
+      "Project contributor",
+      "Manager"
+    ],
+    "brief": "ฝึกอธิบายเหตุล่าช้าและเสนอทางเลือก ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Project owner; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: อธิบายเหตุล่าช้าและเสนอทางเลือก",
+    "opening": "Let’s discuss project delay. Could you start with a brief update?",
+    "success_criteria": [
+      "อธิบายเหตุล่าช้าและเสนอทางเลือก",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "business-05",
+    "title": "Priority discussion",
+    "category": "Business",
+    "level": "B1",
+    "goal": "จัดลำดับงานตามผลกระทบและต้นทุน",
+    "roles": [
+      "Team member",
+      "Product manager"
+    ],
+    "brief": "ฝึกจัดลำดับงานตามผลกระทบและต้นทุน ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Project owner; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: จัดลำดับงานตามผลกระทบและต้นทุน",
+    "opening": "Let’s discuss priority discussion. Could you start with a brief update?",
+    "success_criteria": [
+      "จัดลำดับงานตามผลกระทบและต้นทุน",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "business-06",
+    "title": "Customer journey",
+    "category": "Business",
+    "level": "B1",
+    "goal": "อธิบายขั้นตอนผู้ใช้และจุดติดขัด",
+    "roles": [
+      "Analyst",
+      "Designer"
+    ],
+    "brief": "ฝึกอธิบายขั้นตอนผู้ใช้และจุดติดขัด ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Project owner; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: อธิบายขั้นตอนผู้ใช้และจุดติดขัด",
+    "opening": "Let’s discuss customer journey. Could you start with a brief update?",
+    "success_criteria": [
+      "อธิบายขั้นตอนผู้ใช้และจุดติดขัด",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "business-07",
+    "title": "Metric review",
+    "category": "Business",
+    "level": "B1",
+    "goal": "ตีความตัวชี้วัดโดยไม่สรุปเหตุผลเกินข้อมูล",
+    "roles": [
+      "Analyst",
+      "Business lead"
+    ],
+    "brief": "ฝึกตีความตัวชี้วัดโดยไม่สรุปเหตุผลเกินข้อมูล ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Project owner; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: ตีความตัวชี้วัดโดยไม่สรุปเหตุผลเกินข้อมูล",
+    "opening": "Let’s discuss metric review. Could you start with a brief update?",
+    "success_criteria": [
+      "ตีความตัวชี้วัดโดยไม่สรุปเหตุผลเกินข้อมูล",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "business-08",
+    "title": "Vendor evaluation",
+    "category": "Business",
+    "level": "B2",
+    "goal": "เปรียบเทียบผู้ให้บริการด้วยเกณฑ์เดียวกัน",
+    "roles": [
+      "Evaluator",
+      "Procurement"
+    ],
+    "brief": "ฝึกเปรียบเทียบผู้ให้บริการด้วยเกณฑ์เดียวกัน ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Project owner; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: เปรียบเทียบผู้ให้บริการด้วยเกณฑ์เดียวกัน",
+    "opening": "Let’s discuss vendor evaluation. Could you start with a brief update?",
+    "success_criteria": [
+      "เปรียบเทียบผู้ให้บริการด้วยเกณฑ์เดียวกัน",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "business-09",
+    "title": "Stakeholder update",
+    "category": "Business",
+    "level": "B2",
+    "goal": "สรุปความคืบหน้าและสิ่งที่ต้องตัดสินใจ",
+    "roles": [
+      "Project lead",
+      "Sponsor"
+    ],
+    "brief": "ฝึกสรุปความคืบหน้าและสิ่งที่ต้องตัดสินใจ ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Project owner; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: สรุปความคืบหน้าและสิ่งที่ต้องตัดสินใจ",
+    "opening": "Let’s discuss stakeholder update. Could you start with a brief update?",
+    "success_criteria": [
+      "สรุปความคืบหน้าและสิ่งที่ต้องตัดสินใจ",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "business-10",
+    "title": "Cost-benefit discussion",
+    "category": "Business",
+    "level": "B2",
+    "goal": "อธิบายข้อดี ค่าใช้จ่าย และสมมติฐาน",
+    "roles": [
+      "Contributor",
+      "Finance manager"
+    ],
+    "brief": "ฝึกอธิบายข้อดี ค่าใช้จ่าย และสมมติฐาน ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Project owner; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: อธิบายข้อดี ค่าใช้จ่าย และสมมติฐาน",
+    "opening": "Let’s discuss cost-benefit discussion. Could you start with a brief update?",
+    "success_criteria": [
+      "อธิบายข้อดี ค่าใช้จ่าย และสมมติฐาน",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "interview-01",
+    "title": "Tell me about yourself",
+    "category": "Interview",
+    "level": "A2",
+    "goal": "แนะนำตัวโดยเชื่อมประสบการณ์กับงาน",
+    "roles": [
+      "Candidate",
+      "Interviewer"
+    ],
+    "brief": "ฝึกแนะนำตัวโดยเชื่อมประสบการณ์กับงาน ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Candidate; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: แนะนำตัวโดยเชื่อมประสบการณ์กับงาน",
+    "opening": "Welcome. Please tell me about your experience relevant to Tell me about yourself.",
+    "success_criteria": [
+      "แนะนำตัวโดยเชื่อมประสบการณ์กับงาน",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "interview-02",
+    "title": "A difficult bug",
+    "category": "Interview",
+    "level": "A2",
+    "goal": "เล่าปัญหา วิธีคิด และผลลัพธ์แบบ STAR",
+    "roles": [
+      "Candidate",
+      "Engineer"
+    ],
+    "brief": "ฝึกเล่าปัญหา วิธีคิด และผลลัพธ์แบบ STAR ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Candidate; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: เล่าปัญหา วิธีคิด และผลลัพธ์แบบ STAR",
+    "opening": "Welcome. Please tell me about your experience relevant to A difficult bug.",
+    "success_criteria": [
+      "เล่าปัญหา วิธีคิด และผลลัพธ์แบบ STAR",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "interview-03",
+    "title": "Team disagreement",
+    "category": "Interview",
+    "level": "B1",
+    "goal": "เล่าความขัดแย้งและการหาข้อตกลง",
+    "roles": [
+      "Candidate",
+      "Hiring manager"
+    ],
+    "brief": "ฝึกเล่าความขัดแย้งและการหาข้อตกลง ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Candidate; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: เล่าความขัดแย้งและการหาข้อตกลง",
+    "opening": "Welcome. Please tell me about your experience relevant to Team disagreement.",
+    "success_criteria": [
+      "เล่าความขัดแย้งและการหาข้อตกลง",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "interview-04",
+    "title": "System design interview",
+    "category": "Interview",
+    "level": "B1",
+    "goal": "ถาม constraint ก่อนเสนอแบบ",
+    "roles": [
+      "Candidate",
+      "Architect"
+    ],
+    "brief": "ฝึกถาม constraint ก่อนเสนอแบบ ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Candidate; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: ถาม constraint ก่อนเสนอแบบ",
+    "opening": "Welcome. Please tell me about your experience relevant to System design interview.",
+    "success_criteria": [
+      "ถาม constraint ก่อนเสนอแบบ",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "interview-05",
+    "title": "A project you led",
+    "category": "Interview",
+    "level": "B1",
+    "goal": "ระบุบทบาทจริงและผลกระทบ",
+    "roles": [
+      "Candidate",
+      "Manager"
+    ],
+    "brief": "ฝึกระบุบทบาทจริงและผลกระทบ ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Candidate; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: ระบุบทบาทจริงและผลกระทบ",
+    "opening": "Welcome. Please tell me about your experience relevant to A project you led.",
+    "success_criteria": [
+      "ระบุบทบาทจริงและผลกระทบ",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "interview-06",
+    "title": "Learning something new",
+    "category": "Interview",
+    "level": "B1",
+    "goal": "อธิบายวิธีเรียนและประยุกต์ใช้",
+    "roles": [
+      "Candidate",
+      "Interviewer"
+    ],
+    "brief": "ฝึกอธิบายวิธีเรียนและประยุกต์ใช้ ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Candidate; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: อธิบายวิธีเรียนและประยุกต์ใช้",
+    "opening": "Welcome. Please tell me about your experience relevant to Learning something new.",
+    "success_criteria": [
+      "อธิบายวิธีเรียนและประยุกต์ใช้",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "interview-07",
+    "title": "Handling failure",
+    "category": "Interview",
+    "level": "B1",
+    "goal": "รับผิดชอบและเล่าบทเรียนจากความผิดพลาด",
+    "roles": [
+      "Candidate",
+      "Manager"
+    ],
+    "brief": "ฝึกรับผิดชอบและเล่าบทเรียนจากความผิดพลาด ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Candidate; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: รับผิดชอบและเล่าบทเรียนจากความผิดพลาด",
+    "opening": "Welcome. Please tell me about your experience relevant to Handling failure.",
+    "success_criteria": [
+      "รับผิดชอบและเล่าบทเรียนจากความผิดพลาด",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "interview-08",
+    "title": "Banking domain experience",
+    "category": "Interview",
+    "level": "B2",
+    "goal": "อธิบายประสบการณ์โดยแยกสิ่งที่รู้กับสิ่งที่ยังไม่รู้",
+    "roles": [
+      "Candidate",
+      "Banking lead"
+    ],
+    "brief": "ฝึกอธิบายประสบการณ์โดยแยกสิ่งที่รู้กับสิ่งที่ยังไม่รู้ ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Candidate; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: อธิบายประสบการณ์โดยแยกสิ่งที่รู้กับสิ่งที่ยังไม่รู้",
+    "opening": "Welcome. Please tell me about your experience relevant to Banking domain experience.",
+    "success_criteria": [
+      "อธิบายประสบการณ์โดยแยกสิ่งที่รู้กับสิ่งที่ยังไม่รู้",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "interview-09",
+    "title": "Why this role",
+    "category": "Interview",
+    "level": "B2",
+    "goal": "เชื่อมแรงจูงใจกับบทบาทและการพัฒนา",
+    "roles": [
+      "Candidate",
+      "Recruiter"
+    ],
+    "brief": "ฝึกเชื่อมแรงจูงใจกับบทบาทและการพัฒนา ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Candidate; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: เชื่อมแรงจูงใจกับบทบาทและการพัฒนา",
+    "opening": "Welcome. Please tell me about your experience relevant to Why this role.",
+    "success_criteria": [
+      "เชื่อมแรงจูงใจกับบทบาทและการพัฒนา",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "interview-10",
+    "title": "Questions for the team",
+    "category": "Interview",
+    "level": "B2",
+    "goal": "ถามทีมเรื่องงาน ความคาดหวัง และวิธีทำงาน",
+    "roles": [
+      "Candidate",
+      "Team lead"
+    ],
+    "brief": "ฝึกถามทีมเรื่องงาน ความคาดหวัง และวิธีทำงาน ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Candidate; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: ถามทีมเรื่องงาน ความคาดหวัง และวิธีทำงาน",
+    "opening": "Welcome. What would you like to ask about our team?",
+    "success_criteria": [
+      "ถามทีมเรื่องงาน ความคาดหวัง และวิธีทำงาน",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "meeting-01",
+    "title": "Kickoff meeting",
+    "category": "Meeting",
+    "level": "A2",
+    "goal": "กำหนดเป้าหมาย ขอบเขต และเจ้าของงาน",
+    "roles": [
+      "Facilitator",
+      "Engineer",
+      "Product owner"
+    ],
+    "brief": "ฝึกกำหนดเป้าหมาย ขอบเขต และเจ้าของงาน ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Meeting facilitator; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: กำหนดเป้าหมาย ขอบเขต และเจ้าของงาน",
+    "opening": "Let’s discuss kickoff meeting. Could you start with a brief update?",
+    "success_criteria": [
+      "กำหนดเป้าหมาย ขอบเขต และเจ้าของงาน",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "meeting-02",
+    "title": "Sprint planning",
+    "category": "Meeting",
+    "level": "A2",
+    "goal": "ชี้ dependency และตกลงงานที่ทำได้",
+    "roles": [
+      "Developer",
+      "Scrum master",
+      "BA"
+    ],
+    "brief": "ฝึกชี้ dependency และตกลงงานที่ทำได้ ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Meeting facilitator; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: ชี้ dependency และตกลงงานที่ทำได้",
+    "opening": "Let’s discuss sprint planning. Could you start with a brief update?",
+    "success_criteria": [
+      "ชี้ dependency และตกลงงานที่ทำได้",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "meeting-03",
+    "title": "Cross-team dependency",
+    "category": "Meeting",
+    "level": "A2",
+    "goal": "ตกลงสัญญาส่งต่องานและเวลา",
+    "roles": [
+      "Team representative",
+      "Partner team"
+    ],
+    "brief": "ฝึกตกลงสัญญาส่งต่องานและเวลา ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Meeting facilitator; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: ตกลงสัญญาส่งต่องานและเวลา",
+    "opening": "Let’s discuss cross-team dependency. Could you start with a brief update?",
+    "success_criteria": [
+      "ตกลงสัญญาส่งต่องานและเวลา",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "meeting-04",
+    "title": "Decision meeting",
+    "category": "Meeting",
+    "level": "B1",
+    "goal": "ชวนเปรียบเทียบทางเลือกและบันทึกมติ",
+    "roles": [
+      "Facilitator",
+      "Architect",
+      "Business lead"
+    ],
+    "brief": "ฝึกชวนเปรียบเทียบทางเลือกและบันทึกมติ ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Meeting facilitator; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: ชวนเปรียบเทียบทางเลือกและบันทึกมติ",
+    "opening": "Let’s discuss decision meeting. Could you start with a brief update?",
+    "success_criteria": [
+      "ชวนเปรียบเทียบทางเลือกและบันทึกมติ",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "meeting-05",
+    "title": "Retrospective",
+    "category": "Meeting",
+    "level": "B1",
+    "goal": "ให้ feedback โดยมุ่งปรับกระบวนการ",
+    "roles": [
+      "Team member",
+      "Facilitator"
+    ],
+    "brief": "ฝึกให้ feedback โดยมุ่งปรับกระบวนการ ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Meeting facilitator; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: ให้ feedback โดยมุ่งปรับกระบวนการ",
+    "opening": "Let’s discuss retrospective. Could you start with a brief update?",
+    "success_criteria": [
+      "ให้ feedback โดยมุ่งปรับกระบวนการ",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "meeting-06",
+    "title": "Executive update",
+    "category": "Meeting",
+    "level": "B1",
+    "goal": "สรุปสั้นพร้อมการตัดสินใจที่ต้องการ",
+    "roles": [
+      "Project lead",
+      "Executive"
+    ],
+    "brief": "ฝึกสรุปสั้นพร้อมการตัดสินใจที่ต้องการ ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Meeting facilitator; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: สรุปสั้นพร้อมการตัดสินใจที่ต้องการ",
+    "opening": "Let’s discuss executive update. Could you start with a brief update?",
+    "success_criteria": [
+      "สรุปสั้นพร้อมการตัดสินใจที่ต้องการ",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "meeting-07",
+    "title": "Risk review",
+    "category": "Meeting",
+    "level": "B1",
+    "goal": "จัดความเสี่ยงพร้อม owner และวิธีลด",
+    "roles": [
+      "Engineer",
+      "Risk owner",
+      "Product lead"
+    ],
+    "brief": "ฝึกจัดความเสี่ยงพร้อม owner และวิธีลด ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Meeting facilitator; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: จัดความเสี่ยงพร้อม owner และวิธีลด",
+    "opening": "Let’s discuss risk review. Could you start with a brief update?",
+    "success_criteria": [
+      "จัดความเสี่ยงพร้อม owner และวิธีลด",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "meeting-08",
+    "title": "Demo and questions",
+    "category": "Meeting",
+    "level": "B2",
+    "goal": "สาธิตงานและตอบข้อสงสัย",
+    "roles": [
+      "Presenter",
+      "Stakeholder"
+    ],
+    "brief": "ฝึกสาธิตงานและตอบข้อสงสัย ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Meeting facilitator; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: สาธิตงานและตอบข้อสงสัย",
+    "opening": "Let’s discuss demo and questions. Could you start with a brief update?",
+    "success_criteria": [
+      "สาธิตงานและตอบข้อสงสัย",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "meeting-09",
+    "title": "Difficult stakeholder",
+    "category": "Meeting",
+    "level": "B2",
+    "goal": "รับความกังวลแล้วนำกลับสู่ข้อเท็จจริง",
+    "roles": [
+      "Engineer",
+      "Stakeholder"
+    ],
+    "brief": "ฝึกรับความกังวลแล้วนำกลับสู่ข้อเท็จจริง ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Meeting facilitator; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: รับความกังวลแล้วนำกลับสู่ข้อเท็จจริง",
+    "opening": "Let’s discuss difficult stakeholder. Could you start with a brief update?",
+    "success_criteria": [
+      "รับความกังวลแล้วนำกลับสู่ข้อเท็จจริง",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "meeting-10",
+    "title": "Meeting wrap-up",
+    "category": "Meeting",
+    "level": "B2",
+    "goal": "สรุปมติ action owner และ deadline",
+    "roles": [
+      "Facilitator",
+      "Engineer",
+      "Business lead"
+    ],
+    "brief": "ฝึกสรุปมติ action owner และ deadline ในสถานการณ์สมมติที่ไม่มีข้อมูลลูกค้าจริง คุณเล่นบท Meeting facilitator; AI เล่นบทอื่นใน roles ทีละคนและระบุชื่อผู้พูด เป้าหมายของคุณ: สรุปมติ action owner และ deadline",
+    "opening": "Let’s discuss meeting wrap-up. Could you start with a brief update?",
+    "success_criteria": [
+      "สรุปมติ action owner และ deadline",
+      "ถามเพื่อยืนยันความเข้าใจ",
+      "สรุปสิ่งที่ตกลงและขั้นตอนถัดไป"
+    ],
+    "minutes": 10
+  },
+  {
+    "id": "everyday-01",
+    "title": "First hello",
+    "category": "Everyday",
+    "level": "Pre-A1",
+    "goal": "แนะนำตัวและถามชื่อคนที่เพิ่งเจอ",
+    "roles": [
+      "Learner",
+      "New neighbor"
+    ],
+    "brief": "คุณกำลังฝึกแนะนำตัวและถามชื่อคนที่เพิ่งเจอ กับ New neighbor ใช้ชื่อ ตัวเลข และข้อมูลสมมติ ผู้สอนถามทีละข้อและปรับความเร็วตามคุณ ก่อนเริ่มฉาก สอน starter pattern เป็นวลีสั้นพร้อมคำแปลไทย ให้ตัวเลือกคำศัพท์ 3 คำและซ้อมพูดหนึ่งครั้งโดยยังไม่นับ mastery แล้วจึงเริ่มโจทย์ใหม่",
+    "opening": "Hi! I’m Alex. What’s your name?",
+    "success_criteria": [
+      "ทักทาย บอกชื่อ",
+      "ถามชื่อกลับ"
+    ],
+    "minutes": 7,
+    "starter_pattern": "Hello, I’m [name]."
+  },
+  {
+    "id": "everyday-02",
+    "title": "A coffee please",
+    "category": "Everyday",
+    "level": "Pre-A1",
+    "goal": "สั่งเครื่องดื่ม ระบุขนาด และขอบคุณ",
+    "roles": [
+      "Learner",
+      "Barista"
+    ],
+    "brief": "คุณกำลังฝึกสั่งเครื่องดื่ม ระบุขนาด และขอบคุณ กับ Barista ใช้ชื่อ ตัวเลข และข้อมูลสมมติ ผู้สอนถามทีละข้อและปรับความเร็วตามคุณ ก่อนเริ่มฉาก สอน starter pattern เป็นวลีสั้นพร้อมคำแปลไทย ให้ตัวเลือกคำศัพท์ 3 คำและซ้อมพูดหนึ่งครั้งโดยยังไม่นับ mastery แล้วจึงเริ่มโจทย์ใหม่",
+    "opening": "Hello! What would you like?",
+    "success_criteria": [
+      "สั่งเครื่องดื่มหนึ่งอย่าง เลือกขนาด",
+      "ตอบรับราคา"
+    ],
+    "minutes": 7,
+    "starter_pattern": "I’d like [drink], please."
+  },
+  {
+    "id": "everyday-03",
+    "title": "At the restaurant",
+    "category": "Everyday",
+    "level": "A1",
+    "goal": "สั่งอาหารและบอกสิ่งที่ไม่กิน",
+    "roles": [
+      "Learner",
+      "Server"
+    ],
+    "brief": "คุณกำลังฝึกสั่งอาหารและบอกสิ่งที่ไม่กิน กับ Server ใช้ชื่อ ตัวเลข และข้อมูลสมมติ ผู้สอนถามทีละข้อและปรับความเร็วตามคุณ ก่อนเริ่มฉาก สอน starter pattern เป็นวลีสั้นพร้อมคำแปลไทย ให้ตัวเลือกคำศัพท์ 3 คำและซ้อมพูดหนึ่งครั้งโดยยังไม่นับ mastery แล้วจึงเริ่มโจทย์ใหม่",
+    "opening": "Welcome! Are you ready to order?",
+    "success_criteria": [
+      "สั่งอาหาร ถามส่วนผสม",
+      "ขอเช็กบิล"
+    ],
+    "minutes": 7,
+    "starter_pattern": "Could I have [dish] without [ingredient]?"
+  },
+  {
+    "id": "everyday-04",
+    "title": "Ask for directions",
+    "category": "Everyday",
+    "level": "A1",
+    "goal": "ถามทางแล้วทวนเส้นทางให้ถูก",
+    "roles": [
+      "Learner",
+      "Local resident"
+    ],
+    "brief": "คุณกำลังฝึกถามทางแล้วทวนเส้นทางให้ถูก กับ Local resident ใช้ชื่อ ตัวเลข และข้อมูลสมมติ ผู้สอนถามทีละข้อและปรับความเร็วตามคุณ ก่อนเริ่มฉาก สอน starter pattern เป็นวลีสั้นพร้อมคำแปลไทย ให้ตัวเลือกคำศัพท์ 3 คำและซ้อมพูดหนึ่งครั้งโดยยังไม่นับ mastery แล้วจึงเริ่มโจทย์ใหม่",
+    "opening": "Hello! Do you need help finding somewhere?",
+    "success_criteria": [
+      "บอกจุดหมาย ถามจุดสังเกต",
+      "ทวนทาง"
+    ],
+    "minutes": 7,
+    "starter_pattern": "How do I get to [place]?"
+  },
+  {
+    "id": "everyday-05",
+    "title": "Buying a train ticket",
+    "category": "Everyday",
+    "level": "A1",
+    "goal": "บอกปลายทาง เวลา และจำนวนตั๋ว",
+    "roles": [
+      "Learner",
+      "Ticket clerk"
+    ],
+    "brief": "คุณกำลังฝึกบอกปลายทาง เวลา และจำนวนตั๋ว กับ Ticket clerk ใช้ชื่อ ตัวเลข และข้อมูลสมมติ ผู้สอนถามทีละข้อและปรับความเร็วตามคุณ ก่อนเริ่มฉาก สอน starter pattern เป็นวลีสั้นพร้อมคำแปลไทย ให้ตัวเลือกคำศัพท์ 3 คำและซ้อมพูดหนึ่งครั้งโดยยังไม่นับ mastery แล้วจึงเริ่มโจทย์ใหม่",
+    "opening": "Where would you like to go?",
+    "success_criteria": [
+      "เลือกปลายทาง ถามเวลาออกและราคา"
+    ],
+    "minutes": 7,
+    "starter_pattern": "I need [number] tickets to [place]."
+  },
+  {
+    "id": "everyday-06",
+    "title": "Shopping for a size",
+    "category": "Everyday",
+    "level": "A1",
+    "goal": "ถามขนาด ราคา และตัดสินใจซื้อ",
+    "roles": [
+      "Learner",
+      "Shop assistant"
+    ],
+    "brief": "คุณกำลังฝึกถามขนาด ราคา และตัดสินใจซื้อ กับ Shop assistant ใช้ชื่อ ตัวเลข และข้อมูลสมมติ ผู้สอนถามทีละข้อและปรับความเร็วตามคุณ ก่อนเริ่มฉาก สอน starter pattern เป็นวลีสั้นพร้อมคำแปลไทย ให้ตัวเลือกคำศัพท์ 3 คำและซ้อมพูดหนึ่งครั้งโดยยังไม่นับ mastery แล้วจึงเริ่มโจทย์ใหม่",
+    "opening": "Hi! Can I help you find anything?",
+    "success_criteria": [
+      "ถามขนาดที่ต้องการ ลองสินค้า",
+      "ตอบว่ารับหรือไม่รับ"
+    ],
+    "minutes": 7,
+    "starter_pattern": "Do you have this in [size/color]?"
+  },
+  {
+    "id": "everyday-07",
+    "title": "Checking in",
+    "category": "Everyday",
+    "level": "A2",
+    "goal": "เช็กอินโรงแรมและถามข้อมูลที่พัก",
+    "roles": [
+      "Learner",
+      "Receptionist"
+    ],
+    "brief": "คุณกำลังฝึกเช็กอินโรงแรมและถามข้อมูลที่พัก กับ Receptionist ใช้ชื่อ ตัวเลข และข้อมูลสมมติ ผู้สอนถามทีละข้อและปรับความเร็วตามคุณ ก่อนเริ่มฉาก สอน starter pattern เป็นวลีสั้นพร้อมคำแปลไทย ให้ตัวเลือกคำศัพท์ 3 คำและซ้อมพูดหนึ่งครั้งโดยยังไม่นับ mastery แล้วจึงเริ่มโจทย์ใหม่",
+    "opening": "Welcome! Do you have a reservation?",
+    "success_criteria": [
+      "ให้ชื่อ ถามเวลาอาหารเช้า",
+      "แจ้งคำขอหนึ่งอย่าง"
+    ],
+    "minutes": 7,
+    "starter_pattern": "I have a reservation under [name]."
+  },
+  {
+    "id": "everyday-08",
+    "title": "A taxi ride",
+    "category": "Everyday",
+    "level": "Pre-A1",
+    "goal": "บอกจุดหมายและจุดลง",
+    "roles": [
+      "Learner",
+      "Driver"
+    ],
+    "brief": "คุณกำลังฝึกบอกจุดหมายและจุดลง กับ Driver ใช้ชื่อ ตัวเลข และข้อมูลสมมติ ผู้สอนถามทีละข้อและปรับความเร็วตามคุณ ก่อนเริ่มฉาก สอน starter pattern เป็นวลีสั้นพร้อมคำแปลไทย ให้ตัวเลือกคำศัพท์ 3 คำและซ้อมพูดหนึ่งครั้งโดยยังไม่นับ mastery แล้วจึงเริ่มโจทย์ใหม่",
+    "opening": "Hello! Where are you going?",
+    "success_criteria": [
+      "บอกจุดหมาย ขอเช็กค่าโดยสาร",
+      "จุดลง"
+    ],
+    "minutes": 7,
+    "starter_pattern": "Please take me to [place]."
+  },
+  {
+    "id": "everyday-09",
+    "title": "Weekend plans",
+    "category": "Everyday",
+    "level": "A1",
+    "goal": "ชวนเพื่อนและนัดเวลา",
+    "roles": [
+      "Learner",
+      "Friend"
+    ],
+    "brief": "คุณกำลังฝึกชวนเพื่อนและนัดเวลา กับ Friend ใช้ชื่อ ตัวเลข และข้อมูลสมมติ ผู้สอนถามทีละข้อและปรับความเร็วตามคุณ ก่อนเริ่มฉาก สอน starter pattern เป็นวลีสั้นพร้อมคำแปลไทย ให้ตัวเลือกคำศัพท์ 3 คำและซ้อมพูดหนึ่งครั้งโดยยังไม่นับ mastery แล้วจึงเริ่มโจทย์ใหม่",
+    "opening": "Do you have any plans for Saturday?",
+    "success_criteria": [
+      "ชวนทำกิจกรรม ถามเวลาว่าง",
+      "ยืนยันสถานที่"
+    ],
+    "minutes": 7,
+    "starter_pattern": "Would you like to [activity] on [day]?"
+  },
+  {
+    "id": "everyday-10",
+    "title": "Tell me about yesterday",
+    "category": "Everyday",
+    "level": "A2",
+    "goal": "เล่าเหตุการณ์ที่ผ่านมาเป็นลำดับ",
+    "roles": [
+      "Learner",
+      "Friend"
+    ],
+    "brief": "คุณกำลังฝึกเล่าเหตุการณ์ที่ผ่านมาเป็นลำดับ กับ Friend ใช้ชื่อ ตัวเลข และข้อมูลสมมติ ผู้สอนถามทีละข้อและปรับความเร็วตามคุณ ก่อนเริ่มฉาก สอน starter pattern เป็นวลีสั้นพร้อมคำแปลไทย ให้ตัวเลือกคำศัพท์ 3 คำและซ้อมพูดหนึ่งครั้งโดยยังไม่นับ mastery แล้วจึงเริ่มโจทย์ใหม่",
+    "opening": "How was your day yesterday?",
+    "success_criteria": [
+      "เล่าอย่างน้อยสองเหตุการณ์และความรู้สึก"
+    ],
+    "minutes": 7,
+    "starter_pattern": "First, I [past action]. Then, I [past action]."
+  },
+  {
+    "id": "everyday-11",
+    "title": "Making an appointment",
+    "category": "Everyday",
+    "level": "A2",
+    "goal": "นัดหมายและขอเปลี่ยนเวลา",
+    "roles": [
+      "Learner",
+      "Receptionist"
+    ],
+    "brief": "คุณกำลังฝึกนัดหมายและขอเปลี่ยนเวลา กับ Receptionist ใช้ชื่อ ตัวเลข และข้อมูลสมมติ ผู้สอนถามทีละข้อและปรับความเร็วตามคุณ ก่อนเริ่มฉาก สอน starter pattern เป็นวลีสั้นพร้อมคำแปลไทย ให้ตัวเลือกคำศัพท์ 3 คำและซ้อมพูดหนึ่งครั้งโดยยังไม่นับ mastery แล้วจึงเริ่มโจทย์ใหม่",
+    "opening": "Good morning! How can I help?",
+    "success_criteria": [
+      "ขอเวลานัด รับหรือปฏิเสธตัวเลือก",
+      "ทวนเวลา"
+    ],
+    "minutes": 7,
+    "starter_pattern": "Could I make an appointment for [day/time]?"
+  },
+  {
+    "id": "everyday-12",
+    "title": "At the clinic",
+    "category": "Everyday",
+    "level": "A2",
+    "goal": "ฝึกภาษาเล่าอาการและถามให้พูดซ้ำ",
+    "roles": [
+      "Learner",
+      "Clinic receptionist"
+    ],
+    "brief": "คุณกำลังฝึกฝึกภาษาเล่าอาการและถามให้พูดซ้ำ กับ Clinic receptionist ใช้ชื่อ ตัวเลข และข้อมูลสมมติ ผู้สอนถามทีละข้อและปรับความเร็วตามคุณ ก่อนเริ่มฉาก สอน starter pattern เป็นวลีสั้นพร้อมคำแปลไทย ให้ตัวเลือกคำศัพท์ 3 คำและซ้อมพูดหนึ่งครั้งโดยยังไม่นับ mastery แล้วจึงเริ่มโจทย์ใหม่",
+    "opening": "Hello. What brings you in today?",
+    "success_criteria": [
+      "บอกอาการและระยะเวลา ถามให้ชัด ห้ามให้คำวินิจฉัยหรือการรักษา"
+    ],
+    "minutes": 7,
+    "starter_pattern": "I’ve had [symptom] for [duration]."
+  },
+  {
+    "id": "everyday-13",
+    "title": "Calling for help",
+    "category": "Everyday",
+    "level": "A2",
+    "goal": "บอกปัญหา ตำแหน่ง และขอความช่วยเหลือ",
+    "roles": [
+      "Learner",
+      "Help desk operator"
+    ],
+    "brief": "คุณกำลังฝึกบอกปัญหา ตำแหน่ง และขอความช่วยเหลือ กับ Help desk operator ใช้ชื่อ ตัวเลข และข้อมูลสมมติ ผู้สอนถามทีละข้อและปรับความเร็วตามคุณ ก่อนเริ่มฉาก สอน starter pattern เป็นวลีสั้นพร้อมคำแปลไทย ให้ตัวเลือกคำศัพท์ 3 คำและซ้อมพูดหนึ่งครั้งโดยยังไม่นับ mastery แล้วจึงเริ่มโจทย์ใหม่",
+    "opening": "Hello. Where are you, and what happened?",
+    "success_criteria": [
+      "บอกตำแหน่ง ปัญหา",
+      "ทวนสิ่งที่ผู้ช่วยถาม ใช้เป็นฉากฝึกภาษาเท่านั้น"
+    ],
+    "minutes": 7,
+    "starter_pattern": "I’m at [location]. I need help with [problem]."
+  },
+  {
+    "id": "everyday-14",
+    "title": "Returning a purchase",
+    "category": "Everyday",
+    "level": "B1",
+    "goal": "อธิบายข้อบกพร่องและขอทางแก้สุภาพ",
+    "roles": [
+      "Learner",
+      "Customer service agent"
+    ],
+    "brief": "คุณกำลังฝึกอธิบายข้อบกพร่องและขอทางแก้สุภาพ กับ Customer service agent ใช้ชื่อ ตัวเลข และข้อมูลสมมติ ผู้สอนถามทีละข้อและปรับความเร็วตามคุณ ก่อนเริ่มฉาก สอน starter pattern เป็นวลีสั้นพร้อมคำแปลไทย ให้ตัวเลือกคำศัพท์ 3 คำและซ้อมพูดหนึ่งครั้งโดยยังไม่นับ mastery แล้วจึงเริ่มโจทย์ใหม่",
+    "opening": "What seems to be the problem with your purchase?",
+    "success_criteria": [
+      "เล่าข้อเท็จจริง อธิบายผลกระทบ",
+      "ตกลงทางแก้"
+    ],
+    "minutes": 7,
+    "starter_pattern": "I bought [item], but [problem]. Could I [request]?"
+  },
+  {
+    "id": "everyday-15",
+    "title": "A delayed flight",
+    "category": "Everyday",
+    "level": "B1",
+    "goal": "ถามทางเลือกเมื่อแผนเดินทางเปลี่ยน",
+    "roles": [
+      "Learner",
+      "Airline agent"
+    ],
+    "brief": "คุณกำลังฝึกถามทางเลือกเมื่อแผนเดินทางเปลี่ยน กับ Airline agent ใช้ชื่อ ตัวเลข และข้อมูลสมมติ ผู้สอนถามทีละข้อและปรับความเร็วตามคุณ ก่อนเริ่มฉาก สอน starter pattern เป็นวลีสั้นพร้อมคำแปลไทย ให้ตัวเลือกคำศัพท์ 3 คำและซ้อมพูดหนึ่งครั้งโดยยังไม่นับ mastery แล้วจึงเริ่มโจทย์ใหม่",
+    "opening": "Your flight has been delayed. How can I help?",
+    "success_criteria": [
+      "ถามเวลาที่ทราบ เปรียบเทียบตัวเลือก",
+      "ยืนยันแผนใหม่"
+    ],
+    "minutes": 7,
+    "starter_pattern": "If [option] isn’t available, could we [alternative]?"
+  },
+  {
+    "id": "everyday-16",
+    "title": "Getting to know a friend",
+    "category": "Everyday",
+    "level": "A2",
+    "goal": "ถามความสนใจและคุยต่อไม่จบแค่ yes/no",
+    "roles": [
+      "Learner",
+      "New friend"
+    ],
+    "brief": "คุณกำลังฝึกถามความสนใจและคุยต่อไม่จบแค่ yes/no กับ New friend ใช้ชื่อ ตัวเลข และข้อมูลสมมติ ผู้สอนถามทีละข้อและปรับความเร็วตามคุณ ก่อนเริ่มฉาก สอน starter pattern เป็นวลีสั้นพร้อมคำแปลไทย ให้ตัวเลือกคำศัพท์ 3 คำและซ้อมพูดหนึ่งครั้งโดยยังไม่นับ mastery แล้วจึงเริ่มโจทย์ใหม่",
+    "opening": "What do you enjoy doing outside work?",
+    "success_criteria": [
+      "เล่าความสนใจ ถามต่อ",
+      "เชื่อมเรื่องของตัวเอง"
+    ],
+    "minutes": 7,
+    "starter_pattern": "I enjoy [activity] because [reason]."
+  },
+  {
+    "id": "everyday-17",
+    "title": "Choosing a place to live",
+    "category": "Everyday",
+    "level": "B1",
+    "goal": "เปรียบเทียบที่พักและอธิบายความสำคัญ",
+    "roles": [
+      "Learner",
+      "Friend"
+    ],
+    "brief": "คุณกำลังฝึกเปรียบเทียบที่พักและอธิบายความสำคัญ กับ Friend ใช้ชื่อ ตัวเลข และข้อมูลสมมติ ผู้สอนถามทีละข้อและปรับความเร็วตามคุณ ก่อนเริ่มฉาก สอน starter pattern เป็นวลีสั้นพร้อมคำแปลไทย ให้ตัวเลือกคำศัพท์ 3 คำและซ้อมพูดหนึ่งครั้งโดยยังไม่นับ mastery แล้วจึงเริ่มโจทย์ใหม่",
+    "opening": "What matters most to you when choosing an apartment?",
+    "success_criteria": [
+      "เปรียบเทียบราคา ทำเล",
+      "ข้อจำกัด โดยใช้ตัวเลขสมมติ"
+    ],
+    "minutes": 7,
+    "starter_pattern": "[A] is [comparison], but [B] offers [benefit]."
+  },
+  {
+    "id": "everyday-18",
+    "title": "A polite disagreement",
+    "category": "Everyday",
+    "level": "B2",
+    "goal": "คุยความเห็นต่างโดยไม่เสียความสัมพันธ์",
+    "roles": [
+      "Learner",
+      "Friend"
+    ],
+    "brief": "คุณกำลังฝึกคุยความเห็นต่างโดยไม่เสียความสัมพันธ์ กับ Friend ใช้ชื่อ ตัวเลข และข้อมูลสมมติ ผู้สอนถามทีละข้อและปรับความเร็วตามคุณ ก่อนเริ่มฉาก สอน starter pattern เป็นวลีสั้นพร้อมคำแปลไทย ให้ตัวเลือกคำศัพท์ 3 คำและซ้อมพูดหนึ่งครั้งโดยยังไม่นับ mastery แล้วจึงเริ่มโจทย์ใหม่",
+    "opening": "I think we should book the expensive trip now. What do you think?",
+    "success_criteria": [
+      "ยอมรับมุมอีกฝ่าย อธิบายข้อกังวล",
+      "เสนอทางกลาง"
+    ],
+    "minutes": 7,
+    "starter_pattern": "I see your point, although I’m concerned about [reason]."
+  },
+  {
+    "id": "everyday-19",
+    "title": "Explaining Thai culture",
+    "category": "Everyday",
+    "level": "B2",
+    "goal": "เล่าเรื่องคุ้นเคยให้คนต่างวัฒนธรรมเข้าใจ",
+    "roles": [
+      "Learner",
+      "International friend"
+    ],
+    "brief": "คุณกำลังฝึกเล่าเรื่องคุ้นเคยให้คนต่างวัฒนธรรมเข้าใจ กับ International friend ใช้ชื่อ ตัวเลข และข้อมูลสมมติ ผู้สอนถามทีละข้อและปรับความเร็วตามคุณ ก่อนเริ่มฉาก สอน starter pattern เป็นวลีสั้นพร้อมคำแปลไทย ให้ตัวเลือกคำศัพท์ 3 คำและซ้อมพูดหนึ่งครั้งโดยยังไม่นับ mastery แล้วจึงเริ่มโจทย์ใหม่",
+    "opening": "Could you tell me about a Thai celebration you enjoy?",
+    "success_criteria": [
+      "อธิบายบริบท ยกตัวอย่าง",
+      "รับคำถามโดยไม่เหมารวมทุกคน"
+    ],
+    "minutes": 7,
+    "starter_pattern": "A useful way to think about [concept] is [comparison]."
+  },
+  {
+    "id": "everyday-20",
+    "title": "A difficult phone call",
+    "category": "Everyday",
+    "level": "B1",
+    "goal": "อธิบายปัญหาผ่านโทรศัพท์และทวนข้อมูล",
+    "roles": [
+      "Learner",
+      "Service agent"
+    ],
+    "brief": "คุณกำลังฝึกอธิบายปัญหาผ่านโทรศัพท์และทวนข้อมูล กับ Service agent ใช้ชื่อ ตัวเลข และข้อมูลสมมติ ผู้สอนถามทีละข้อและปรับความเร็วตามคุณ ก่อนเริ่มฉาก สอน starter pattern เป็นวลีสั้นพร้อมคำแปลไทย ให้ตัวเลือกคำศัพท์ 3 คำและซ้อมพูดหนึ่งครั้งโดยยังไม่นับ mastery แล้วจึงเริ่มโจทย์ใหม่",
+    "opening": "Hello, customer support. How may I help you?",
+    "success_criteria": [
+      "เล่าปัญหา ทวนตัวเลขสมมติ",
+      "ตกลงขั้นตอนถัดไป"
+    ],
+    "minutes": 7,
+    "starter_pattern": "Let me confirm: [details]. Is that correct?"
+  }
+]

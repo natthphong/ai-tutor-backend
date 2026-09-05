@@ -1,0 +1,16 @@
+[
+  {
+    "audio_bytes": 280846,
+    "cost_thb": 0.051555,
+    "error": "\u003cnil\u003e",
+    "latency_ms": 5198,
+    "model": "gemini-2.5-flash-preview-tts"
+  },
+  {
+    "audio_bytes": 286080,
+    "cost_thb": 0.13461,
+    "error": "\u003cnil\u003e",
+    "latency_ms": 4715,
+    "model": "gemini-3.1-flash-tts-preview"
+  }
+]

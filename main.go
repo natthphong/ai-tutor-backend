@@ -2,172 +2,32 @@ package main
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"runtime"
-	"strconv"
-	"time"
-
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/google/uuid"
-	"github.com/minio/minio-go/v7"
-	"github.com/minio/minio-go/v7/pkg/credentials"
-	"go.uber.org/zap"
-
-	"gitlab.com/home-server7795544/home-server/iam/iam-backend/api"
-	"gitlab.com/home-server7795544/home-server/iam/iam-backend/config"
-	authHandler "gitlab.com/home-server7795544/home-server/iam/iam-backend/handler/auth"
-	tutorHandler "gitlab.com/home-server7795544/home-server/iam/iam-backend/handler/tutor"
-	"gitlab.com/home-server7795544/home-server/iam/iam-backend/internal/ai"
-	"gitlab.com/home-server7795544/home-server/iam/iam-backend/internal/db"
-	"gitlab.com/home-server7795544/home-server/iam/iam-backend/internal/logz"
-	"gitlab.com/home-server7795544/home-server/iam/iam-backend/internal/tutor"
+	"log/slog"
+	"os"
+	"os/signal"
+	"syscall"
+	"tokoloop/internal/app"
+	"tokoloop/internal/config"
 )
 
 func main() {
-	currentTime := time.Now()
-	versionDeploy := currentTime.Unix()
-	ctx := context.Background()
-	config.InitTimeZone()
-
-	cfg, err := config.InitConfig()
-	if err != nil {
-		panic("Unable to initial config: " + err.Error())
+	cfg, e := config.Load()
+	if e != nil {
+		slog.Error("configuration error", "error", e)
+		os.Exit(1)
 	}
-
-	logz.Init(cfg.LogConfig.Level, cfg.Server.Name)
-	defer logz.Drop()
-	logger := zap.L()
-	logger.Info("AI Tutor Loop starting", zap.Int64("version", versionDeploy))
-
-	// Database
-	dbPool, err := db.Open(ctx, cfg.DBConfig)
-	if err != nil {
-		logger.Fatal("DB connect failed", zap.Error(err))
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	a, e := app.New(ctx, cfg)
+	if e != nil {
+		slog.Error("startup failed", "error", e)
+		os.Exit(1)
 	}
-	defer dbPool.Close()
-	logger.Info("DB connected")
-
-	// MinIO Client
-	minioClient, err := minio.New(cfg.MinIO.Endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(cfg.MinIO.AccessKey, cfg.MinIO.SecretKey, ""),
-		Secure: cfg.MinIO.UseSSL,
-	})
-	if err != nil {
-		logger.Warn("Failed to initialize MinIO client", zap.Error(err))
-	} else {
-		// Ensure bucket exists
-		exists, err := minioClient.BucketExists(ctx, cfg.MinIO.Bucket)
-		if err == nil && !exists {
-			minioClient.MakeBucket(ctx, cfg.MinIO.Bucket, minio.MakeBucketOptions{})
-		}
+	defer a.DB.Close()
+	go a.Worker(ctx)
+	go func() { <-ctx.Done(); a.HTTP.Shutdown() }()
+	slog.Info("Toko Loop ready", "port", cfg.Port, "ai_configured", cfg.GeminiKey != "")
+	if e = a.HTTP.Listen(":" + cfg.Port); e != nil {
+		slog.Error("server stopped", "error", e)
 	}
-
-	// AI Router (Gemini → OpenRouter → OpenAI fallback)
-	aiRouter := ai.NewRouter(cfg)
-
-	// Tutor Services
-	tutorSvc := tutor.NewService(dbPool, aiRouter, minioClient, cfg)
-	ingestSvc := tutor.NewIngestService(dbPool)
-
-	// Fiber App
-	app := initFiber()
-	group := app.Group(fmt.Sprintf("/%s/api/v1", cfg.Server.Name))
-
-	// Health
-	group.Get("/health", func(c *fiber.Ctx) error {
-		return api.OkWithMessage(c, "Service is healthy", fiber.Map{"status": "ok", "version": versionDeploy})
-	})
-
-	// Metrics
-	group.Get("/metric", metrics())
-
-	// Auth Handler (LINE login → whitelist check → JWT)
-	authHandler.RegisterTutorAuth(group, tutorSvc, cfg)
-
-	// Local auth (username/password) – enabled when LOCAL_AUTH_ENABLED=true,
-	// always on in dev to keep agent-driven testing simple.
-	authHandler.RegisterLocalAuth(group, dbPool, cfg)
-	authHandler.EnsureLocalSeed(ctx, dbPool)
-
-	// Shadowing Mode (YouTube + Gemini + MinIO)
-	shadowingSvc := tutor.NewShadowingService(dbPool, aiRouter, minioClient, cfg)
-
-	// Tutor Handler (registers all tutor routes)
-	tutorH := tutorHandler.NewTutorHandler(tutorSvc, ingestSvc, aiRouter, cfg)
-	tutorH.Register(group)
-
-	tutorHandler.NewShadowingHandler(shadowingSvc, tutorH).Register(group)
-
-	// LINE Webhook placeholder
-	group.Post("/line/webhook", func(c *fiber.Ctx) error {
-		return api.Ok(c, fiber.Map{"received": true})
-	})
-
-	// Config info (allowed user IDs)
-	_, _ = json.Marshal(cfg.Line.AllowedUserIDs)
-	logger.Info(fmt.Sprintf("/%s/api/v1", cfg.Server.Name), zap.Any("port", cfg.Server.Port))
-	logger.Info("Allowed LINE users", zap.Strings("userIds", cfg.Line.AllowedUserIDs))
-
-	if err = app.Listen(fmt.Sprintf(":%v", cfg.Server.Port)); err != nil {
-		logger.Fatal(err.Error())
-	}
-}
-
-func initFiber() *fiber.App {
-	app := fiber.New(fiber.Config{
-		ReadTimeout:           30 * time.Second,
-		WriteTimeout:          30 * time.Second,
-		IdleTimeout:           60 * time.Second,
-		DisableStartupMessage: false,
-		CaseSensitive:         true,
-		StrictRouting:         false,
-		BodyLimit:             50 * 1024 * 1024, // 50MB for audio uploads
-	})
-
-	app.Use(cors.New(cors.Config{
-		AllowOrigins: "*",
-		AllowMethods: "GET,POST,PUT,PATCH,DELETE,OPTIONS",
-		AllowHeaders: "Origin,Content-Type,Accept,Authorization,traceId,requestId,Range,X-Requested-With",
-		ExposeHeaders: "Content-Length,Content-Range,Accept-Ranges",
-	}))
-	app.Use(SetHeaderID())
-	return app
-}
-
-func SetHeaderID() fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		traceId := c.Get("traceId")
-		if traceId == "" {
-			traceId = uuid.New().String()
-		}
-		c.Accepts(fiber.MIMEApplicationJSON)
-		c.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSONCharsetUTF8)
-		c.Request().Header.Set("traceId", traceId)
-		return c.Next()
-	}
-}
-
-func metrics() fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		var mem runtime.MemStats
-		runtime.ReadMemStats(&mem)
-		return api.Ok(c, map[string]interface{}{
-			"memory": map[string]interface{}{
-				"alloc":      fmt.Sprintf("%.2f MB", float64(mem.Alloc)/1024/1024),
-				"totalAlloc": fmt.Sprintf("%.2f MB", float64(mem.TotalAlloc)/1024/1024),
-				"sysAlloc":   fmt.Sprintf("%.2f MB", float64(mem.Sys)/1024/1024),
-			},
-		})
-	}
-}
-
-// unused but kept for compatibility
-func toMB(b uint64) string {
-	return fmt.Sprintf("%.2f MB", float64(b)/(1024*1024))
-}
-
-func init() {
-	_ = strconv.Itoa(0) // keep import
 }

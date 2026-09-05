@@ -1,125 +1,89 @@
-# AI Tutor Loop — Backend
+# Toko Loop — backend
 
-Go 1.25 + Fiber v2 backend for the AI Tutor Loop project (Thai → English
-self-study tutor with LINE LIFF auth, Gemini/OpenRouter AI, MinIO storage,
-and a parroto.app-style Shadowing Mode).
+Go/Fiber + PostgreSQL speaking tutor for Thai adults, powered only by Gemini. New API: `/ai-tutor/api/v2`. The frontend repository lives beside this one and uses a Next.js server proxy for Safari-compatible session cookies.
 
-## Quick start
+## Run locally
 
-```bash
-cd backend
-cp config/config.example.yaml config/config.yaml   # edit DB, AI keys, MinIO
-go run main.go                                     # listens on :8080
+Requires Go 1.26, PostgreSQL 17+, and `ffmpeg` on PATH.
+
+```sh
+cp .env.example .env.local
+# Set a NEW database containing `toko` in its name, and GEMINI_API_KEY.
+set -a
+source .env.local
+set +a
+go run .
 ```
 
-The server registers everything under `/{Server.Name}/api/v1`, default
-`/ai-tutor/api/v1`. With the default config the frontend should point
-`NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8080/ai-tutor/api`.
+The migration deliberately rejects database names without `toko`. It never connects to or erases the previous application's database. On a new database only, bootstrap creates `admin / password`. Change this password before AI or invitations can be used. Restarting or deploying does not reset the account. Admin can issue/revoke single-use invitations, valid for 7 days. Passwords use Argon2id; bearer session tokens and invitations are stored as SHA-256 hashes. Browser tokens stay in an HttpOnly, Secure, SameSite=Lax frontend cookie; the browser never receives the Gemini key.
 
-## Database
+## Learning system
 
-Apply migrations in `sql/` order: `V1_table.sql`, `V002_tutor_tables.sql`,
-`V7_data.sql`, `V9_cache.sql`, `V10_tutor_intelligence.sql`,
-`V011_local_auth_and_shadowing.sql`. V011 adds:
+- 100 original core lessons: Pre-A1, A1, A2, B1, B2-oriented; 20 lessons at each stage, four units of five.
+- 50 work simulations across Tech, Banking, Business, Interview, Meeting; 20 additional everyday simulations for ordering food, directions, shopping, travel, friends, appointments and problem-solving.
+- Pattern → four drills → two independent transfer tasks → completion. Text can practice meaning but cannot establish speaking mastery. Assisted answers and corrected retries are separate from independent successes.
+- Hints: idea → keyword → pattern → sentence. Thai ideas can be supplied. Hint use, recent attempts and response times inform subsequent tutoring.
+- Correctness and goal completion are separate. Optional natural/professional phrasing never automatically becomes a grammar failure. Missing or invalid Gemini assessment schemas are rejected.
+- Spoken mistakes are deduplicated by stable error category. Reviews progress through 1, 3, 7, 14, 30, 60 days; mistakes return the next day, hints hold the stage. A failed review can be retried in the same session. Typed reviews do not advance the speaking schedule.
+- Scenario drafts use the current lesson and recurring weaknesses. Learners edit the draft before playing. Completed scenes generate a goal-based summary and a separate retry session; original results remain intact.
+- Level labels organize practice difficulty and are **not CEFR certification**. Completing these exercises does not guarantee fluency; varied independent speech and real conversations remain necessary.
 
-- Local username/password fields on `tutor_users` (+ dev seed `test/test1234`)
-- Shadowing tables: `shadowing_clips`, `shadowing_segments`,
-  `shadowing_progress`, `shadowing_recordings`, `shadowing_notes`
+Curriculum sources: `scripts/build_content.py`, then `scripts/enrich_content.py`. Generated, versioned JSON lives in `internal/content/`. No AI bill is incurred for seeding the curriculum.
 
-Quick re-apply:
-```bash
-for f in sql/V*.sql; do psql -h localhost -U postgres -d ai_tutor -f "$f"; done
+## Audio and Live
+
+Turn audio is decoded with FFmpeg to mono PCM16/16kHz. Only pipe input protocols are allowed; corrupt, very short and overlong recordings are rejected before assessment. Pronunciation is qualitative and requires actual clear audio. Silent/unintelligible input produces a re-record request, not a language weakness.
+
+Live uses a one-use, 30-second WebSocket ticket and exact Origin allowlist. The backend proxies Gemini Live; audio enters as binary PCM16/16kHz and leaves as Gemini 24kHz PCM events. A session allows one active connection per learner, has daily/minute limits, 15-second frontend heartbeats, a silence timeout, cost checks and explicit stop. Recent persisted turns restore conversation context on reconnect or switching to turn mode. Interruption clears queued browser audio. Backgrounding pauses the microphone and Live connection.
+
+`AUDIO_DIR` must be a persistent volume. Learner/Live recordings expire after 30 days and are deleted by the worker; transcript, feedback and progress remain. Lesson/response TTS is generated on demand and privately cached by user, text, voice, model, language and config version. File endpoints check ownership and support HTTP Range playback.
+
+## Configuration and costs
+
+Edit `config/models.yaml`; credentials come from environment. Each profile defines Gemini model ID, capability, generation limits, thinking options and separate text/audio prices. A fallback must be another explicitly configured, priced Gemini profile with the same capability. Changing providers is not supported.
+
+Defaults checked against [Gemini pricing](https://ai.google.dev/gemini-api/docs/pricing) and [deprecations](https://ai.google.dev/gemini-api/docs/deprecations) on 2026-09-05:
+
+| Role | Model | Text input/output USD per 1M | Audio input/output USD per 1M |
+|---|---|---|---|
+| Helper | gemini-2.5-flash-lite | 0.10 / 0.40 | 0.30 / — |
+| Tutor, feedback, scenario | gemini-3.1-flash-lite | 0.25 / 1.50 | 0.50 / — |
+| TTS | gemini-2.5-flash-preview-tts | 0.50 / — | — / 10 |
+| Live | gemini-3.1-flash-live-preview | 0.75 / 4.50 | 3 / 12 |
+
+Default budget 600 THB/month, configurable up to 1,000; total application protection also caps 1,000 THB/month. Default exchange rate 35 THB/USD is a configurable accounting assumption. Reserve funds before calls, settle by modality from usage metadata, show 80% warnings and stop new AI work at the ceiling. Missing usage is explicitly estimated, including duration-based estimates for interrupted Live responses. These figures are app estimates, not invoices. History and cached audio remain accessible when the budget is exhausted.
+
+The four engines are orchestrated in a single tutor call where possible; review scheduling, progress, deduplication and authorization run in Go. Original lessons/static hints need no model call; PostgreSQL stores queued TTS/scenario/summary jobs with bounded retries and idempotency keys.
+
+## API contract
+
+`contracts/openapi.json` is the canonical public contract, also served at `/ai-tutor/api/v2/openapi.json`. In frontend run `npm run generate:api` to regenerate TypeScript types. All practice answers require `request_id` UUIDs. Never generate a fresh UUID when retrying the same network submission.
+
+## Verification
+
+```sh
+go test -race -timeout 90s ./...
+go vet ./...
+# Integration refuses any database without `_test` in its name and resets that test database only:
+TEST_DATABASE_URL='postgres://toko:test-only@localhost:5432/toko_loop_test?sslmode=disable' go test -race ./internal/app
+# Opt-in paid Gemini regression; synthetic/text fixtures, estimate capped at 5 THB:
+go run ./cmd/eval
+# Opt-in Live smoke test using credentials from ignored .toko-qa.json:
+go run ./cmd/livecheck
 ```
 
-## Auth
+Real Gemini evaluation and smoke evidence are in `reports/`. Evaluation includes valid alternatives, article errors, optional professional wording, Tech/Banking scenarios, off-topic answers, instruction injection and silence. Synthetic examples are not a substitute for a Thai-speaker pronunciation benchmark or physical iPhone/Bluetooth testing. See the frontend README for browser screenshots and release verification.
 
-Two flows live side-by-side:
+## Home server deployment
 
-| Path | Purpose |
-|------|---------|
-| `POST /v1/auth/line-login` | LINE LIFF (whitelist enforced) |
-| `POST /v1/auth/line-refresh` | refresh access token |
-| `GET  /v1/auth/line-me` | LINE profile (JWT) |
-| `POST /v1/auth/register` | **Local** username/password signup |
-| `POST /v1/auth/login` | **Local** login |
-| `GET  /v1/auth/me` | Current user (JWT, works for both) |
-| `POST /v1/auth/logout` | Stateless logout |
+`bash deploy_local.sh` runs tests/vet, builds a Linux Docker image, uploads it through the existing Portainer endpoint, creates a **new isolated** PostgreSQL database/volume and an audio volume, and checks a candidate before switching the exact named app container. It stops if another app owns the requested port, network or volume. It retains the previous app container and automatically restores it if readiness or public HTTPS verification fails. It never commits/pushes Git or modifies unrelated containers.
 
-`tutor_users` rows have either `line_user_id`, `username`, or both.
-`auth_kind='local'` users skip LINE notifications by design.
+Required `.env.deploy` values: `PORTAINER_URL`, `PORTAINER_API_KEY`, `ENDPOINT_ID`, `GEMINI_API_KEY`; optional `APP_NAME`, `EXTERNAL_PORT`, `RELEASE_ID`, `PUBLIC_BACKEND_URL`, `ALLOWED_ORIGINS`. Existing `.env` deployment credentials can be reused, but old AI-provider/config payloads are unused. No secrets are copied into the image.
 
-Dev seed for AI agents:
-```
-username: test
-password: test1234
-```
+Production target: [toko-api.tarcloud.win](https://toko-api.tarcloud.win/ai-tutor/api/v2/health). Cloudflare must route this hostname to port 8104 and permit HTTPS/WSS. The check sends a named application User-Agent. Release metadata is saved locally in ignored `.toko-deploy-state.json`; use the previous container recorded there for a manual rollback if necessary. Back up PostgreSQL and the audio volume together. Do not use `docker volume prune` as part of deployment.
 
-## Tutor evaluator (deterministic)
+## Cost and queue update (2026-09-05)
 
-`internal/tutor/evaluator.go` replaces the old AI-dependent listening grader.
+Tutor requests send a compact lesson rubric and 8 recent turns (1000 characters each), with 2048 output tokens; helpers cap at 512. TTS timeout is 75 seconds. Ambiguous timeouts are not automatically replayed; explicit transient rejection retries at most once. Two bounded job workers avoid blocking scenario summaries behind audio. Unknown TTS usage is estimated from input length and audio token rates, while explicit rejected calls settle at zero. Reservations remain conservative hard-budget guards, not billed totals.
 
-- `NormalizeAnswer` lowercases, trims, collapses spaces, strips terminal
-  punctuation, normalises curly quotes and dashes, keeps intra-word
-  apostrophes.
-- `EvaluateAnswer(expected, user)` → `EvaluationResult` with:
-  - `Score` 1.0 for normalised exact match, else weighted token-overlap +
-    LCS order similarity in [0,1).
-  - `MissingWords` / `ExtraWords` for hint/UX feedback.
-  - `IsCorrect` only when `Score >= 0.95`.
-- `BuildMaskedHint(target, level)` returns a deterministic mask that preserves
-  word count, keeps apostrophes/hyphens, and reveals more letters with higher
-  levels. Level 1 of `"Sarah is in her car"` → `S____ i_ i_ h__ c__`.
-- `IsAnswerRevealRequest` triggers on `เฉลย`, `ขอคำตอบ`, `show answer`, …
-  When matched, the tutor switches to `IntentRevealAnswer` and the AI is
-  forced to reveal target + Thai meaning + grammar note (see prompt.go).
-
-## Shadowing Mode
-
-`/v1/shadowing/*` endpoints (see `handler/tutor/shadowing.go`). On
-`POST /v1/shadowing/clips` the service:
-
-1. Validates the YouTube URL (`ParseYouTubeID`).
-2. Inserts a `shadowing_clips` row with `status='pending'`.
-3. In a goroutine, tries `yt-dlp` for the 720p mp4, uploads to MinIO,
-   asks Gemini to transcribe + segment + translate to Thai, then sets
-   `status='ready'`.
-4. If `yt-dlp` or Gemini is unavailable, it falls back to canned segments
-   pointing at `youtube.com/embed/<id>` so the UI keeps working. Set
-   `SHADOWING_LOCAL_FALLBACK=true` to force fallback.
-
-The frontend polls `GET /v1/shadowing/clips/:clipId` until the clip becomes
-`ready` and then renders the segment list / prev / next / replay / record /
-notes UI under `/shadowing/:clipId`.
-
-## Environment variables (most often overridden)
-
-| Var | Purpose |
-|-----|---------|
-| `DATABASE_URL` | Postgres DSN (used by ops scripts, app reads `config.yaml`) |
-| `JWT_SECRET` | HMAC secret for tutor JWT |
-| `GEMINI_API_KEY` | primary LLM/TTS/STT |
-| `OPENROUTER_API_KEY` / `OPENAI_API_KEY` | fallbacks |
-| `MINIO_ENDPOINT`/`MINIO_ACCESS_KEY`/`MINIO_SECRET_KEY`/`MINIO_BUCKET`/`MINIO_PUBLIC_URL` | object storage |
-| `LOCAL_AUTH_ENABLED` | always true today; the routes are mounted unconditionally |
-| `SHADOWING_LOCAL_FALLBACK` | `true` to skip yt-dlp/Gemini |
-
-## Running tests
-
-```bash
-cd backend
-go test ./internal/tutor/... -v
-```
-
-Notable tests:
-- `evaluator_test.go` — deterministic evaluator + masked hint + reveal regex.
-- `brain_test.go` — intent classification.
-- `decision_engine_test.go` — SRS decision tree.
-
-## Running MinIO locally
-
-```bash
-docker run -p 9000:9000 -p 9001:9001 \
-  -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin \
-  quay.io/minio/minio server /data --console-address ":9001"
-```
-The backend will auto-create the bucket from `cfg.MinIO.Bucket` if missing.
+Rebuild content deterministically: `python3 scripts/build_content.py && python3 scripts/enrich_content.py && python3 scripts/refine_content.py`. The refinement adds 200 active vocabulary entries, lesson-specific drill rubrics, scenario learner roles and beginner rehearsal. See `reports/curriculum-review.md` for the original audit and remaining depth limitations.
