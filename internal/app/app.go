@@ -51,6 +51,10 @@ func New(ctx context.Context, cfg config.Config) (*App, error) {
 		db.Close()
 		return nil, e
 	}
+	if e = a.refreshReviewCues(ctx, ""); e != nil {
+		db.Close()
+		return nil, e
+	}
 	if e = os.MkdirAll(cfg.AudioDir, 0700); e != nil {
 		return nil, e
 	}

@@ -24,7 +24,9 @@ func main() {
 		os.Exit(1)
 	}
 	defer a.DB.Close()
-	go a.Worker(ctx)
+	if os.Getenv("TOKO_READINESS_ONLY") != "true" {
+		go a.Worker(ctx)
+	}
 	go func() { <-ctx.Done(); a.HTTP.Shutdown() }()
 	slog.Info("Toko Loop ready", "port", cfg.Port, "ai_configured", cfg.GeminiKey != "")
 	if e = a.HTTP.Listen(":" + cfg.Port); e != nil {

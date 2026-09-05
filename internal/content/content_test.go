@@ -4,7 +4,7 @@ import "testing"
 
 func TestCompleteCurriculum(t *testing.T) {
 	ls := Lessons()
-	if len(ls) != 100 {
+	if len(ls) != 525 {
 		t.Fatal(len(ls))
 	}
 	seen := map[string]bool{}
@@ -17,7 +17,11 @@ func TestCompleteCurriculum(t *testing.T) {
 		units[l.Level]++
 	}
 	for _, level := range []string{"Pre-A1", "A1", "A2", "B1", "B2"} {
-		if units[level] != 20 {
+		expected := 145
+		if level == "Pre-A1" || level == "A1" {
+			expected = 45
+		}
+		if units[level] != expected {
 			t.Fatal(level, units[level])
 		}
 	}

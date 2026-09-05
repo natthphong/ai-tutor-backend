@@ -27,3 +27,15 @@ ALTER TABLE review_items ADD COLUMN IF NOT EXISTS hint_until timestamptz;
 
 ALTER TABLE attempts ADD COLUMN IF NOT EXISTS response_ms integer NOT NULL DEFAULT 0;
 CREATE TABLE IF NOT EXISTS hint_cache(key text PRIMARY KEY, data jsonb NOT NULL, expires_at timestamptz NOT NULL);
+
+-- Selection is independent of speech mastery. Existing sessions remain the progress evidence.
+CREATE TABLE IF NOT EXISTS learning_cursor (
+ user_id uuid PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+ session_id uuid NOT NULL REFERENCES learning_sessions(id),
+ selected_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS learner_lesson_sessions ON learning_sessions(user_id,lesson_id,updated_at DESC);
+ALTER TABLE review_items ADD COLUMN IF NOT EXISTS title text NOT NULL DEFAULT '';
+ALTER TABLE review_items ADD COLUMN IF NOT EXISTS cue_version integer NOT NULL DEFAULT 0;
+
+CREATE INDEX IF NOT EXISTS attempt_session_lookup ON attempts(session_id);

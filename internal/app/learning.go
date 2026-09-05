@@ -19,7 +19,7 @@ func (a *App) jsonRows(c *fiber.Ctx, q string, args ...any) error {
 	return c.Send(b)
 }
 func (a *App) curriculum(c *fiber.Ctx) error {
-	return a.jsonRows(c, `SELECT coalesce(jsonb_agg(l.data || jsonb_build_object('completed',coalesce(m.completed,false),'independent_successes',coalesce(m.independent_successes,0)) ORDER BY l.ordinal),'[]'::jsonb) FROM lessons l LEFT JOIN mastery m ON m.lesson_id=l.id AND m.user_id=$1`, user(c).ID)
+	return a.jsonRows(c, `SELECT coalesce(jsonb_agg(l.data || jsonb_build_object('completed',coalesce(m.completed,false),'studied',`+studiedSQL+`,'active_session_id',(SELECT s.id FROM learning_sessions s WHERE s.user_id=$1 AND s.lesson_id=l.id AND s.mode='lesson' AND s.status='active' ORDER BY s.updated_at DESC LIMIT 1),'independent_successes',coalesce(m.independent_successes,0)) ORDER BY `+lessonOrderSQL+`),'[]'::jsonb) FROM lessons l LEFT JOIN mastery m ON m.lesson_id=l.id AND m.user_id=$1`, user(c).ID)
 }
 func (a *App) lesson(c *fiber.Ctx) error {
 	var b []byte
@@ -33,29 +33,10 @@ func (a *App) lesson(c *fiber.Ctx) error {
 	c.Type("json")
 	return c.Send(b)
 }
-func (a *App) daily(c *fiber.Ctx) error {
-	u := user(c)
-	var due int
-	var lesson []byte
-	var active *string
-	if e := a.DB.QueryRow(c.UserContext(), "SELECT count(*) FROM review_items WHERE user_id=$1 AND due_at<=now()", u.ID).Scan(&due); e != nil {
-		return e
-	}
-	e := a.DB.QueryRow(c.UserContext(), `SELECT l.data FROM lessons l LEFT JOIN mastery m ON m.lesson_id=l.id AND m.user_id=$1 WHERE NOT coalesce(m.completed,false) AND l.ordinal >= CASE $2 WHEN 'A1' THEN 21 WHEN 'A2' THEN 41 WHEN 'B1' THEN 61 WHEN 'B2' THEN 81 ELSE 1 END ORDER BY ordinal LIMIT 1`, u.ID, textValue(u.Profile["level"])).Scan(&lesson)
-	if e != nil && e != pgx.ErrNoRows {
-		return e
-	}
-	e = a.DB.QueryRow(c.UserContext(), "SELECT id::text FROM learning_sessions WHERE user_id=$1 AND status='active' ORDER BY updated_at DESC LIMIT 1", u.ID).Scan(&active)
-	if e != nil && e != pgx.ErrNoRows {
-		return e
-	}
-	var l any
-	if len(lesson) > 0 {
-		json.Unmarshal(lesson, &l)
-	}
-	return c.JSON(fiber.Map{"lesson": l, "due_count": due, "active_session_id": active, "minutes": number(u.Profile["daily_minutes"], 30), "blocks": []fiber.Map{{"kind": "review", "minutes": 5}, {"kind": "pattern", "minutes": 5}, {"kind": "drill", "minutes": 8}, {"kind": "conversation", "minutes": 10}, {"kind": "summary", "minutes": 2}}})
-}
 func (a *App) progress(c *fiber.Ctx) error {
+	if e := a.refreshReviewCues(c.UserContext(), user(c).ID); e != nil {
+		return e
+	}
 	return a.jsonRows(c, `WITH speech AS (
  SELECT created_at,duration_seconds FROM attempts WHERE user_id=$1 AND input_kind='audio' AND (feedback->>'audio_clear')::boolean
  UNION ALL SELECT created_at,duration_seconds FROM speech_events WHERE user_id=$1
@@ -64,16 +45,19 @@ func (a *App) progress(c *fiber.Ctx) error {
 ), ranked AS (SELECT day,row_number() OVER(ORDER BY day DESC) AS rn FROM daily), streak AS (
  SELECT count(*) AS n FROM ranked WHERE day=((SELECT max(day) FROM daily)-(rn-1)::int) AND (SELECT max(day) FROM daily)>=(now() AT TIME ZONE 'Asia/Bangkok')::date-1
 ) SELECT jsonb_build_object(
- 'speaking_minutes',coalesce((SELECT round(sum(duration_seconds)::numeric/60,1) FROM speech),0),
+ 'total_lessons',(SELECT count(*) FROM lessons),'speaking_minutes',coalesce((SELECT round(sum(duration_seconds)::numeric/60,1) FROM speech),0),
  'attempts',(SELECT count(*) FROM attempts WHERE user_id=$1)+(SELECT count(*) FROM review_events WHERE user_id=$1),
- 'completed_lessons',(SELECT count(*) FROM mastery WHERE user_id=$1 AND completed),
+ 'completed_lessons',(SELECT count(*) FROM lessons l LEFT JOIN mastery m ON m.lesson_id=l.id AND m.user_id=$1 WHERE `+studiedSQL+`),'mastered_lessons',(SELECT count(*) FROM mastery WHERE user_id=$1 AND completed),
  'independent_successes',coalesce((SELECT sum(independent_successes) FROM mastery WHERE user_id=$1),0),
  'hint_dependency',coalesce((SELECT round(100.0*count(*) FILTER(WHERE hint_level>0)/nullif(count(*),0)) FROM attempts WHERE user_id=$1),0),
  'streak',(SELECT n FROM streak),'active_vocabulary',(SELECT count(*) FROM vocabulary WHERE user_id=$1 AND uses>=2),
  'daily',coalesce((SELECT jsonb_agg(to_jsonb(daily) ORDER BY day) FROM daily WHERE day >= (now() AT TIME ZONE 'Asia/Bangkok')::date-6),'[]'::jsonb),
- 'weaknesses',coalesce((SELECT jsonb_agg(to_jsonb(w)) FROM(SELECT prompt,failures,due_at FROM review_items WHERE user_id=$1 ORDER BY failures DESC LIMIT 8) w),'[]'::jsonb))`, user(c).ID)
+ 'weaknesses',coalesce((SELECT jsonb_agg(to_jsonb(w)) FROM(SELECT title,prompt,failures,due_at FROM review_items WHERE user_id=$1 ORDER BY failures DESC LIMIT 8) w),'[]'::jsonb))`, user(c).ID)
 }
 func (a *App) library(c *fiber.Ctx) error {
+	if e := a.refreshReviewCues(c.UserContext(), user(c).ID); e != nil {
+		return e
+	}
 	return a.jsonRows(c, `SELECT jsonb_build_object('vocabulary',coalesce((SELECT jsonb_agg(to_jsonb(v) - 'user_id' ORDER BY v.created_at DESC) FROM vocabulary v WHERE user_id=$1),'[]'::jsonb),'patterns',coalesce((SELECT jsonb_agg(l.data || jsonb_build_object('completed',m.completed,'uses',m.independent_successes)) FROM mastery m JOIN lessons l ON l.id=m.lesson_id WHERE m.user_id=$1),'[]'::jsonb),'mistakes',coalesce((SELECT jsonb_agg(to_jsonb(r)-'user_id' ORDER BY due_at) FROM review_items r WHERE user_id=$1),'[]'::jsonb))`, user(c).ID)
 }
 func (a *App) saveWord(c *fiber.Ctx) error {
@@ -129,6 +113,9 @@ func (a *App) editScenario(c *fiber.Ctx) error {
 	return c.JSON(s)
 }
 func (a *App) reviews(c *fiber.Ctx) error {
+	if e := a.refreshReviewCues(c.UserContext(), user(c).ID); e != nil {
+		return e
+	}
 	return a.jsonRows(c, "SELECT coalesce(jsonb_agg(to_jsonb(r)-'user_id' ORDER BY due_at),'[]'::jsonb) FROM review_items r WHERE user_id=$1 AND due_at<=now()", user(c).ID)
 }
 func (a *App) job(c *fiber.Ctx) error {

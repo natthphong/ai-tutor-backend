@@ -136,6 +136,9 @@ func (a *App) ttsJob(c *fiber.Ctx) error {
 	return c.Status(202).JSON(fiber.Map{"job_id": id})
 }
 func (a *App) reviewAnswer(c *fiber.Ctx) error {
+	if e := a.refreshReviewCues(c.UserContext(), user(c).ID); e != nil {
+		return e
+	}
 	if !validID(c.Params("id")) {
 		return fail(c, 404, "ไม่พบรายการทบทวน")
 	}
@@ -151,10 +154,10 @@ func (a *App) reviewAnswer(c *fiber.Ctx) error {
 		return e
 	}
 	defer tx.Rollback(c.UserContext())
-	var prompt, target string
+	var prompt, target, key, kind string
 	var stage int
 	var hinted bool
-	e = tx.QueryRow(c.UserContext(), "SELECT prompt,target,stage,coalesce(hint_until>now(),false) FROM review_items WHERE id=$1 AND user_id=$2 FOR UPDATE", c.Params("id"), user(c).ID).Scan(&prompt, &target, &stage, &hinted)
+	e = tx.QueryRow(c.UserContext(), "SELECT prompt,target,stage,coalesce(hint_until>now(),false),key,kind FROM review_items WHERE id=$1 AND user_id=$2 FOR UPDATE", c.Params("id"), user(c).ID).Scan(&prompt, &target, &stage, &hinted, &key, &kind)
 	if e == pgx.ErrNoRows {
 		return fail(c, 404, "ไม่พบรายการทบทวน")
 	}
@@ -174,7 +177,7 @@ func (a *App) reviewAnswer(c *fiber.Ctx) error {
 	if e != nil {
 		return fail(c, 402, e.Error())
 	}
-	r, e := a.AI.Generate(c.UserContext(), a.Cfg.Models["tutor"], learning.SystemPrompt, fmt.Sprintf("Review retrieval. Prompt: %s. Target meaning/example: %s. Accept valid alternatives. User typed: %s. Input: %s", prompt, target, p.Text, p.Kind), audio, mime, learning.FeedbackSchema, "")
+	r, e := a.AI.Generate(c.UserContext(), a.Cfg.Models["tutor"], learning.SystemPrompt, fmt.Sprintf("Review communication task: %s. Historical example (not an exact answer key): %s. Focus: %s (%s). Judge the task meaning AND grammatical correctness. Accept different names, facts, wording and valid paraphrases that satisfy the prompt. For vocabulary require correct use of the target word or a contextually equivalent expression. Do not accept grammatical off-topic answers. Never penalize audio for capitalization/punctuation. User typed: %s. Input: %s", prompt, target, key, kind, p.Text, p.Kind), audio, mime, learning.FeedbackSchema, "")
 	a.settle(usage, "tutor", r, e, 0)
 	if e != nil {
 		return fail(c, 502, e.Error())

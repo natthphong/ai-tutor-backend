@@ -2156,6 +2156,27 @@
                 }
               }
             }
+          },
+          "200": {
+            "description": "Resume the existing active lesson without resetting history",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "resumed": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ]
+                }
+              }
+            }
           }
         },
         "requestBody": {
@@ -4214,6 +4235,24 @@
           },
           "independent_successes": {
             "type": "number"
+          },
+          "studied": {
+            "type": "boolean"
+          },
+          "active_session_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "grammar_focus": {
+            "type": "string"
+          },
+          "source_units": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
           }
         },
         "required": [
@@ -4616,6 +4655,9 @@
           },
           "due_at": {
             "type": "string"
+          },
+          "title": {
+            "type": "string"
           }
         },
         "required": [
@@ -4723,6 +4765,9 @@
                 },
                 "failures": {
                   "type": "number"
+                },
+                "title": {
+                  "type": "string"
                 }
               },
               "required": [
@@ -4730,6 +4775,9 @@
                 "failures"
               ]
             }
+          },
+          "total_lessons": {
+            "type": "integer"
           }
         },
         "required": [

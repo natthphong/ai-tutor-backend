@@ -126,7 +126,7 @@ func TestIntegration(t *testing.T) {
 	}
 	var lessons []any
 	json.Unmarshal(expect(200, "GET", "/curriculum", token, nil), &lessons)
-	if len(lessons) != 100 {
+	if len(lessons) != 525 {
 		t.Fatal("curriculum incomplete")
 	}
 	s := decode(expect(201, "POST", "/sessions", token, map[string]any{"mode": "lesson", "lesson_id": "lesson-001"}))

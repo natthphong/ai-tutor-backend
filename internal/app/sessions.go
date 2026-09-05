@@ -79,6 +79,25 @@ func (a *App) createSession(c *fiber.Ctx) error {
 		return e
 	}
 	defer tx.Rollback(c.UserContext())
+	if p.Mode == "lesson" {
+		if _, e = tx.Exec(c.UserContext(), "SELECT id FROM users WHERE id=$1 FOR UPDATE", user(c).ID); e != nil {
+			return e
+		}
+		var prior string
+		e = tx.QueryRow(c.UserContext(), "SELECT id::text FROM learning_sessions WHERE user_id=$1 AND lesson_id=$2 AND mode='lesson' AND status='active' ORDER BY updated_at DESC LIMIT 1", user(c).ID, p.LessonID).Scan(&prior)
+		if e == nil {
+			if _, e = tx.Exec(c.UserContext(), "INSERT INTO learning_cursor(user_id,session_id) VALUES($1,$2) ON CONFLICT(user_id) DO UPDATE SET session_id=excluded.session_id,selected_at=now()", user(c).ID, prior); e != nil {
+				return e
+			}
+			if e = tx.Commit(c.UserContext()); e != nil {
+				return e
+			}
+			return c.JSON(fiber.Map{"id": prior, "resumed": true})
+		}
+		if e != pgx.ErrNoRows {
+			return e
+		}
+	}
 	_, e = tx.Exec(c.UserContext(), "INSERT INTO learning_sessions(id,user_id,lesson_id,scenario_id,mode,state,model_version) VALUES($1,$2,$3,$4,$5,$6,$7)", id, user(c).ID, p.LessonID, p.ScenarioID, p.Mode, asJSON(state), a.Cfg.Version)
 	if e != nil {
 		return e
@@ -86,6 +105,11 @@ func (a *App) createSession(c *fiber.Ctx) error {
 	_, e = tx.Exec(c.UserContext(), "INSERT INTO turns(id,session_id,role,text) VALUES($1,$2,'model',$3)", uuid.NewString(), id, firstPrompt(p.Mode, l, s))
 	if e != nil {
 		return e
+	}
+	if p.Mode == "lesson" {
+		if _, e = tx.Exec(c.UserContext(), "INSERT INTO learning_cursor(user_id,session_id) VALUES($1,$2) ON CONFLICT(user_id) DO UPDATE SET session_id=excluded.session_id,selected_at=now()", user(c).ID, id); e != nil {
+			return e
+		}
 	}
 	if e = tx.Commit(c.UserContext()); e != nil {
 		return e
@@ -99,6 +123,11 @@ func (a *App) getSession(c *fiber.Ctx) error {
 	s, e := a.findSession(c)
 	if e != nil {
 		return e
+	}
+	if s.Mode == "lesson" && s.Status == "active" {
+		if _, e = a.DB.Exec(c.UserContext(), "INSERT INTO learning_cursor(user_id,session_id) VALUES($1,$2) ON CONFLICT(user_id) DO UPDATE SET session_id=excluded.session_id,selected_at=now()", user(c).ID, s.ID); e != nil {
+			return e
+		}
 	}
 	l, e := a.contextLesson(c, s.LessonID)
 	if e != nil {
@@ -388,7 +417,7 @@ func (a *App) submitTurn(c *fiber.Ctx) error {
 	}
 	if p.Kind == "text" || f.AudioClear {
 		for _, w := range f.Weaknesses {
-			if len(w) > 160 {
+			if len(w) > 160 || (p.Kind == "audio" && (strings.EqualFold(w, "capitalization") || strings.EqualFold(w, "punctuation") || strings.EqualFold(w, "spelling"))) {
 				continue
 			}
 			target := f.RetrySentence
@@ -398,7 +427,7 @@ func (a *App) submitTurn(c *fiber.Ctx) error {
 			if target == "" {
 				continue
 			}
-			_, e = tx.Exec(c.UserContext(), "INSERT INTO review_items(id,user_id,key,kind,prompt,target,meaning,failures,source_attempt) VALUES($1,$2,$3,'mistake',$4,$5,$6,1,$7) ON CONFLICT(user_id,key) DO UPDATE SET failures=review_items.failures+1,due_at=least(review_items.due_at,now()),target=excluded.target,source_attempt=excluded.source_attempt", uuid.NewString(), u.ID, "mistake:"+strings.ToLower(w), w, target, f.Meaning, id)
+			_, e = tx.Exec(c.UserContext(), "INSERT INTO review_items(id,user_id,key,kind,prompt,target,meaning,failures,source_attempt) VALUES($1,$2,$3,'mistake',$4,$5,$6,1,$7) ON CONFLICT(user_id,key) DO UPDATE SET failures=review_items.failures+1,due_at=least(review_items.due_at,now()),target=excluded.target,source_attempt=excluded.source_attempt,meaning=excluded.meaning,cue_version=0", uuid.NewString(), u.ID, "mistake:"+strings.ToLower(w), w, target, f.Meaning, id)
 			if e != nil {
 				return e
 			}
@@ -433,6 +462,9 @@ func (a *App) completeSession(c *fiber.Ctx) error {
 	var n int
 	if e = a.DB.QueryRow(c.UserContext(), "SELECT count(*) FROM attempts WHERE session_id=$1", s.ID).Scan(&n); e != nil {
 		return e
+	}
+	if s.Mode == "lesson" && n == 0 {
+		return fail(c, 409, "ลองตอบอย่างน้อยหนึ่งครั้งก่อนจบบท หรือกลับหน้าวันนี้เพื่อพักแล้วฝึกต่อ")
 	}
 	if s.Mode == "placement" && n < 5 {
 		return fail(c, 409, "ตอบคำถามประเมินอย่างน้อย 5 ข้อ")
@@ -492,6 +524,11 @@ func (a *App) completeSession(c *fiber.Ctx) error {
 	}
 	if _, e = tx.Exec(c.UserContext(), "UPDATE learning_sessions SET status='completed',summary=$1,updated_at=now() WHERE id=$2", asJSON(summary), s.ID); e != nil {
 		return e
+	}
+	if s.Mode == "lesson" {
+		if _, e = tx.Exec(c.UserContext(), "INSERT INTO learning_cursor(user_id,session_id) VALUES($1,$2) ON CONFLICT(user_id) DO UPDATE SET session_id=excluded.session_id,selected_at=now()", user(c).ID, s.ID); e != nil {
+			return e
+		}
 	}
 	if s.Mode == "live" || s.ScenarioID != nil {
 		_, e = tx.Exec(c.UserContext(), "INSERT INTO jobs(id,user_id,kind,request_key,payload) VALUES($1,$2,'summary',$3,$4) ON CONFLICT(user_id,request_key) DO NOTHING", uuid.NewString(), user(c).ID, "summary:"+s.ID, asJSON(fiber.Map{"session_id": s.ID}))

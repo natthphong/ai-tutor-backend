@@ -48,7 +48,7 @@ env=['DATABASE_URL=postgres://toko:'+password+'@'+dbname+':5432/toko_loop?sslmod
 def specification(publish):
  host={'NetworkMode':network,'Binds':['toko-loop-audio:/data/audio'],'RestartPolicy':{'Name':'unless-stopped'},'CapDrop':['ALL'],'SecurityOpt':['no-new-privileges:true']}
  if publish:host['PortBindings']={'8080/tcp':[{'HostPort':str(port)}]}
- return {'Image':image,'Env':env,'Labels':dict(labels,release=release),'ExposedPorts':{'8080/tcp':{}},'HostConfig':host}
+ return {'Image':image,'Env':env+([] if publish else ['TOKO_READINESS_ONLY=true']),'Labels':dict(labels,release=release),'ExposedPorts':{'8080/tcp':{}},'HostConfig':host}
 def wait_ready(cid):
  for _ in range(60):
   state=api('GET','/containers/'+cid+'/json')['State']
@@ -62,6 +62,21 @@ if not wait_ready(candidate):
  api('POST','/containers/'+candidate+'/stop?t=5');api('DELETE','/containers/'+candidate)
  raise SystemExit('Candidate readiness failed; old deployment kept running')
 api('POST','/containers/'+candidate+'/stop?t=10');api('DELETE','/containers/'+candidate)
+# Avoid interrupting an in-flight learner response or Live conversation.
+def busy_learning():
+ query="SELECT (SELECT count(*) FROM usage WHERE status='reserved' AND created_at>now()-interval '3 minutes') + (SELECT count(*) FROM learning_sessions WHERE state->>'live_active'='true' AND updated_at>now()-interval '90 seconds');"
+ eid=api('POST','/containers/'+db['Id']+'/exec',{'AttachStdout':True,'AttachStderr':True,'Cmd':['psql','-U','toko','-d','toko_loop','-tAc',query]})['Id']
+ raw=api('POST','/exec/'+eid+'/start',{'Detach':False,'Tty':False})
+ if not isinstance(raw,bytes):raise RuntimeError('Unable to check active learner requests')
+ chunks=[]
+ while len(raw)>=8:
+  length=int.from_bytes(raw[4:8],'big');chunks.append(raw[8:8+length]);raw=raw[8+length:]
+ return int(b''.join(chunks).decode().strip())
+for check in range(31):
+ if busy_learning()==0:break
+ if check==30:raise SystemExit('Learners are still active; old app kept running. Retry deployment later.')
+ if check==0:print('Waiting for active learner requests before switching; existing app stays online',flush=True)
+ time.sleep(10)
 print('Candidate passed database migration and readiness; switching named app',flush=True)
 rollback=name+'-rollback-'+release;new=None;renamed=False;stopped=False
 try:

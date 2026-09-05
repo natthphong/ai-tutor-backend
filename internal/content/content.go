@@ -17,6 +17,8 @@ type Drill struct {
 	TimeGoalSeconds int    `json:"time_goal_seconds,omitempty"`
 }
 type Lesson struct {
+	GrammarFocus       string              `json:"grammar_focus,omitempty"`
+	SourceUnits        []int               `json:"source_units,omitempty"`
 	ID                 string              `json:"id"`
 	Ordinal            int                 `json:"ordinal"`
 	Level              string              `json:"level"`
@@ -54,6 +56,9 @@ type Scenario struct {
 //go:embed lessons.json
 var lessonJSON []byte
 
+//go:embed expansion.json
+var expansionJSON []byte
+
 //go:embed scenarios.json
 var scenarioJSON []byte
 
@@ -62,7 +67,11 @@ func Lessons() []Lesson {
 	if e := json.Unmarshal(lessonJSON, &v); e != nil {
 		panic(e)
 	}
-	return v
+	var extra []Lesson
+	if e := json.Unmarshal(expansionJSON, &extra); e != nil {
+		panic(e)
+	}
+	return append(v, extra...)
 }
 func Scenarios() []Scenario {
 	var v []Scenario

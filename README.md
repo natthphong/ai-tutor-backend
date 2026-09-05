@@ -87,3 +87,12 @@ Production target: [toko-api.tarcloud.win](https://toko-api.tarcloud.win/ai-tuto
 Tutor requests send a compact lesson rubric and 8 recent turns (1000 characters each), with 2048 output tokens; helpers cap at 512. TTS timeout is 75 seconds. Ambiguous timeouts are not automatically replayed; explicit transient rejection retries at most once. Two bounded job workers avoid blocking scenario summaries behind audio. Unknown TTS usage is estimated from input length and audio token rates, while explicit rejected calls settle at zero. Reservations remain conservative hard-budget guards, not billed totals.
 
 Rebuild content deterministically: `python3 scripts/build_content.py && python3 scripts/enrich_content.py && python3 scripts/refine_content.py`. The refinement adds 200 active vocabulary entries, lesson-specific drill rubrics, scenario learner roles and beginner rehearsal. See `reports/curriculum-review.md` for the original audit and remaining depth limitations.
+
+
+## Additive learner continuity release — 2026-09-06
+
+`learning_cursor` records the learner's selected lesson session. An active lesson is resumed by `POST /sessions` (200 with `resumed:true`), while a new/replay session returns 201. Finished sessions with attempts constitute studied evidence independently of speech mastery; legacy sessions are read in place. Curriculum returns `studied`, `completed` (mastered), and `active_session_id`. Daily selection orders by level/unit/ordinal rather than fixed 20-lesson offsets, and follows the last explicit lesson selection.
+
+Review cue upgrades add `title` and `cue_version`, preserving targets, IDs, schedules and attempt evidence. New errors refresh their context; audio capitalization/punctuation/spelling keys do not create speaking review cards. Evaluation checks the communication goal and grammatical validity while allowing new details/paraphrases.
+
+Focused QA: see `docs/qa-resume.md`. Run `TEST_DATABASE_URL=<dedicated toko_*_test DSN> env -u GOROOT go test ./internal/app -run TestLessonResume -count=1`. Deployment supports `TEST_RUN=TestLessonResume` to limit this release's checks as requested. Readiness candidates do not start AI job workers; switching waits for existing metered learner requests/Live to finish. Schema changes are additive, and existing users/session/history remain intact.

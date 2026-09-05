@@ -224,7 +224,7 @@ func (a *App) makeSummary(ctx context.Context, uid string, p map[string]any) (an
 		if cor.Kind != "grammar" {
 			continue
 		}
-		_, e = tx.Exec(ctx, "INSERT INTO review_items(id,user_id,key,kind,prompt,target,meaning,failures) VALUES($1,$2,$3,'mistake',$4,$5,$6,1) ON CONFLICT(user_id,key) DO UPDATE SET failures=review_items.failures+1,due_at=now()", uuid.NewString(), uid, "mistake:"+cor.Original, cor.Original, cor.Corrected, cor.Reason)
+		_, e = tx.Exec(ctx, "INSERT INTO review_items(id,user_id,key,kind,prompt,target,meaning,failures) VALUES($1,$2,$3,'mistake',$4,$5,$6,1) ON CONFLICT(user_id,key) DO UPDATE SET failures=review_items.failures+1,due_at=now(),target=excluded.target,meaning=excluded.meaning,cue_version=0", uuid.NewString(), uid, "mistake:"+cor.Original, cor.Original, cor.Corrected, cor.Reason)
 		if e != nil {
 			return nil, e
 		}
