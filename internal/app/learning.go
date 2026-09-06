@@ -1,12 +1,14 @@
 package app
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"strings"
+	"time"
 	"tokoloop/internal/content"
 )
 
@@ -22,8 +24,7 @@ func (a *App) curriculum(c *fiber.Ctx) error {
 	return a.jsonRows(c, `SELECT coalesce(jsonb_agg(l.data || jsonb_build_object('completed',coalesce(m.completed,false),'studied',`+studiedSQL+`,'active_session_id',(SELECT s.id FROM learning_sessions s WHERE s.user_id=$1 AND s.lesson_id=l.id AND s.mode='lesson' AND s.status='active' ORDER BY s.updated_at DESC LIMIT 1),'independent_successes',coalesce(m.independent_successes,0)) ORDER BY `+lessonOrderSQL+`),'[]'::jsonb) FROM lessons l LEFT JOIN mastery m ON m.lesson_id=l.id AND m.user_id=$1`, user(c).ID)
 }
 func (a *App) lesson(c *fiber.Ctx) error {
-	var b []byte
-	e := a.DB.QueryRow(c.UserContext(), "SELECT data FROM lessons WHERE id=$1", c.Params("id")).Scan(&b)
+	b, e := a.lessonData(c.UserContext(), c.Params("id"))
 	if e == pgx.ErrNoRows {
 		return fail(c, 404, "ไม่พบบทเรียน")
 	}
@@ -133,13 +134,28 @@ func (a *App) job(c *fiber.Ctx) error {
 	c.Type("json")
 	return c.Send(b)
 }
+func (a *App) lessonData(ctx context.Context, id string) ([]byte, error) {
+	key := "lesson:" + a.Cfg.Version + ":" + id
+	if a.Cache != nil {
+		if b, ok, e := a.Cache.Get(ctx, key); e == nil && ok {
+			return b, nil
+		}
+	}
+	var b []byte
+	if e := a.DB.QueryRow(ctx, "SELECT data FROM lessons WHERE id=$1", id).Scan(&b); e != nil {
+		return nil, e
+	}
+	if a.Cache != nil {
+		_ = a.Cache.Set(ctx, key, b, time.Duration(a.Cfg.CacheTTLSeconds)*time.Second)
+	}
+	return b, nil
+}
 func (a *App) contextLesson(c *fiber.Ctx, id *string) (content.Lesson, error) {
 	var l content.Lesson
 	if id == nil {
 		return l, nil
 	}
-	var b []byte
-	e := a.DB.QueryRow(c.UserContext(), "SELECT data FROM lessons WHERE id=$1", *id).Scan(&b)
+	b, e := a.lessonData(c.UserContext(), *id)
 	if e != nil {
 		return l, e
 	}

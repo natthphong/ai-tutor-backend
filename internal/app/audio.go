@@ -16,7 +16,6 @@ import (
 	"time"
 	"tokoloop/internal/gemini"
 	"tokoloop/internal/learning"
-	"tokoloop/internal/security"
 )
 
 type Input struct {
@@ -84,7 +83,7 @@ func (a *App) storeAudio(ctx context.Context, tx pgx.Tx, uid, key string, b []by
 	if expires {
 		expiry = time.Now().AddDate(0, 0, a.Cfg.RetentionDays)
 	}
-	_, e := tx.Exec(ctx, "INSERT INTO audio_assets(id,user_id,cache_key,path,mime,expires_at) VALUES($1,$2,$3,$4,$5,$6)", id, owner, cache, path, mime, expiry)
+	_, e := tx.Exec(ctx, "INSERT INTO audio_assets(id,user_id,cache_key,path,mime,expires_at,object_key) VALUES($1,$2,$3,$4,$5,$6,$7)", id, owner, cache, path, mime, expiry, a.objectKey(id, expires))
 	if e != nil {
 		os.Remove(path)
 	}
@@ -94,13 +93,16 @@ func (a *App) audio(c *fiber.Ctx) error {
 	if !validID(c.Params("id")) {
 		return fail(c, 404, "ไม่พบเสียง")
 	}
-	var path, mime string
-	e := a.DB.QueryRow(c.UserContext(), "SELECT path,mime FROM audio_assets WHERE id=$1 AND (user_id IS NULL OR user_id=$2) AND (expires_at IS NULL OR expires_at>now())", c.Params("id"), user(c).ID).Scan(&path, &mime)
+	var path, mime, objectKey string
+	e := a.DB.QueryRow(c.UserContext(), "SELECT path,mime,object_key FROM audio_assets WHERE id=$1 AND (user_id IS NULL OR user_id=$2) AND (expires_at IS NULL OR expires_at>now())", c.Params("id"), user(c).ID).Scan(&path, &mime, &objectKey)
 	if e == pgx.ErrNoRows {
 		return fail(c, 404, "เสียงหมดอายุหรือไม่มีสิทธิ์เข้าถึง")
 	}
 	if e != nil {
 		return e
+	}
+	if e = a.ensureLocalAudio(c.UserContext(), c.Params("id"), path, objectKey); e != nil {
+		return fail(c, 503, "กำลังเรียกคืนเสียง กรุณาลองอีกครั้ง")
 	}
 	c.Set("Content-Type", mime)
 	return c.SendFile(path)
@@ -119,7 +121,7 @@ func (a *App) ttsJob(c *fiber.Ctx) error {
 	if p.Voice != "Kore" && p.Voice != "Puck" && p.Voice != "Aoede" {
 		p.Voice = a.Cfg.Voice
 	}
-	key := security.Digest(user(c).ID + "|" + a.Cfg.Version + "|" + a.Cfg.Models["tts"].ID + "|" + p.Voice + "|en|" + strings.TrimSpace(p.Text))
+	key := a.ttsKey(user(c).ID, p.Text, p.Voice)
 	var id string
 	e := a.DB.QueryRow(c.UserContext(), "SELECT id::text FROM audio_assets WHERE cache_key=$1", key).Scan(&id)
 	if e == nil {

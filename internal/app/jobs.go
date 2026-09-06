@@ -18,6 +18,7 @@ import (
 )
 
 func (a *App) Worker(ctx context.Context) {
+	go a.mediaWorker(ctx)
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 	cleanup := time.NewTicker(time.Hour)
@@ -44,20 +45,7 @@ func (a *App) Worker(ctx context.Context) {
 	}
 }
 func (a *App) cleanup(ctx context.Context) {
-	rows, e := a.DB.Query(ctx, "SELECT id::text,path FROM audio_assets WHERE expires_at<now()")
-	if e != nil {
-		return
-	}
-	defer rows.Close()
-	for rows.Next() {
-		var id, path string
-		if rows.Scan(&id, &path) != nil {
-			continue
-		}
-		if e = os.Remove(path); e == nil || os.IsNotExist(e) {
-			_, _ = a.DB.Exec(ctx, "DELETE FROM audio_assets WHERE id=$1", id)
-		}
-	}
+	a.expireAudio(ctx)
 	// Recover files left by a crash between disk write and database commit.
 	if entries, err := os.ReadDir(a.Cfg.AudioDir); err == nil {
 		for _, entry := range entries {
@@ -94,6 +82,7 @@ func (a *App) runJob(ctx context.Context) {
 		slog.Error("job claim failed", "error", e)
 		return
 	}
+	defer a.invalidateUser(uid)
 	var p map[string]any
 	json.Unmarshal(payload, &p)
 	p["_job_id"] = id

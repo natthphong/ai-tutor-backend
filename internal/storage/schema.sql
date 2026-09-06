@@ -39,3 +39,12 @@ ALTER TABLE review_items ADD COLUMN IF NOT EXISTS title text NOT NULL DEFAULT ''
 ALTER TABLE review_items ADD COLUMN IF NOT EXISTS cue_version integer NOT NULL DEFAULT 0;
 
 CREATE INDEX IF NOT EXISTS attempt_session_lookup ON attempts(session_id);
+
+ALTER TABLE audio_assets ADD COLUMN IF NOT EXISTS object_key text NOT NULL DEFAULT '';
+ALTER TABLE audio_assets ADD COLUMN IF NOT EXISTS uploaded_at timestamptz;
+ALTER TABLE audio_assets ADD COLUMN IF NOT EXISTS upload_retry_at timestamptz NOT NULL DEFAULT now();
+CREATE INDEX IF NOT EXISTS pending_audio_upload ON audio_assets(upload_retry_at) WHERE uploaded_at IS NULL;
+ALTER TABLE turns ADD COLUMN IF NOT EXISTS text_th text NOT NULL DEFAULT '';
+ALTER TABLE attempts ADD COLUMN IF NOT EXISTS reply_audio_id uuid;
+ALTER TABLE attempts ADD COLUMN IF NOT EXISTS reply_audio_error text NOT NULL DEFAULT '';
+ALTER TABLE attempts ADD COLUMN IF NOT EXISTS reply_turn_id uuid;

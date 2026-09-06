@@ -80,7 +80,7 @@ Real Gemini evaluation and smoke evidence are in `reports/`. Evaluation includes
 
 Required `.env.deploy` values: `PORTAINER_URL`, `PORTAINER_API_KEY`, `ENDPOINT_ID`, `GEMINI_API_KEY`; optional `APP_NAME`, `EXTERNAL_PORT`, `RELEASE_ID`, `PUBLIC_BACKEND_URL`, `ALLOWED_ORIGINS`. Existing `.env` deployment credentials can be reused, but old AI-provider/config payloads are unused. No secrets are copied into the image.
 
-Production target: [toko-api.tarcloud.win](https://toko-api.tarcloud.win/ai-tutor/api/v2/health). Cloudflare must route this hostname to port 8104 and permit HTTPS/WSS. The check sends a named application User-Agent. Release metadata is saved locally in ignored `.toko-deploy-state.json`; use the previous container recorded there for a manual rollback if necessary. Back up PostgreSQL and the audio volume together. Do not use `docker volume prune` as part of deployment.
+Production target format: `https://api.example.com/ai-tutor/api/v2/health`. Cloudflare must route the configured API hostname to the configured external port and permit HTTPS/WSS. The check sends a named application User-Agent. Release metadata is saved locally in ignored `.toko-deploy-state.json`; use the previous container recorded there for a manual rollback if necessary. Back up PostgreSQL and the audio volume together. Do not use `docker volume prune` as part of deployment.
 
 ## Cost and queue update (2026-09-05)
 
@@ -96,3 +96,7 @@ Rebuild content deterministically: `python3 scripts/build_content.py && python3 
 Review cue upgrades add `title` and `cue_version`, preserving targets, IDs, schedules and attempt evidence. New errors refresh their context; audio capitalization/punctuation/spelling keys do not create speaking review cards. Evaluation checks the communication goal and grammatical validity while allowing new details/paraphrases.
 
 Focused QA: see `docs/qa-resume.md`. Run `TEST_DATABASE_URL=<dedicated toko_*_test DSN> env -u GOROOT go test ./internal/app -run TestLessonResume -count=1`. Deployment supports `TEST_RUN=TestLessonResume` to limit this release's checks as requested. Readiness candidates do not start AI job workers; switching waits for existing metered learner requests/Live to finish. Schema changes are additive, and existing users/session/history remain intact.
+
+## Cache, session and durable audio changes
+
+[docs/new-features.md](docs/new-features.md) documents the implemented contract for private per-user caching, session `auto_audio`, reply Thai/audio fields, MinIO-backed durable audio, and the PostgreSQL LAN-port rollout. `contracts/openapi.json` remains canonical. Backend tests, frontend typechecking, six tests, and the production build have passed; deployment validation is still pending.

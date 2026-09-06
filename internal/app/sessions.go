@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
@@ -15,13 +16,14 @@ import (
 )
 
 type Session struct {
-	ID         string         `json:"id"`
-	LessonID   *string        `json:"lesson_id"`
-	ScenarioID *string        `json:"scenario_id"`
-	Mode       string         `json:"mode"`
-	Status     string         `json:"status"`
-	State      map[string]any `json:"state"`
-	Summary    any            `json:"summary"`
+	Progress   *LessonProgress `json:"progress,omitempty"`
+	ID         string          `json:"id"`
+	LessonID   *string         `json:"lesson_id"`
+	ScenarioID *string         `json:"scenario_id"`
+	Mode       string          `json:"mode"`
+	Status     string          `json:"status"`
+	State      map[string]any  `json:"state"`
+	Summary    any             `json:"summary"`
 }
 
 func (a *App) findSession(c *fiber.Ctx) (Session, error) {
@@ -38,10 +40,12 @@ func (a *App) findSession(c *fiber.Ctx) (Session, error) {
 		return s, e
 	}
 	e = json.Unmarshal(b, &s.State)
+	s.Progress = lessonProgress(s)
 	return s, e
 }
 func (a *App) createSession(c *fiber.Ctx) error {
 	var p struct {
+		AutoAudio  *bool   `json:"auto_audio"`
 		LessonID   *string `json:"lesson_id"`
 		ScenarioID *string `json:"scenario_id"`
 		Mode       string  `json:"mode"`
@@ -73,7 +77,7 @@ func (a *App) createSession(c *fiber.Ctx) error {
 	if p.Mode == "lesson" {
 		stage = "pattern"
 	}
-	state := fiber.Map{"stage": stage, "step": 0, "hint_level": 0, "last_pass": false, "independent": 0, "live_active": false, "step_started_at": time.Now().UnixMilli()}
+	state := fiber.Map{"auto_audio": p.AutoAudio != nil && *p.AutoAudio, "stage": stage, "step": 0, "hint_level": 0, "last_pass": false, "independent": 0, "live_active": false, "step_started_at": time.Now().UnixMilli()}
 	tx, e := a.DB.Begin(c.UserContext())
 	if e != nil {
 		return e
@@ -86,6 +90,11 @@ func (a *App) createSession(c *fiber.Ctx) error {
 		var prior string
 		e = tx.QueryRow(c.UserContext(), "SELECT id::text FROM learning_sessions WHERE user_id=$1 AND lesson_id=$2 AND mode='lesson' AND status='active' ORDER BY updated_at DESC LIMIT 1", user(c).ID, p.LessonID).Scan(&prior)
 		if e == nil {
+			if p.AutoAudio != nil {
+				if _, e = tx.Exec(c.UserContext(), "UPDATE learning_sessions SET state=jsonb_set(state,'{auto_audio}',$1::jsonb) WHERE id=$2", asJSON(*p.AutoAudio), prior); e != nil {
+					return e
+				}
+			}
 			if _, e = tx.Exec(c.UserContext(), "INSERT INTO learning_cursor(user_id,session_id) VALUES($1,$2) ON CONFLICT(user_id) DO UPDATE SET session_id=excluded.session_id,selected_at=now()", user(c).ID, prior); e != nil {
 				return e
 			}
@@ -134,10 +143,10 @@ func (a *App) getSession(c *fiber.Ctx) error {
 		return e
 	}
 	var turns, attempts []byte
-	if e = a.DB.QueryRow(c.UserContext(), "SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY created_at),'[]'::jsonb) FROM(SELECT id,role,text,audio_id,created_at FROM turns WHERE session_id=$1) t", s.ID).Scan(&turns); e != nil {
+	if e = a.DB.QueryRow(c.UserContext(), "SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY created_at),'[]'::jsonb) FROM(SELECT id,role,text,text_th,audio_id,created_at FROM turns WHERE session_id=$1) t", s.ID).Scan(&turns); e != nil {
 		return e
 	}
-	if e = a.DB.QueryRow(c.UserContext(), "SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY created_at),'[]'::jsonb) FROM(SELECT id,transcript,feedback,hint_level,input_kind,duration_seconds,audio_id,retry_of,created_at FROM attempts WHERE session_id=$1) t", s.ID).Scan(&attempts); e != nil {
+	if e = a.DB.QueryRow(c.UserContext(), "SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY created_at),'[]'::jsonb) FROM(SELECT id,transcript,feedback,hint_level,input_kind,duration_seconds,audio_id,reply_audio_id,reply_audio_error,retry_of,created_at FROM attempts WHERE session_id=$1) t", s.ID).Scan(&attempts); e != nil {
 		return e
 	}
 	return c.JSON(fiber.Map{"session": s, "lesson": l, "turns": json.RawMessage(turns), "attempts": json.RawMessage(attempts)})
@@ -246,15 +255,6 @@ func (a *App) submitTurn(c *fiber.Ctx) error {
 	if e != nil {
 		return e
 	}
-	if s.Status != "active" {
-		return fail(c, 409, "session จบแล้ว")
-	}
-	if s.State["live_active"] == true {
-		return fail(c, 409, "พัก Live ก่อนส่งคำตอบ")
-	}
-	if textValue(s.State["stage"]) == "pattern" {
-		return fail(c, 409, "เริ่มขั้นฝึกก่อนส่งคำตอบ")
-	}
 	p, audio, mime, duration, e := a.readInput(c)
 	if e != nil {
 		return fail(c, 400, e.Error())
@@ -273,20 +273,23 @@ func (a *App) submitTurn(c *fiber.Ctx) error {
 		return e
 	}
 	json.Unmarshal(state, &s.State)
+	var existing string
+	e = tx.QueryRow(c.UserContext(), "SELECT id::text FROM attempts WHERE user_id=$1 AND request_id=$2 AND session_id=$3", u.ID, p.RequestID, s.ID).Scan(&existing)
+	if e == nil {
+		tx.Rollback(c.UserContext())
+		return a.finishTurn(c, s, existing, false)
+	}
+	if e != pgx.ErrNoRows {
+		return e
+	}
 	if s.Status != "active" {
 		return fail(c, 409, "session จบแล้ว")
 	}
 	if s.State["live_active"] == true {
 		return fail(c, 409, "พัก Live ก่อนส่งคำตอบ")
 	}
-	var existing []byte
-	e = tx.QueryRow(c.UserContext(), "SELECT jsonb_build_object('id',id,'feedback',feedback,'audio_id',audio_id) FROM attempts WHERE user_id=$1 AND request_id=$2", u.ID, p.RequestID).Scan(&existing)
-	if e == nil {
-		c.Type("json")
-		return c.Send(existing)
-	}
-	if e != pgx.ErrNoRows {
-		return e
+	if textValue(s.State["stage"]) == "pattern" {
+		return fail(c, 409, "เริ่มขั้นฝึกก่อนส่งคำตอบ")
 	}
 	var lastID *string
 	var retryFeedback []byte
@@ -338,6 +341,9 @@ func (a *App) submitTurn(c *fiber.Ctx) error {
 		return e
 	}
 	prompt := fmt.Sprintf("Learner profile: %s\nWeaknesses: %s\nLesson: %s\nTask: %s\nStage: %s\nHistory: %s\nInput type: %s\nLearner text (empty for audio): %s\n", asJSON(u.Profile), weak, asJSON(map[string]any{"level": l.Level, "objective": l.Objective, "pattern": l.Pattern, "example": l.Example, "acceptance": l.Acceptance}), task, stage, history, p.Kind, p.Text)
+	if s.Mode == "lesson" && stage == "conversation" {
+		prompt += fmt.Sprintf("\nTransfer round %d: evaluate the learner's answer to the most recent tutor question using this lesson's communication goal. Ask one short follow-up with a different concrete everyday/work detail so the learner reuses the pattern in a fresh context. Do not require exact example wording. Two independent successful speaking rounds finish this lesson.", step+1)
+	}
 	prompt += "\nRecent performance: " + string(performance) + "\nPersonalize: only after at least 4 recent attempts, if independent_ratio>=0.75 and hint_rate<1 ask for one additional reason or follow-up detail; otherwise keep one short concrete question and avoid auto-revealing answers. Do not claim a new CEFR level from one answer."
 	if l.Assessment {
 		prompt += "\nUnit checkpoint: check transfer to a fresh context, ask for a follow-up and one earlier reusable pattern; copied examples are not independent transfer."
@@ -346,7 +352,9 @@ func (a *App) submitTurn(c *fiber.Ctx) error {
 	if e != nil {
 		return fail(c, 402, e.Error())
 	}
-	r, e := a.AI.Generate(c.UserContext(), a.Cfg.Models["tutor"], learning.SystemPrompt, prompt, audio, mime, learning.FeedbackSchema, "")
+	tutorCtx, cancelTutor := context.WithTimeout(c.UserContext(), 30*time.Second)
+	r, e := a.AI.Generate(tutorCtx, a.Cfg.Models["tutor"], learning.SystemPrompt, prompt, audio, mime, learning.FeedbackSchema, "")
+	cancelTutor()
 	a.settle(usage, "tutor", r, e, 0)
 	if e != nil {
 		return fail(c, 502, e.Error())
@@ -376,13 +384,15 @@ func (a *App) submitTurn(c *fiber.Ctx) error {
 	if e != nil {
 		return e
 	}
-	for _, t := range []struct {
-		role, text string
-		audio      any
-	}{{"user", f.Transcript, aid}, {"model", f.Reply, nil}} {
-		if _, e = tx.Exec(c.UserContext(), "INSERT INTO turns(id,session_id,role,text,audio_id) VALUES($1,$2,$3,$4,$5)", uuid.NewString(), s.ID, t.role, t.text, t.audio); e != nil {
-			return e
-		}
+	replyTurn := uuid.NewString()
+	if _, e = tx.Exec(c.UserContext(), "INSERT INTO turns(id,session_id,role,text,audio_id) VALUES($1,$2,'user',$3,$4)", uuid.NewString(), s.ID, f.Transcript, aid); e != nil {
+		return e
+	}
+	if _, e = tx.Exec(c.UserContext(), "INSERT INTO turns(id,session_id,role,text,text_th) VALUES($1,$2,'model',$3,$4)", replyTurn, s.ID, f.Reply, f.ReplyTH); e != nil {
+		return e
+	}
+	if _, e = tx.Exec(c.UserContext(), "UPDATE attempts SET reply_turn_id=$1 WHERE id=$2", replyTurn, id); e != nil {
+		return e
 	}
 	independent := learning.Independent(f, p.Kind, hint, retry)
 	if independent && stage == "conversation" {
@@ -398,6 +408,9 @@ func (a *App) submitTurn(c *fiber.Ctx) error {
 		s.State["independent_steps"] = seen
 	}
 	s.State["last_pass"] = f.Correct && f.GoalMet && (p.Kind == "text" || f.AudioClear)
+	if stage == "drill" && s.State["last_pass"] == true {
+		s.State["progress_drills"] = max(int(number(s.State["progress_drills"], 0)), min(4, step+1))
+	}
 	if independent && stage == "conversation" {
 		s.State["independent"] = number(s.State["independent"], 0) + 1
 	}
@@ -446,7 +459,7 @@ func (a *App) submitTurn(c *fiber.Ctx) error {
 	if e = tx.Commit(c.UserContext()); e != nil {
 		return e
 	}
-	return c.JSON(fiber.Map{"id": id, "feedback": f, "audio_id": aid, "independent": independent, "state": s.State})
+	return a.finishTurn(c, s, id, independent)
 }
 func (a *App) completeSession(c *fiber.Ctx) error {
 	s, e := a.findSession(c)

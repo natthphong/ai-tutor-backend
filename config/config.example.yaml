@@ -6,6 +6,19 @@ live_minutes: 10
 retention_days: 30
 voice: Kore
 timeout_seconds: 45
+# Defaults may also be overridden by CACHE_TTL_SECONDS, CACHE_MAX_MB, and
+# AUDIO_LOCAL_CACHE_DAYS. Keep MinIO credentials in environment variables.
+cache_ttl_seconds: 30
+cache_max_mb: 32
+audio_local_cache_days: 3
+MinIO:
+  endpoint: ""
+  access_key: ""
+  secret_key: ""
+  bucket: ai-tutor
+  use_ssl: true
+  prefix_tts: tts/
+  prefix_user_audio: user-audio/
 # USD / million tokens. Match updated prices to model IDs when changing them.
 models:
   helper:

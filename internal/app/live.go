@@ -98,6 +98,7 @@ func (a *App) serveLive(client *fw.Conn) {
 	uid := client.Locals("live_uid").(string)
 	sid := client.Locals("live_sid").(string)
 	defer client.Close()
+	defer a.invalidateUser(uid)
 	defer func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
@@ -182,6 +183,7 @@ func (a *App) serveLive(client *fw.Conn) {
 		defer func() { done <- struct{}{} }()
 		var inText, outText string
 		flush := func() {
+			defer a.invalidateUser(uid)
 			audioMu.Lock()
 			in, out := inputPCM, outputPCM
 			inputPCM = nil

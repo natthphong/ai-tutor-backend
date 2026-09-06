@@ -1,5 +1,5 @@
 """Deploy only the named Toko app. Private PostgreSQL + durable volumes; preserve previous image/container."""
-import http.client,json,os,re,secrets,sys,time,urllib.request,urllib.error,urllib.parse,ssl
+import http.client,json,os,re,secrets,sys,time,urllib.request,urllib.error,urllib.parse,ssl,copy,ipaddress
 E=os.environ;name=E['APP_NAME'];release=E['RELEASE_ID'];image=E['IMAGE_TAG'];port=int(E['EXTERNAL_PORT'])
 if not re.fullmatch(r'[a-zA-Z0-9_.-]+',name) or not re.fullmatch(r'[a-zA-Z0-9_.-]+',release):raise SystemExit('Invalid app/release identifier')
 base=E['PORTAINER_URL'].rstrip('/')+'/api/endpoints/'+E['ENDPOINT_ID']+'/docker'
@@ -26,6 +26,12 @@ for volume in ['toko-loop-postgres','toko-loop-audio']:
  if existing and existing.get('Labels',{}).get('app')!='toko-loop':raise SystemExit('Volume already owned by another app: '+volume)
  if not existing:api('POST','/volumes/create',{'Name':volume,'Labels':labels})
 dbname='toko-loop-db';db=next((c for c in containers if '/'+dbname in c['Names']),None)
+dbport=int(E.get('DATABASE_HOST_PORT','15432'));dbbind=E.get('DATABASE_BIND_IP','192.168.1.122')
+ipaddress.ip_address(dbbind)
+if not 1 <= dbport <= 65535:raise SystemExit('Invalid database host port')
+for c in containers:
+ if c.get('State')=='running' and any(x.get('PublicPort')==dbport for x in c.get('Ports',[])) and (not db or c['Id']!=db['Id']):raise SystemExit('Database host port belongs to another container; no database changes made')
+db_binding={'5432/tcp':[{'HostIp':dbbind,'HostPort':str(dbport)}]}
 if db:
  info=api('GET','/containers/'+db['Id']+'/json')
  if info['Config'].get('Labels',{}).get('app')!='toko-loop':raise SystemExit('Database container belongs to another app')
@@ -34,7 +40,7 @@ if db:
 else:
  password=secrets.token_urlsafe(32)
  api('POST','/images/create?fromImage=postgres&tag=17-alpine')
- db=api('POST','/containers/create?name='+dbname,{'Image':'postgres:17-alpine','Env':['POSTGRES_USER=toko','POSTGRES_PASSWORD='+password,'POSTGRES_DB=toko_loop'],'Labels':labels,'HostConfig':{'NetworkMode':network,'Binds':['toko-loop-postgres:/var/lib/postgresql/data'],'RestartPolicy':{'Name':'unless-stopped'}},'Healthcheck':{'Test':['CMD-SHELL','pg_isready -U toko -d toko_loop'],'Interval':5000000000,'Timeout':3000000000,'Retries':12}})
+ db=api('POST','/containers/create?name='+dbname,{'Image':'postgres:17-alpine','Env':['POSTGRES_USER=toko','POSTGRES_PASSWORD='+password,'POSTGRES_DB=toko_loop'],'Labels':labels,'ExposedPorts':{'5432/tcp':{}},'HostConfig':{'PortBindings':db_binding,'NetworkMode':network,'Binds':['toko-loop-postgres:/var/lib/postgresql/data'],'RestartPolicy':{'Name':'unless-stopped'}},'Healthcheck':{'Test':['CMD-SHELL','pg_isready -U toko -d toko_loop'],'Interval':5000000000,'Timeout':3000000000,'Retries':12}})
  api('POST','/containers/'+db['Id']+'/start')
 for _ in range(60):
  if api('GET','/containers/'+db['Id']+'/json')['State'].get('Health',{}).get('Status')=='healthy':break
@@ -45,6 +51,8 @@ with open(sys.argv[1],'rb') as f:api('POST','/images/load?quiet=1',body=f.read()
 key=E.get('GEMINI_API_KEY')
 if not key:raise SystemExit('Set GEMINI_API_KEY in .env.deploy; no AI credentials were uploaded')
 env=['DATABASE_URL=postgres://toko:'+password+'@'+dbname+':5432/toko_loop?sslmode=disable','GEMINI_API_KEY='+key,'PUBLIC_BACKEND_URL='+E['PUBLIC_BACKEND_URL'],'ALLOWED_ORIGINS='+E['ALLOWED_ORIGINS'],'RELEASE_ID='+release]
+for variable in ['MINIO_ENDPOINT','MINIO_ACCESS_KEY','MINIO_SECRET_KEY','MINIO_BUCKET','MINIO_USE_SSL','MINIO_PREFIX_TTS','MINIO_PREFIX_USER_AUDIO','CACHE_TTL_SECONDS','CACHE_MAX_MB','AUDIO_LOCAL_CACHE_DAYS']:
+ if variable in E:env.append(variable+'='+E[variable])
 def specification(publish):
  host={'NetworkMode':network,'Binds':['toko-loop-audio:/data/audio'],'RestartPolicy':{'Name':'unless-stopped'},'CapDrop':['ALL'],'SecurityOpt':['no-new-privileges:true']}
  if publish:host['PortBindings']={'8080/tcp':[{'HostPort':str(port)}]}
@@ -56,6 +64,34 @@ def wait_ready(cid):
   if not state.get('Running'):return False
   time.sleep(1)
  return False
+def ensure_database_port():
+ global db
+ prior=api('GET','/containers/'+db['Id']+'/json')
+ bindings=prior['HostConfig'].get('PortBindings',{}).get('5432/tcp') or []
+ if any(b.get('HostPort')==str(dbport) and b.get('HostIp')==dbbind for b in bindings):return
+ # Docker cannot add published ports in place. Retain the exact volume, image,
+ # credentials and original container; never run two postgres processes on it.
+ spec=copy.deepcopy(prior['Config']);spec.pop('Hostname',None);spec.pop('Domainname',None)
+ spec['ExposedPorts']=dict(spec.get('ExposedPorts') or {},**{'5432/tcp':{}})
+ spec['HostConfig']=copy.deepcopy(prior['HostConfig']);spec['HostConfig']['PortBindings']=db_binding
+ previous_id=db['Id'];replacement=None;renamed_db=False
+ try:
+  api('POST','/containers/'+previous_id+'/stop?t=30')
+  api('POST','/containers/'+previous_id+'/rename?name='+dbname+'-before-port-'+release);renamed_db=True
+  replacement=api('POST','/containers/create?name='+dbname,spec)['Id']
+  api('POST','/containers/'+replacement+'/start')
+  if not wait_ready(replacement):raise RuntimeError('Database port rollout readiness failed')
+  db={'Id':replacement}
+ except Exception:
+  if replacement:
+   state=api('GET','/containers/'+replacement+'/json')['State']
+   if state.get('Running'):api('POST','/containers/'+replacement+'/stop?t=15')
+   api('DELETE','/containers/'+replacement)
+  if renamed_db:api('POST','/containers/'+previous_id+'/rename?name='+dbname)
+  api('POST','/containers/'+previous_id+'/start')
+  if not wait_ready(previous_id):raise RuntimeError('Original database could not restart; volume retained')
+  raise
+ print('Database integration port ready on '+dbbind+':'+str(dbport)+'; original volume and credentials preserved',flush=True)
 candidate=api('POST','/containers/create?name='+name+'-candidate-'+release,specification(False))['Id']
 api('POST','/containers/'+candidate+'/start')
 if not wait_ready(candidate):
@@ -83,6 +119,7 @@ try:
  if old:
   api('POST','/containers/'+old['Id']+'/stop?t=15');stopped=True
   api('POST','/containers/'+old['Id']+'/rename?name='+rollback);renamed=True
+ ensure_database_port()
  new=api('POST','/containers/create?name='+name,specification(True))['Id'];api('POST','/containers/'+new+'/start')
  if not wait_ready(new):raise RuntimeError('App readiness failed')
  for _ in range(30):

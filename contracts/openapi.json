@@ -2201,6 +2201,10 @@
                   },
                   "scenario_id": {
                     "type": "string"
+                  },
+                  "auto_audio": {
+                    "type": "boolean",
+                    "description": "Optional; omission preserves an active session preference. New sessions default false."
                   }
                 },
                 "required": [
@@ -4065,6 +4069,265 @@
           }
         }
       }
+    },
+    "/sessions/{id}/settings": {
+      "patch": {
+        "operationId": "patch_session_settings",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "auto_audio": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "auto_audio"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Login required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Budget exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Gemini unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "auto_audio": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "auto_audio"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions/{id}/turns/{turnID}/translate": {
+      "post": {
+        "operationId": "translate_session_turn",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "turnID",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "text_th": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "text_th"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Login required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Budget exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Gemini unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -4407,6 +4670,10 @@
           },
           "level": {
             "type": "string"
+          },
+          "reply_th": {
+            "type": "string",
+            "description": "Thai translation of the English reply; optional for historical feedback."
           }
         },
         "required": [
@@ -4456,6 +4723,15 @@
           },
           "duration_seconds": {
             "type": "number"
+          },
+          "reply_audio_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "reply_audio_error": {
+            "type": "string"
           }
         },
         "required": [
@@ -4493,6 +4769,9 @@
               "string",
               "null"
             ]
+          },
+          "text_th": {
+            "type": "string"
           }
         },
         "required": [
@@ -4545,6 +4824,10 @@
               },
               "live_active": {
                 "type": "boolean"
+              },
+              "auto_audio": {
+                "type": "boolean",
+                "default": false
               }
             },
             "required": [
@@ -4586,6 +4869,16 @@
                   "independent",
                   "message"
                 ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "progress": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LessonProgress"
               },
               {
                 "type": "null"
@@ -4901,6 +5194,10 @@
           },
           "live_active": {
             "type": "boolean"
+          },
+          "auto_audio": {
+            "type": "boolean",
+            "default": false
           }
         },
         "required": [
@@ -4987,6 +5284,28 @@
           },
           "state": {
             "$ref": "#/components/schemas/SessionState"
+          },
+          "reply_audio_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "audio_error": {
+            "type": "string"
+          },
+          "progress": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LessonProgress"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "session_completed": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -5114,6 +5433,39 @@
         "required": [
           "request_id",
           "text"
+        ]
+      },
+      "LessonProgress": {
+        "type": "object",
+        "properties": {
+          "percent": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "completed_drills": {
+            "type": "integer"
+          },
+          "total_drills": {
+            "type": "integer"
+          },
+          "independent_conversations": {
+            "type": "integer"
+          },
+          "required_conversations": {
+            "type": "integer"
+          },
+          "ready_to_complete": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "percent",
+          "completed_drills",
+          "total_drills",
+          "independent_conversations",
+          "required_conversations",
+          "ready_to_complete"
         ]
       }
     }
