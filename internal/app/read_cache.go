@@ -21,7 +21,7 @@ func (a *App) readCache(c *fiber.Ctx) error {
 	path := c.Path()
 	base := "/ai-tutor/api/v2"
 	ttl := time.Duration(a.Cfg.CacheTTLSeconds) * time.Second
-	allowed := path == base+"/curriculum" || path == base+"/daily-plan" || path == base+"/library" || path == base+"/progress" || path == base+"/scenarios" || path == base+"/review"
+	allowed := path == base+"/ebook" || path == base+"/curriculum" || path == base+"/daily-plan" || path == base+"/library" || path == base+"/progress" || path == base+"/scenarios" || path == base+"/review" || path == base+"/daily-meets"
 	if a.Cache == nil || ttl <= 0 {
 		return c.Next()
 	}

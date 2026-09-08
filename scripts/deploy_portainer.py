@@ -51,7 +51,7 @@ with open(sys.argv[1],'rb') as f:api('POST','/images/load?quiet=1',body=f.read()
 key=E.get('GEMINI_API_KEY')
 if not key:raise SystemExit('Set GEMINI_API_KEY in .env.deploy; no AI credentials were uploaded')
 env=['DATABASE_URL=postgres://toko:'+password+'@'+dbname+':5432/toko_loop?sslmode=disable','GEMINI_API_KEY='+key,'PUBLIC_BACKEND_URL='+E['PUBLIC_BACKEND_URL'],'ALLOWED_ORIGINS='+E['ALLOWED_ORIGINS'],'RELEASE_ID='+release]
-for variable in ['MINIO_ENDPOINT','MINIO_ACCESS_KEY','MINIO_SECRET_KEY','MINIO_BUCKET','MINIO_USE_SSL','MINIO_PREFIX_TTS','MINIO_PREFIX_USER_AUDIO','CACHE_TTL_SECONDS','CACHE_MAX_MB','AUDIO_LOCAL_CACHE_DAYS']:
+for variable in ['EBOOK_REQUIRED','MINIO_ENDPOINT','MINIO_ACCESS_KEY','MINIO_SECRET_KEY','MINIO_BUCKET','MINIO_USE_SSL','MINIO_PREFIX_TTS','MINIO_PREFIX_USER_AUDIO','CACHE_TTL_SECONDS','CACHE_MAX_MB','AUDIO_LOCAL_CACHE_DAYS']:
  if variable in E:env.append(variable+'='+E[variable])
 def specification(publish):
  host={'NetworkMode':network,'Binds':['toko-loop-audio:/data/audio'],'RestartPolicy':{'Name':'unless-stopped'},'CapDrop':['ALL'],'SecurityOpt':['no-new-privileges:true']}

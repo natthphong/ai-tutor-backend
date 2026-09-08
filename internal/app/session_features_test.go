@@ -10,6 +10,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"strings"
 	"sync"
@@ -28,8 +29,9 @@ func featureApp(t *testing.T) *App {
 	if dsn == "" {
 		t.Skip("set TEST_DATABASE_URL to a dedicated toko_*_test database")
 	}
-	if !strings.Contains(dsn, "_test") {
-		t.Fatal("refusing non-test DB")
+	u, err := url.Parse(dsn)
+	if err != nil || !strings.HasSuffix(strings.Trim(u.Path, "/"), "_test") {
+		t.Fatal("refusing DB whose URL path does not end in _test")
 	}
 	t.Setenv("DATABASE_URL", dsn)
 	t.Setenv("GEMINI_API_KEY", "test-key")
@@ -142,6 +144,10 @@ func TestLessonFeatureProgressAutoFinishAndReplay(t *testing.T) {
 		t.Fatalf("other user received cached response: %q", got)
 	}
 	sid := textValue(call(201, "POST", "/sessions", token, map[string]any{"mode": "lesson", "lesson_id": "lesson-001", "auto_audio": true})["id"])
+	// Preserve the original four-drill contract for a pre-guided active session.
+	if _, err := a.DB.Exec(context.Background(), "UPDATE learning_sessions SET state=state-'lesson_flow' WHERE id=$1", sid); err != nil {
+		t.Fatal(err)
+	}
 	call(200, "POST", "/sessions/"+sid+"/advance", token, map[string]any{})
 	audioTurnFor := func(sessionID, requestID string) map[string]any {
 		t.Helper()

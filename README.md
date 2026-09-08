@@ -59,7 +59,25 @@ The four engines are orchestrated in a single tutor call where possible; review 
 
 `contracts/openapi.json` is the canonical public contract, also served at `/ai-tutor/api/v2/openapi.json`. In frontend run `npm run generate:api` to regenerate TypeScript types. All practice answers require `request_id` UUIDs. Never generate a fresh UUID when retrying the same network submission.
 
+## Learn Ebook (pre-release)
+
+The private Learn Ebook source contains 392 pages and 145 units. Import the source locally; neither the original PDF nor the imported `.ebook/` directory belongs in Git:
+
+```sh
+python3 scripts/import_ebook.py /private/path/book.pdf --output .ebook
+```
+
+Set `EBOOK_DIR` only where that private imported directory is available. The API requires authentication for every Ebook route, including page images. It exposes learner-safe unit packs and keeps the source text and answer keys private. Unit worksheets are prepared on demand and cached globally by unit and book version, so the same source version is not prepared again for each learner.
+
+Learners can save page progress, submit idempotent grammar checks, reveal an answer after attempting it, and launch an Ebook speaking or listening session. Speaking practice requires two independent oral rounds; existing review scheduling remains available after practice. The Ebook feature has not been deployed.
+
 ## Verification
+
+See [docs/TESTING.md](docs/TESTING.md) for the safe local-only backend command, fixture account, and the frontend validation command. The documented QA account exists only in a disposable local test database; production credentials remain ignored.
+
+```sh
+bash scripts/validate.sh
+```
 
 ```sh
 go test -race -timeout 90s ./...
@@ -97,6 +115,6 @@ Review cue upgrades add `title` and `cue_version`, preserving targets, IDs, sche
 
 Focused QA: see `docs/qa-resume.md`. Run `TEST_DATABASE_URL=<dedicated toko_*_test DSN> env -u GOROOT go test ./internal/app -run TestLessonResume -count=1`. Deployment supports `TEST_RUN=TestLessonResume` to limit this release's checks as requested. Readiness candidates do not start AI job workers; switching waits for existing metered learner requests/Live to finish. Schema changes are additive, and existing users/session/history remain intact.
 
-## Cache, session and durable audio changes
+## Guided lessons, listening and daily meets
 
-[docs/new-features.md](docs/new-features.md) documents the implemented contract for private per-user caching, session `auto_audio`, reply Thai/audio fields, MinIO-backed durable audio, and the PostgreSQL LAN-port rollout. `contracts/openapi.json` remains canonical. Backend tests, frontend typechecking, six tests, and the production build have passed; deployment validation is still pending.
+[docs/new-features.md](docs/new-features.md) documents private caching, guided lesson flow, Thai hint idempotency, auto-audio, listening, Daily Meets, durable audio, and Live transcript handling. `contracts/openapi.json` remains canonical. The deployed progress/voice/cache release is `20260906-progress-voice-cache` at backend `265e762` and frontend `bda27a2`; `20260906-listening-daily-meet` has not been deployed. See [docs/TESTING.md](docs/TESTING.md) for local-only validation and fixture rules.

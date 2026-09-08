@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
@@ -21,6 +22,7 @@ import (
 	"tokoloop/internal/appcache"
 	"tokoloop/internal/config"
 	"tokoloop/internal/content"
+	"tokoloop/internal/ebook"
 	"tokoloop/internal/gemini"
 	"tokoloop/internal/objectstore"
 	"tokoloop/internal/security"
@@ -28,6 +30,7 @@ import (
 )
 
 type App struct {
+	Book       *ebook.Book
 	Cache      appcache.Cache
 	cacheMu    sync.Mutex
 	cacheEpoch map[string]uint64
@@ -57,6 +60,13 @@ func New(ctx context.Context, cfg config.Config) (*App, error) {
 		return nil, e
 	}
 	a := &App{DB: db, Cfg: cfg, AI: gemini.New(cfg), Cache: appcache.NewMemory(cfg.CacheMaxMB << 20), cacheEpoch: map[string]uint64{}}
+	a.Book, _ = ebook.Load(cfg.EbookDir)
+	if os.Getenv("EBOOK_REQUIRED") == "true" {
+		if e := a.Book.ValidatePages(cfg.EbookDir); e != nil {
+			db.Close()
+			return nil, fmt.Errorf("required ebook: %w", e)
+		}
+	}
 	if cfg.MinIO.Endpoint != "" {
 		a.Objects, e = objectstore.NewMinIO(cfg.MinIO)
 		if e != nil {
@@ -173,6 +183,19 @@ func (a *App) routes() {
 	g.Patch("/sessions/:id/settings", a.sessionSettings)
 	g.Post("/sessions/:id/turns/:turnID/translate", a.translateTurn)
 	g.Post("/sessions/:id/turns", a.submitTurn)
+	g.Post("/sessions/:id/listen", a.listen)
+	g.Get("/ebook", a.ebookCatalog)
+	g.Get("/ebook/pages/:page", a.ebookPage)
+	g.Get("/ebook/units/:id", a.ebookUnit)
+	g.Post("/ebook/units/:id/prepare", a.prepareEbook)
+	g.Patch("/ebook/units/:id/progress", a.ebookProgress)
+	g.Post("/ebook/units/:id/check", a.checkEbook)
+	g.Post("/ebook/units/:id/reveal", a.revealEbook)
+	g.Post("/ebook/units/:id/sessions", a.ebookSession)
+	g.Get("/daily-meets", a.dailyMeets)
+	g.Post("/daily-meets", a.createDailyMeet)
+	g.Patch("/daily-meets/:id", a.updateDailyMeet)
+	g.Post("/daily-meets/:id/sessions", a.dailyMeetSession)
 	g.Post("/sessions/:id/hints", a.hint)
 	g.Post("/sessions/:id/advance", a.advance)
 	g.Post("/sessions/:id/complete", a.completeSession)

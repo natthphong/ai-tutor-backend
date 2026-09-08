@@ -140,3 +140,8 @@ test-results/
 __pycache__/
 *.pyc
 *.tsbuildinfo
+
+# Private source book and generated copyrighted pages
+.ebook/
+
+.venv-ebook/

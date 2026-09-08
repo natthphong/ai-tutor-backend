@@ -2,6 +2,8 @@
 import urllib.request,json,os
 from pathlib import Path
 BASE='http://localhost:8080/ai-tutor/api/v2'
+if not BASE.startswith(('http://localhost:', 'http://127.0.0.1:')):
+ raise SystemExit('qa_local.py only permits a local server')
 def call(path,data=None,token=None):
  h={'Content-Type':'application/json'}
  if token:h['Authorization']='Bearer '+token
@@ -12,7 +14,7 @@ if p.exists():
 admin=call('/auth/login',{'username':'admin','password':'password'})['token']
 call('/auth/change-password',{'current':'password','password':'Toko-Local-Admin-2026!'},admin)
 invite=call('/admin/invitations',{},admin)
-creds={'username':'qa_learner','password':'Toko-Local-QA-2026!'}
+creds={'username':'qa_learner','password':'qa-password-only'}
 call('/auth/register',dict(creds,invitation=invite['code']))
 p.write_text(json.dumps(creds));p.chmod(0o600)
 print('Local QA learner created; bootstrap password changed for local DB only')

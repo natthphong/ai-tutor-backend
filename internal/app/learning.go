@@ -163,6 +163,9 @@ func (a *App) contextLesson(c *fiber.Ctx, id *string) (content.Lesson, error) {
 	return l, e
 }
 func firstPrompt(mode string, l content.Lesson, s content.Scenario) string {
+	if mode == "listening" {
+		return "What is one thing you like to do after work or school?"
+	}
 	if mode == "placement" {
 		return "Hello! Please introduce yourself. Tell me your name and what you do."
 	}

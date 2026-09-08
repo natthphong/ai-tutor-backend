@@ -153,12 +153,12 @@ func (a *App) serveLive(client *fw.Conn) {
 	upstream.SetReadLimit(4 << 20)
 	client.SetReadLimit(64 << 10)
 	var contextBytes []byte
-	_ = a.DB.QueryRow(ctx, `SELECT jsonb_build_object('scenario',(SELECT data FROM scenarios WHERE id=s.scenario_id),'lesson',(SELECT data FROM lessons WHERE id=s.lesson_id),'recent_turns',(SELECT jsonb_agg(to_jsonb(t) ORDER BY created_at) FROM(SELECT role,text,created_at FROM turns WHERE session_id=s.id ORDER BY created_at DESC LIMIT 12)t)) FROM learning_sessions s WHERE id=$1`, sid).Scan(&contextBytes)
+	_ = a.DB.QueryRow(ctx, `SELECT jsonb_build_object('daily_meet',(SELECT jsonb_build_object('day',entry_date,'title',data->'title','english',data->'english') FROM daily_meets WHERE id::text=s.state->>'daily_meet_id' AND user_id=s.user_id),'scenario',(SELECT data FROM scenarios WHERE id=s.scenario_id),'lesson',(SELECT data FROM lessons WHERE id=s.lesson_id),'recent_turns',(SELECT jsonb_agg(to_jsonb(t) ORDER BY created_at) FROM(SELECT role,text,created_at FROM turns WHERE session_id=s.id ORDER BY created_at DESC LIMIT 12)t)) FROM learning_sessions s WHERE id=$1`, sid).Scan(&contextBytes)
 	voice := textValue(p["voice"])
 	if voice == "" {
 		voice = a.Cfg.Voice
 	}
-	setup := map[string]any{"setup": map[string]any{"model": "models/" + a.Cfg.Models["live"].ID, "generationConfig": map[string]any{"responseModalities": []string{"AUDIO"}, "maxOutputTokens": a.Cfg.Models["live"].MaxTokens, "speechConfig": map[string]any{"voiceConfig": map[string]any{"prebuiltVoiceConfig": map[string]any{"voiceName": voice}}}}, "systemInstruction": map[string]any{"parts": []any{map[string]any{"text": learning.SystemPrompt + "\nLIVE OVERRIDE: speak naturally, no JSON. One short response then let learner speak. Save grammar coaching for post-session review unless explicitly asked. Follow scenario roles one at a time, introduce who speaks. Do not claim completed learning goals. Resume naturally using recent turns. Learner: " + string(asJSON(p)) + "\nContext: " + string(contextBytes)}}}, "inputAudioTranscription": map[string]any{}, "outputAudioTranscription": map[string]any{}, "contextWindowCompression": map[string]any{"slidingWindow": map[string]any{}}}}
+	setup := map[string]any{"setup": map[string]any{"model": "models/" + a.Cfg.Models["live"].ID, "generationConfig": map[string]any{"responseModalities": []string{"AUDIO"}, "maxOutputTokens": a.Cfg.Models["live"].MaxTokens, "speechConfig": map[string]any{"voiceConfig": map[string]any{"prebuiltVoiceConfig": map[string]any{"voiceName": voice}}}}, "systemInstruction": map[string]any{"parts": []any{map[string]any{"text": learning.LiveSystemPrompt + "\nLearner: " + string(asJSON(p)) + "\nContext: " + string(contextBytes)}}}, "inputAudioTranscription": map[string]any{}, "outputAudioTranscription": map[string]any{}, "contextWindowCompression": map[string]any{"slidingWindow": map[string]any{}}}}
 	if e = upstream.WriteJSON(setup); e != nil {
 		callErr = e
 		return
@@ -276,10 +276,11 @@ func (a *App) serveLive(client *fw.Conn) {
 						}
 					}
 					audioMu.Unlock()
-					sendClient(map[string]any{"serverContent": json.RawMessage(v)})
+					snapshot := map[string]string{"input": inText, "output": outText}
 					if sc.TurnComplete || sc.Interrupted {
 						flush()
 					}
+					sendClient(map[string]any{"serverContent": json.RawMessage(v), "transcript": snapshot})
 				}
 			}
 			if _, ok := event["goAway"]; ok {

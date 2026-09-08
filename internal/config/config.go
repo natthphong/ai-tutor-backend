@@ -24,6 +24,7 @@ type Model struct {
 	Fallback       string  `yaml:"fallback"`
 }
 type Config struct {
+	EbookDir            string           `yaml:"ebook_dir"`
 	CacheTTLSeconds     int              `yaml:"cache_ttl_seconds"`
 	CacheMaxMB          int              `yaml:"cache_max_mb"`
 	AudioLocalCacheDays int              `yaml:"audio_local_cache_days"`
@@ -60,6 +61,12 @@ func Load() (Config, error) {
 		if e = yaml.Unmarshal(b, &c); e != nil {
 			return c, e
 		}
+	}
+	if v := os.Getenv("EBOOK_DIR"); v != "" {
+		c.EbookDir = v
+	}
+	if c.EbookDir == "" {
+		c.EbookDir = ".ebook"
 	}
 	c.DatabaseURL = os.Getenv("DATABASE_URL")
 	c.GeminiKey = os.Getenv("GEMINI_API_KEY")

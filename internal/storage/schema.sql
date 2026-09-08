@@ -48,3 +48,11 @@ ALTER TABLE turns ADD COLUMN IF NOT EXISTS text_th text NOT NULL DEFAULT '';
 ALTER TABLE attempts ADD COLUMN IF NOT EXISTS reply_audio_id uuid;
 ALTER TABLE attempts ADD COLUMN IF NOT EXISTS reply_audio_error text NOT NULL DEFAULT '';
 ALTER TABLE attempts ADD COLUMN IF NOT EXISTS reply_turn_id uuid;
+
+CREATE TABLE IF NOT EXISTS daily_meets(id uuid PRIMARY KEY, user_id uuid NOT NULL REFERENCES users(id), entry_date date NOT NULL, data jsonb NOT NULL, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now());
+CREATE INDEX IF NOT EXISTS user_daily_meets ON daily_meets(user_id,entry_date DESC);
+
+CREATE TABLE IF NOT EXISTS ebook_packs(unit_id text NOT NULL,version text NOT NULL,status text NOT NULL DEFAULT 'queued',job_id uuid,data jsonb,error text NOT NULL DEFAULT '',PRIMARY KEY(unit_id,version));
+CREATE TABLE IF NOT EXISTS ebook_progress(user_id uuid NOT NULL REFERENCES users(id),unit_id text NOT NULL,version text NOT NULL,state jsonb NOT NULL DEFAULT '{}',updated_at timestamptz NOT NULL DEFAULT now(),PRIMARY KEY(user_id,unit_id,version));
+CREATE TABLE IF NOT EXISTS ebook_events(id uuid PRIMARY KEY,user_id uuid NOT NULL REFERENCES users(id),unit_id text NOT NULL,version text NOT NULL,request_id text NOT NULL,result jsonb NOT NULL,created_at timestamptz NOT NULL DEFAULT now(),UNIQUE(user_id,request_id));
+CREATE TABLE IF NOT EXISTS ebook_cursor(user_id uuid PRIMARY KEY REFERENCES users(id),unit_id text NOT NULL,page integer NOT NULL,updated_at timestamptz NOT NULL DEFAULT now());

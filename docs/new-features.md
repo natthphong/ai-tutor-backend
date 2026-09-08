@@ -1,4 +1,4 @@
-# Cache, session and durable audio
+# Cache, guided lessons, listening and daily meets
 
 `contracts/openapi.json` is the canonical API contract. This note explains the
 new behavior around that contract; it does not replace it.
@@ -46,11 +46,23 @@ saved setting. Use `PATCH /sessions/{id}/settings` with
 }
 ```
 
-A lesson progresses through four drills and then two independent conversations.
-The two conversation successes are distinct steps; after the sixth required step,
-the session completes automatically. `POST /sessions/{id}/complete` remains
-available for the existing manual-finish flow. An unfinished active lesson still
-resumes with its saved history and settings.
+New lesson sessions set `SessionState.lesson_flow` to `guided-v2`. The learner
+first sees the pattern, then completes two independent speaking rounds: a personal
+use, followed by a roleplay use with one useful extra detail. Progress is 0, 50,
+then 100 percent; the second successful independent round completes the lesson.
+In guided sessions `total_drills` is 0. An active legacy session with no
+`lesson_flow` continues to use the four-drill flow, then two independent
+conversations. `POST /sessions/{id}/complete` remains available for the existing
+manual-finish flow, and an unfinished active lesson resumes with saved history
+and settings.
+
+## Idempotent Thai hints
+
+`POST /sessions/{id}/hints` accepts `idea` and an optional UUID `request_id`.
+`idea` is limited to 500 Unicode characters, so Thai characters count as
+characters rather than UTF-8 bytes. Repeating a successful request ID returns its
+saved hint without another helper call. A failed helper call does not increment
+the hint level, so the learner can retry without losing a hint step.
 
 ## English reply, Thai companion and playback
 
@@ -72,6 +84,51 @@ The frontend continues to use the `/api` BFF and its HttpOnly session-cookie
 pattern. It attempts to play `reply_audio_id` at the learner's selected playback
 speed. If Safari blocks autoplay, the interface keeps an accessible player so the
 learner can tap to play; playback failure never discards the reply.
+
+## Listening mode
+
+Create a listening session with `POST /sessions` and `{"mode":"listening"}`.
+The current tutor question is English audio. `POST /sessions/{id}/listen` accepts
+`{"request_id":"<UUID>"}` and is idempotent for that request ID. It generates
+or reuses private TTS for the current question, then progressively reveals help:
+
+- listen 1: audio only;
+- listen 2: a partial English caption;
+- listen 3: the full English caption and Thai translation.
+
+The learner may answer at any point. For listening, `goal_met` means the answer
+shows that the learner understood the current question's context. `correct`
+continues to represent grammatical correctness, so comprehension and grammar are
+reported separately. Typed answers can demonstrate comprehension, but never add
+speaking mastery.
+
+## Daily meets
+
+`POST /daily-meets` queues a 202 job. Its body requires a date-only `day`,
+`source`, and UUID `request_id`; `title` is optional. Source accepts 3–6,000
+Unicode characters and title accepts at most 120 characters. Poll the returned
+`job_id` through the normal jobs endpoint, then use `GET /daily-meets` to list
+the learner's saved entries.
+
+The generated entry preserves the original source and includes `english`, `thai`,
+one `question` and `question_th`, plus 3–6 reusable phrase records (`en`, `th`,
+and `note`). `PATCH /daily-meets/{id}` updates the required `title`, `english`,
+and `thai` fields. Only the owner can list, edit, or start practice from an entry;
+all of these writes invalidate that learner's cached data.
+
+`POST /daily-meets/{id}/sessions` accepts a UUID `request_id` and one of
+`free`, `live`, or `listening`. The resulting session begins with the saved
+daily-meet question and includes the entry as learner-owned context for replies
+and Live. Reusing the same request ID returns the same session.
+
+## Live transcripts
+
+Live uses `LiveSystemPrompt`, a dedicated spoken-conversation instruction that
+never includes the structured evaluator JSON contract. Input and output
+transcripts (and available audio) are committed before the client receives a
+`turnComplete` or interruption event. Each Live client event includes an
+authoritative transcript snapshot for the text persisted so far; the client
+should treat that snapshot as the current source of truth.
 
 ## Durable audio and retention
 
@@ -107,10 +164,18 @@ Before the short app-container restart, deployment waits for active metered AI
 requests and Live sessions to finish. It retains the prior app container and
 restores it if the new release fails readiness or public health verification.
 
-## Validation status
+## Validation and testing
 
-Backend tests have passed. Frontend typechecking, six tests, and the production
-build have passed. Deployment verification is still pending.
+The deployed progress/voice/cache release is `20260906-progress-voice-cache`
+from backend `265e762` and frontend `bda27a2`. The next release,
+`20260906-listening-daily-meet`, has not been deployed.
+
+For safe local validation, fixtures, and the frontend command, follow
+[TESTING.md](TESTING.md). Extend coverage with local fakes or fixtures: add API
+and state tests under `internal/app`, then add frontend interaction tests in the
+frontend test suite. Do not use production accounts, credentials, or a production
+database. Automated tests do not cover real-device microphone permission,
+backgrounding, Bluetooth, or interruption behavior.
 
 ## Product suggestions for language learning
 

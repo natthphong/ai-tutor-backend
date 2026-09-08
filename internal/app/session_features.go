@@ -22,10 +22,20 @@ type LessonProgress struct {
 }
 
 func lessonProgress(s Session) *LessonProgress {
-	if s.Mode != "lesson" {
+	if s.Mode != "lesson" && textValue(s.State["ebook_unit_id"]) == "" {
 		return nil
 	}
 	p := &LessonProgress{TotalDrills: 4, RequiredConversations: 2}
+	if s.State["lesson_flow"] == "guided-v2" || textValue(s.State["ebook_unit_id"]) != "" {
+		p.TotalDrills = 0
+		p.IndependentConversations = min(2, max(0, int(number(s.State["independent"], 0))))
+		if s.Mode == "listening" {
+			p.IndependentConversations = min(2, max(0, int(number(s.State["ebook_listening_successes"], 0))))
+		}
+		p.Percent = p.IndependentConversations * 50
+		p.Ready = p.IndependentConversations == 2
+		return p
+	}
 	stage := textValue(s.State["stage"])
 	if stage == "conversation" {
 		p.CompletedDrills = 4
@@ -77,7 +87,7 @@ func (a *App) finishTurn(c *fiber.Ctx, s Session, id string, independent bool) e
 		return e
 	}
 	// This runs after the learning transaction commits. Voice failure never rolls back the answer.
-	if s.State["auto_audio"] == true && replyAudio == nil && audioError == "" {
+	if s.State["auto_audio"] == true && s.Mode != "listening" && replyAudio == nil && audioError == "" {
 		result, generationError, _ := a.replies.Do(id, func() (any, error) {
 			var prior *string
 			var priorError string

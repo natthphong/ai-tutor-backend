@@ -3,6 +3,7 @@ WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
+RUN mkdir -p /src/.ebook
 RUN CGO_ENABLED=0 go build -trimpath -ldflags='-s -w' -o /toko-loop .
 FROM alpine:3.23
 RUN apk add --no-cache ca-certificates tzdata ffmpeg curl && addgroup -g 10001 toko && adduser -D -u 10001 -G toko toko
@@ -10,6 +11,8 @@ ENV TZ=Asia/Bangkok AUDIO_DIR=/data/audio PORT=8080
 WORKDIR /app
 COPY --from=build /toko-loop /app/toko-loop
 COPY config/models.yaml /app/models.yaml
+COPY --from=build /src/.ebook /app/ebook
+ENV EBOOK_DIR=/app/ebook
 ENV TOKO_CONFIG=/app/models.yaml
 RUN mkdir -p /data/audio && chown -R toko:toko /data
 USER toko
