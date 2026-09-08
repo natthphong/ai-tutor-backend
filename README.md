@@ -59,7 +59,7 @@ The four engines are orchestrated in a single tutor call where possible; review 
 
 `contracts/openapi.json` is the canonical public contract, also served at `/ai-tutor/api/v2/openapi.json`. In frontend run `npm run generate:api` to regenerate TypeScript types. All practice answers require `request_id` UUIDs. Never generate a fresh UUID when retrying the same network submission.
 
-## Learn Ebook (pre-release)
+## Learn Ebook — release 20260908-ebook
 
 The private Learn Ebook source contains 392 pages and 145 units. Import the source locally; neither the original PDF nor the imported `.ebook/` directory belongs in Git:
 
