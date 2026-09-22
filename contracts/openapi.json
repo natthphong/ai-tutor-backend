@@ -6002,6 +6002,7 @@
                 "type": "string",
                 "enum": [
                   "speak",
+                  "shadowing",
                   "listening"
                 ]
               },
@@ -6406,6 +6407,7 @@
             "type": "string",
             "enum": [
               "speak",
+              "shadowing",
               "listening"
             ]
           },
@@ -6707,6 +6709,27 @@
           },
           "translation": {
             "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "sentence": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "thai": {
+            "type": "string"
+          },
+          "meaning_th": {
+            "type": "string"
+          },
+          "line": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
           }
         },
         "required": [
@@ -6776,6 +6799,291 @@
           "sections"
         ]
       },
+      "EbookStatus": {
+        "type": "string",
+        "enum": [
+          "unlearned",
+          "learning",
+          "learned",
+          "review"
+        ]
+      },
+      "EbookStep": {
+        "type": "string",
+        "enum": [
+          "understand",
+          "examples",
+          "quiz",
+          "shadowing",
+          "speaking"
+        ]
+      },
+      "EbookOriginalBook": {
+        "type": "object",
+        "properties": {
+          "available": {
+            "type": "boolean"
+          },
+          "unit_id": {
+            "type": "string"
+          },
+          "lesson_page": {
+            "type": "integer"
+          },
+          "exercise_page": {
+            "type": "integer"
+          },
+          "answer_pages": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        },
+        "required": [
+          "available"
+        ]
+      },
+      "EbookUnitSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "unit_id": {
+            "type": "string"
+          },
+          "number": {
+            "type": "integer"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/EbookStatus"
+          },
+          "percent": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "current_step": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "review_due": {
+            "type": "boolean"
+          },
+          "original_book": {
+            "$ref": "#/components/schemas/EbookOriginalBook"
+          }
+        },
+        "required": [
+          "id",
+          "unit_id",
+          "number",
+          "title",
+          "status",
+          "percent",
+          "current_step",
+          "review_due",
+          "original_book"
+        ]
+      },
+      "EbookExample": {
+        "type": "object",
+        "properties": {
+          "en": {
+            "type": "string"
+          },
+          "th": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "en",
+          "th"
+        ]
+      },
+      "EbookVocabulary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "term": {
+            "type": "string"
+          },
+          "meaning_th": {
+            "type": "string"
+          },
+          "example_en": {
+            "type": "string"
+          },
+          "example_th": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "term",
+          "meaning_th",
+          "example_en",
+          "example_th"
+        ]
+      },
+      "EbookQuizItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "choice",
+              "write"
+            ]
+          },
+          "prompt_en": {
+            "type": "string"
+          },
+          "prompt_th": {
+            "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "prompt_en",
+          "prompt_th"
+        ]
+      },
+      "EbookShadowLine": {
+        "type": "string",
+        "description": "A verbatim English sentence from the lesson examples, selected for audio shadowing."
+      },
+      "EbookPracticeTask": {
+        "type": "object",
+        "properties": {
+          "prompt_en": {
+            "type": "string"
+          },
+          "prompt_th": {
+            "type": "string"
+          },
+          "target_vocabulary": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "success_criteria_th": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "prompt_en",
+          "prompt_th",
+          "target_vocabulary",
+          "success_criteria_th"
+        ]
+      },
+      "EbookLesson": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "unit_id": {
+            "type": "string"
+          },
+          "ordinal": {
+            "type": "integer"
+          },
+          "title": {
+            "type": "string"
+          },
+          "goal_th": {
+            "type": "string"
+          },
+          "explanation_th": {
+            "type": "string"
+          },
+          "pattern": {
+            "type": "string"
+          },
+          "examples": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": {
+              "$ref": "#/components/schemas/EbookExample"
+            }
+          },
+          "vocabulary": {
+            "type": "array",
+            "minItems": 10,
+            "maxItems": 10,
+            "items": {
+              "$ref": "#/components/schemas/EbookVocabulary"
+            }
+          },
+          "quiz": {
+            "type": "array",
+            "minItems": 5,
+            "maxItems": 5,
+            "items": {
+              "$ref": "#/components/schemas/EbookQuizItem"
+            }
+          },
+          "shadowing": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": {
+              "$ref": "#/components/schemas/EbookShadowLine"
+            }
+          },
+          "speaking": {
+            "$ref": "#/components/schemas/EbookPracticeTask"
+          },
+          "listening": {
+            "$ref": "#/components/schemas/EbookPracticeTask"
+          },
+          "concept_tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "unit_id",
+          "ordinal",
+          "title",
+          "goal_th",
+          "explanation_th",
+          "pattern",
+          "examples",
+          "vocabulary",
+          "quiz",
+          "shadowing",
+          "speaking",
+          "listening"
+        ]
+      },
       "EbookOption": {
         "type": "object",
         "properties": {
@@ -6835,9 +7143,7 @@
           "kind",
           "prompt",
           "instruction_th",
-          "options",
-          "open",
-          "example"
+          "options"
         ]
       },
       "EbookPack": {
@@ -6845,6 +7151,38 @@
         "properties": {
           "explanation_th": {
             "type": "string"
+          },
+          "explanation": {
+            "type": "string"
+          },
+          "goal": {
+            "type": "string"
+          },
+          "goal_th": {
+            "type": "string"
+          },
+          "examples": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": {
+              "type": "object",
+              "properties": {
+                "sentence": {
+                  "type": "string"
+                },
+                "meaning": {
+                  "type": "string"
+                },
+                "source_page": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "sentence",
+                "meaning"
+              ]
+            }
           },
           "questions": {
             "type": "array",
@@ -6854,6 +7192,8 @@
           },
           "vocabulary": {
             "type": "array",
+            "minItems": 10,
+            "maxItems": 10,
             "items": {
               "$ref": "#/components/schemas/Word"
             }
@@ -6872,10 +7212,79 @@
           },
           "listening_th": {
             "type": "string"
+          },
+          "concept_steps": {
+            "type": "array",
+            "minItems": 5,
+            "maxItems": 5,
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "available",
+                    "active",
+                    "complete",
+                    "locked"
+                  ]
+                },
+                "quiz": {
+                  "$ref": "#/components/schemas/EbookQuestion"
+                }
+              },
+              "required": [
+                "id",
+                "title",
+                "status"
+              ]
+            }
+          },
+          "original_book": {
+            "type": "object"
+          },
+          "shadowing_sentences": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": {
+              "type": "object",
+              "properties": {
+                "lesson_example": {
+                  "type": "string"
+                },
+                "source_page": {
+                  "type": "integer"
+                },
+                "meaning_th": {
+                  "type": "string"
+                },
+                "sentence": {
+                  "type": "string"
+                },
+                "meaning": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "lesson_example",
+                "sentence",
+                "meaning"
+              ]
+            }
           }
         },
         "required": [
           "explanation_th",
+          "explanation",
+          "goal",
+          "examples",
           "questions",
           "vocabulary",
           "pattern",
@@ -6883,6 +7292,59 @@
           "speaking_th",
           "listening_prompt",
           "listening_th"
+        ]
+      },
+      "EbookConceptStep": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "available",
+              "active",
+              "complete",
+              "locked"
+            ]
+          },
+          "quiz": {
+            "$ref": "#/components/schemas/EbookQuestion"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "status"
+        ]
+      },
+      "EbookShadowSentence": {
+        "type": "object",
+        "properties": {
+          "lesson_example": {
+            "type": "string"
+          },
+          "source_page": {
+            "type": "integer"
+          },
+          "meaning_th": {
+            "type": "string"
+          },
+          "sentence": {
+            "type": "string"
+          },
+          "meaning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "lesson_example",
+          "sentence",
+          "meaning"
         ]
       },
       "EbookCatalog": {
@@ -6900,7 +7362,7 @@
           "units": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/EbookUnit"
+              "$ref": "#/components/schemas/EbookUnitSummary"
             }
           },
           "progress": {
@@ -6908,8 +7370,15 @@
             "additionalProperties": true
           },
           "cursor": {
-            "type": "object",
-            "additionalProperties": true
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": true
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -6924,7 +7393,23 @@
         "type": "object",
         "properties": {
           "unit": {
-            "$ref": "#/components/schemas/EbookUnit"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EbookUnit"
+              },
+              {
+                "$ref": "#/components/schemas/EbookUnitSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lesson": {
+            "$ref": "#/components/schemas/EbookLesson"
+          },
+          "original_book": {
+            "$ref": "#/components/schemas/EbookOriginalBook"
           },
           "status": {
             "type": "string",
@@ -6988,21 +7473,159 @@
             "additionalProperties": {
               "type": "string"
             }
+          },
+          "current_step": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "completed_step": {
+            "type": "string",
+            "enum": [
+              "understand",
+              "examples"
+            ],
+            "description": "Self-paced step acknowledged by the learner. Assessed steps are advanced only by their dedicated endpoints."
+          },
+          "completed_steps": {
+            "type": "object",
+            "properties": {
+              "understand": {
+                "type": "boolean"
+              },
+              "examples": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false,
+            "description": "Only understand/examples are client-settable. Quiz, shadowing, speaking, learned and completed_at are server-managed."
+          },
+          "quiz_answers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "vocabulary_saved": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            }
+          },
+          "review_requested": {
+            "type": "boolean"
           }
-        },
-        "required": [
-          "page"
-        ]
+        }
       },
       "EbookSaved": {
         "type": "object",
         "properties": {
           "saved": {
             "type": "boolean"
+          },
+          "progress": {
+            "$ref": "#/components/schemas/EbookProgressState"
           }
         },
         "required": [
           "saved"
+        ]
+      },
+      "EbookProgressState": {
+        "type": "object",
+        "properties": {
+          "current_step": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "completed_steps": {
+            "type": "object",
+            "properties": {
+              "understand": {
+                "type": "boolean"
+              },
+              "examples": {
+                "type": "boolean"
+              },
+              "quiz": {
+                "type": "boolean"
+              },
+              "shadowing": {
+                "type": "boolean"
+              },
+              "speaking": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false
+          },
+          "quiz_answers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "quiz_scores": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            }
+          },
+          "vocabulary_saved": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            }
+          },
+          "learned": {
+            "type": "boolean"
+          },
+          "completed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "review_requested": {
+            "type": "boolean"
+          }
+        },
+        "required": []
+      },
+      "EbookProgress": {
+        "type": "object",
+        "properties": {
+          "learning_state": {
+            "type": "string",
+            "enum": [
+              "unlearned",
+              "learning",
+              "learned",
+              "review"
+            ]
+          },
+          "current_step": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "completed_steps": {
+            "$ref": "#/components/schemas/EbookProgressState/properties/completed_steps"
+          },
+          "percent": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "review_due": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "learning_state",
+          "current_step",
+          "completed_steps",
+          "percent",
+          "review_due"
         ]
       },
       "EbookCheckRequest": {
@@ -7118,6 +7741,7 @@
             "type": "string",
             "enum": [
               "speak",
+              "shadowing",
               "listening"
             ]
           },

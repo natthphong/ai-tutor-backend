@@ -59,17 +59,29 @@ The four engines are orchestrated in a single tutor call where possible; review 
 
 `contracts/openapi.json` is the canonical public contract, also served at `/ai-tutor/api/v2/openapi.json`. In frontend run `npm run generate:api` to regenerate TypeScript types. All practice answers require `request_id` UUIDs. Never generate a fresh UUID when retrying the same network submission.
 
-## Learn Ebook — release 20260908-ebook
+## Learn Ebook — interactive course
 
-The private Learn Ebook source contains 392 pages and 145 units. Import the source locally; neither the original PDF nor the imported `.ebook/` directory belongs in Git:
+Learn Ebook is a bundled, versioned 145-lesson course. Every lesson contains one practical grammar concept, three bilingual examples, exactly ten contextual vocabulary items, five mini-quiz items, three listen-and-repeat lines copied verbatim from the lesson examples, and a speaking transfer task. Learner state is tracked as `unlearned`, `learning`, `learned`, or `review`, with five additive steps: understand, examples, quiz, shadowing, and speaking. Existing Ebook progress and the private source book remain readable.
+
+The authored course is static and validated before the application opens its database. Opening a redesigned lesson therefore returns `ready` immediately and incurs no AI preparation cost. Deterministic choice answers are checked in Go; original written answers that are not an exact sample match are assessed together by the configured Gemini tutor so valid personal sentences are accepted. Revealing an answer is recorded in owner-scoped progress. Shadowing advances only from clear, goal-matching audio and uses the same sentence shown in the lesson. The progress PATCH accepts navigation, drafts, review requests, vocabulary saves, and the self-paced understand/examples steps; quiz, shadowing, speaking, learned state, and completion time are advanced only by backend assessment.
+
+Rebuild and audit the course after changing its generator:
+
+```sh
+python3 scripts/generate_learn_ebook_course.py
+go test ./internal/ebook -count=1
+TEST_DATABASE_URL='<dedicated toko_*_test DSN>' go test ./internal/app -run 'TestEbookCourse|TestEbookShadowing' -count=1
+```
+
+The generator reads only unit titles from private `.ebook/manifest.json`; it does not read or copy extracted prose, exercises, answer keys, or page images. The generated file must always audit to 145 lessons, 1,450 vocabulary entries, 725 quiz items, and 435 verbatim shadowing lines.
+
+The optional private reference contains 392 pages and 145 units. Import the source locally; neither the original PDF nor the imported `.ebook/` directory belongs in Git:
 
 ```sh
 python3 scripts/import_ebook.py /private/path/book.pdf --output .ebook
 ```
 
-Set `EBOOK_DIR` only where that private imported directory is available. The API requires authentication for every Ebook route, including page images. It exposes learner-safe unit packs and keeps the source text and answer keys private. Unit worksheets are prepared on demand and cached globally by unit and book version, so the same source version is not prepared again for each learner.
-
-Learners can save page progress, submit idempotent grammar checks, reveal an answer after attempting it, and launch an Ebook speaking or listening session. Speaking practice requires two independent oral rounds; existing review scheduling remains available after practice. The Ebook feature has not been deployed.
+Set `EBOOK_DIR` only where that private imported directory is available. The API requires authentication for every Ebook route, including page images. The original book is an optional reference panel; the interactive course remains the primary lesson. Legacy generated worksheets remain available through their existing IDs and are not rewritten or deleted.
 
 ## Verification
 

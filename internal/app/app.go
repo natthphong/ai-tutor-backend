@@ -31,6 +31,7 @@ import (
 
 type App struct {
 	Book       *ebook.Book
+	Course     *ebook.Course
 	Cache      appcache.Cache
 	cacheMu    sync.Mutex
 	cacheEpoch map[string]uint64
@@ -51,6 +52,12 @@ type User struct {
 }
 
 func New(ctx context.Context, cfg config.Config) (*App, error) {
+	// Validate the embedded course before opening the database so malformed
+	// content fails startup without leaving any live resources behind.
+	course, e := ebook.LoadCourse()
+	if e != nil {
+		return nil, fmt.Errorf("learn ebook course: %w", e)
+	}
 	db, e := storage.Open(ctx, cfg.DatabaseURL)
 	if e != nil {
 		return nil, e
@@ -59,7 +66,7 @@ func New(ctx context.Context, cfg config.Config) (*App, error) {
 		db.Close()
 		return nil, e
 	}
-	a := &App{DB: db, Cfg: cfg, AI: gemini.New(cfg), Cache: appcache.NewMemory(cfg.CacheMaxMB << 20), cacheEpoch: map[string]uint64{}}
+	a := &App{DB: db, Cfg: cfg, AI: gemini.New(cfg), Cache: appcache.NewMemory(cfg.CacheMaxMB << 20), cacheEpoch: map[string]uint64{}, Course: course}
 	a.Book, _ = ebook.Load(cfg.EbookDir)
 	if os.Getenv("EBOOK_REQUIRED") == "true" {
 		if e := a.Book.ValidatePages(cfg.EbookDir); e != nil {

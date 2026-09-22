@@ -25,6 +25,9 @@ func (a *App) listen(c *fiber.Ctx) error {
 	if e != nil {
 		return e
 	}
+	if textValue(s.State["ebook_activity"]) == "shadowing" {
+		return a.listenEbookShadowing(c, s)
+	}
 	if s.Mode != "listening" || s.Status != "active" {
 		return fail(c, 409, "โหมดฟังไม่พร้อม")
 	}
@@ -100,6 +103,93 @@ func (a *App) listen(c *fiber.Ctx) error {
 	}
 	if e = tx.Commit(c.UserContext()); e != nil {
 		return e
+	}
+	return c.JSON(result)
+}
+
+func (a *App) listenEbookShadowing(c *fiber.Ctx, session Session) error {
+	if session.Status != "active" {
+		return fail(c, 409, "session จบแล้ว")
+	}
+	var body struct {
+		RequestID string `json:"request_id"`
+	}
+	if c.BodyParser(&body) != nil || !validID(body.RequestID) {
+		return fail(c, 400, "ระบุรหัสคำขอ")
+	}
+	tx, err := a.DB.Begin(c.UserContext())
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(c.UserContext())
+	var raw []byte
+	var status string
+	if err = tx.QueryRow(c.UserContext(), "SELECT state,status FROM learning_sessions WHERE id=$1 AND user_id=$2 FOR NO KEY UPDATE", session.ID, user(c).ID).Scan(&raw, &status); err != nil {
+		return err
+	}
+	if status != "active" {
+		return fail(c, 409, "session จบแล้ว")
+	}
+	state := ebookCourseState(raw)
+	if textValue(state["shadow_listen_request_id"]) == body.RequestID {
+		if result, ok := state["shadow_listen_result"].(map[string]any); ok {
+			return c.JSON(result)
+		}
+	}
+	var turnID, text, thai string
+	var audioID *string
+	if err = tx.QueryRow(c.UserContext(), "SELECT id::text,text,text_th,audio_id::text FROM turns WHERE session_id=$1 AND role='model' ORDER BY created_at DESC LIMIT 1", session.ID).Scan(&turnID, &text, &thai, &audioID); err != nil {
+		return err
+	}
+	if text == "" {
+		lines := ebookStateStrings(state["shadow_lines"])
+		index := int(number(state["shadow_index"], 0))
+		if index >= 0 && index < len(lines) {
+			text = lines[index]
+		}
+	}
+	if audioID == nil {
+		voice := textValue(user(c).Profile["voice"])
+		if voice == "" {
+			voice = a.Cfg.Voice
+		}
+		callCtx, cancel := context.WithTimeout(c.UserContext(), 25*time.Second)
+		generated, generateErr := a.makeTTS(callCtx, user(c).ID, map[string]any{"text": text, "voice": voice, "cache_key": a.ttsKey(user(c).ID, text, voice)})
+		cancel()
+		if generateErr != nil {
+			return fail(c, 502, "เตรียมเสียงไม่สำเร็จ ลองอีกครั้งได้โดยยังไม่นับรอบฟัง")
+		}
+		value, ok := generated.(map[string]any)["audio_id"].(string)
+		if !ok || value == "" {
+			return fail(c, 502, "เตรียมเสียงไม่สำเร็จ")
+		}
+		audioID = &value
+		if _, err = tx.Exec(c.UserContext(), "UPDATE turns SET audio_id=$1 WHERE id=$2", value, turnID); err != nil {
+			return err
+		}
+	}
+	count := int(number(state["shadow_listen_count"], 0)) + 1
+	result := fiber.Map{
+		"turn_id":      turnID,
+		"audio_id":     audioID,
+		"target":       text,
+		"sentence":     text,
+		"text":         text,
+		"thai":         thai,
+		"meaning_th":   thai,
+		"translation":  thai,
+		"listen_count": count,
+		"line":         int(number(state["shadow_index"], 0)) + 1,
+		"total":        len(ebookStateStrings(state["shadow_lines"])),
+	}
+	state["shadow_listen_count"] = count
+	state["shadow_listen_request_id"] = body.RequestID
+	state["shadow_listen_result"] = result
+	if _, err = tx.Exec(c.UserContext(), "UPDATE learning_sessions SET state=$1,updated_at=now() WHERE id=$2", asJSON(state), session.ID); err != nil {
+		return err
+	}
+	if err = tx.Commit(c.UserContext()); err != nil {
+		return err
 	}
 	return c.JSON(result)
 }

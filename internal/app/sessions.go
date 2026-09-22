@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"tokoloop/internal/content"
+	"tokoloop/internal/ebook"
 	"tokoloop/internal/learning"
 )
 
@@ -217,6 +218,9 @@ func (a *App) submitTurn(c *fiber.Ctx) error {
 	if e != nil {
 		return e
 	}
+	if textValue(s.State["ebook_activity"]) == "shadowing" {
+		return a.submitEbookShadowing(c, s)
+	}
 	p, audio, mime, duration, e := a.readInput(c)
 	if e != nil {
 		return fail(c, 400, e.Error())
@@ -289,11 +293,15 @@ func (a *App) submitTurn(c *fiber.Ctx) error {
 		task = "Listening conversation: the learner is answering your most recent English audio question. goal_met means their answer demonstrates understanding of its meaning/context, even if wording differs or grammar is imperfect. Keep correct as the separate grammar judgement. Accept relevant paraphrases, never require repeating the transcript. Ask one short natural follow-up appropriate to their level."
 	}
 	if bookID := textValue(s.State["ebook_unit_id"]); bookID != "" {
-		pack, err := a.ebookPack(c.UserContext(), bookID, textValue(s.State["ebook_version"]))
-		if err != nil {
-			return err
+		if lesson, ok := a.courseSessionLesson(s.State); ok {
+			task += "\nEbook topic: " + lesson.Title + "\nTarget grammar: " + lesson.Pattern + "\nTeaching: " + lesson.ExplanationTH + "\nGoal: " + lesson.Speaking.PromptEN + "\nAsk practical questions that require the learner to use this grammar in their own context twice. Accept valid equivalent wording. After success ask a different everyday follow-up. Spoken mastery needs real clear audio. Listening goal_met judges meaning, separately from grammar."
+		} else {
+			pack, err := a.ebookPack(c.UserContext(), bookID, textValue(s.State["ebook_version"]))
+			if err != nil {
+				return err
+			}
+			task += "\nEbook topic: " + textValue(s.State["daily_title"]) + "\nTarget grammar: " + pack.Pattern + "\nTeaching: " + pack.ExplanationTH + "\nAsk practical questions that require the learner to use this grammar in their own context twice. Accept valid equivalent wording. After success ask a different everyday follow-up. Spoken mastery needs real clear audio. Listening goal_met judges meaning, separately from grammar."
 		}
-		task += "\nEbook topic: " + textValue(s.State["daily_title"]) + "\nTarget grammar: " + pack.Pattern + "\nTeaching: " + pack.ExplanationTH + "\nAsk practical questions that require the learner to use this grammar in their own context twice. Accept valid equivalent wording. After success ask a different everyday follow-up. Spoken mastery needs real clear audio. Listening goal_met judges meaning, separately from grammar."
 	}
 	if dailyID := textValue(s.State["daily_meet_id"]); dailyID != "" {
 		var daily []byte
@@ -460,6 +468,206 @@ func (a *App) submitTurn(c *fiber.Ctx) error {
 	}
 	return a.finishTurn(c, s, id, independent)
 }
+
+func ebookStateStrings(value any) []string {
+	values, ok := value.([]any)
+	if !ok {
+		if strings, ok := value.([]string); ok {
+			return append([]string(nil), strings...)
+		}
+		return nil
+	}
+	result := make([]string, 0, len(values))
+	for _, item := range values {
+		if text, ok := item.(string); ok {
+			result = append(result, text)
+		}
+	}
+	return result
+}
+
+func ebookShadowingResultMap(s Session, attemptID, audioID string, feedback learning.Feedback, advanced bool) fiber.Map {
+	return fiber.Map{
+		"id":                attemptID,
+		"feedback":          feedback,
+		"audio_id":          audioID,
+		"state":             s.State,
+		"shadow_index":      int(number(s.State["shadow_index"], 0)),
+		"mastery_advanced":  advanced,
+		"session_completed": int(number(s.State["shadow_index"], 0)) >= len(ebookStateStrings(s.State["shadow_lines"])),
+	}
+}
+
+func (a *App) ebookShadowingResult(c *fiber.Ctx, s Session, attemptID, audioID string, feedback learning.Feedback, advanced bool) error {
+	return c.JSON(ebookShadowingResultMap(s, attemptID, audioID, feedback, advanced))
+}
+
+func ebookShadowStateCopy(state map[string]any) map[string]any {
+	copy := make(map[string]any, len(state))
+	for key, value := range state {
+		copy[key] = value
+	}
+	return copy
+}
+
+func (a *App) submitEbookShadowing(c *fiber.Ctx, session Session) error {
+	p, audio, mime, duration, err := a.readInput(c)
+	if err != nil {
+		return fail(c, 400, err.Error())
+	}
+	if !validID(p.RequestID) {
+		return fail(c, 400, "request_id ต้องเป็น UUID")
+	}
+	if p.Kind == "text" {
+		return c.JSON(fiber.Map{
+			"typed":             true,
+			"mastery_advanced":  false,
+			"shadow_index":      int(number(session.State["shadow_index"], 0)),
+			"state":             session.State,
+			"session_completed": false,
+		})
+	}
+	tx, err := a.DB.Begin(c.UserContext())
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(c.UserContext())
+	var raw []byte
+	var status string
+	if err = tx.QueryRow(c.UserContext(), "SELECT state,status FROM learning_sessions WHERE id=$1 AND user_id=$2 FOR NO KEY UPDATE", session.ID, user(c).ID).Scan(&raw, &status); err != nil {
+		return err
+	}
+	state := ebookCourseState(raw)
+	var existingID, existingSessionID, existingAudio string
+	var existingFeedbackRaw []byte
+	err = tx.QueryRow(c.UserContext(), "SELECT id::text,session_id::text,coalesce(audio_id::text,''),feedback FROM attempts WHERE user_id=$1 AND request_id=$2", user(c).ID, p.RequestID).Scan(&existingID, &existingSessionID, &existingAudio, &existingFeedbackRaw)
+	if err == nil {
+		if existingSessionID != session.ID {
+			return fail(c, 409, "รหัสคำขอนี้ถูกใช้กับ session อื่นแล้ว")
+		}
+		if results, ok := state["shadow_results"].(map[string]any); ok {
+			if result, ok := results[p.RequestID].(map[string]any); ok {
+				return c.JSON(result)
+			}
+		}
+		var feedback learning.Feedback
+		if json.Unmarshal(existingFeedbackRaw, &feedback) != nil {
+			return fmt.Errorf("stored shadowing feedback is invalid")
+		}
+		session.State = state
+		return a.ebookShadowingResult(c, session, existingID, existingAudio, feedback, feedback.AudioClear && feedback.GoalMet)
+	}
+	if err != pgx.ErrNoRows {
+		return err
+	}
+	if status != "active" {
+		return fail(c, 409, "session จบแล้ว")
+	}
+	lines := ebookStateStrings(state["shadow_lines"])
+	meanings := ebookStateStrings(state["shadow_meanings"])
+	index := int(number(state["shadow_index"], 0))
+	if index < 0 || index >= len(lines) {
+		return fail(c, 409, "shadowing เสร็จแล้ว")
+	}
+	usage, err := a.reserve(c.UserContext(), user(c).ID, session.ID, "tutor", 2)
+	if err != nil {
+		return fail(c, 402, err.Error())
+	}
+	prompt := fmt.Sprintf("Ebook shadowing. The learner must repeat this exact lesson sentence: %q. Judge the supplied audio only. Set goal_met true only when the learner's spoken meaning matches this target. Set audio_clear false for unclear audio. Do not advance on typed input. Return concise Thai feedback.", lines[index])
+	callCtx, cancel := context.WithTimeout(c.UserContext(), 30*time.Second)
+	result, err := a.AI.Generate(callCtx, a.Cfg.Models["tutor"], learning.SystemPrompt, prompt, audio, mime, learning.FeedbackSchema, "")
+	cancel()
+	a.settle(usage, "tutor", result, err, 0)
+	if err != nil {
+		return fail(c, 502, err.Error())
+	}
+	feedback, err := learning.ParseFeedback(result.Text, true)
+	if err != nil {
+		return fail(c, 502, "ผลประเมินไม่สมบูรณ์ กรุณาลองใหม่")
+	}
+	attemptID := uuid.NewString()
+	audioID, err := a.storeAudio(c.UserContext(), tx, user(c).ID, "", audio, mime, true)
+	if err != nil {
+		return err
+	}
+	if _, err = tx.Exec(c.UserContext(), "INSERT INTO attempts(id,session_id,user_id,request_id,input_kind,transcript,feedback,hint_level,duration_seconds,audio_id,response_ms) VALUES($1,$2,$3,$4,'audio',$5,$6,0,$7,$8,0)", attemptID, session.ID, user(c).ID, p.RequestID, feedback.Transcript, asJSON(feedback), duration, audioID); err != nil {
+		return err
+	}
+	advanced := feedback.AudioClear && feedback.GoalMet
+	if advanced {
+		index++
+		state["shadow_index"] = index
+		state["shadow_passes"] = index
+		state["shadow_listen_count"] = 0
+		delete(state, "shadow_listen_request_id")
+		delete(state, "shadow_listen_result")
+		if index < len(lines) {
+			state["shadow_current_target"] = lines[index]
+			modelTH := ""
+			if index < len(meanings) {
+				modelTH = meanings[index]
+			}
+			if _, err = tx.Exec(c.UserContext(), "INSERT INTO turns(id,session_id,role,text,text_th) VALUES($1,$2,'model',$3,$4)", uuid.NewString(), session.ID, lines[index], modelTH); err != nil {
+				return err
+			}
+		} else {
+			state["shadow_current_target"] = ""
+			state["shadowing_completed"] = true
+		}
+	}
+	state["last_attempt"] = attemptID
+	state["shadow_last_request_id"] = p.RequestID
+	responseState := ebookShadowStateCopy(state)
+	// Keep replay history out of response snapshots. Retaining this map here
+	// would create a recursive JSON value when a later attempt is recorded.
+	delete(responseState, "shadow_results")
+	response := ebookShadowingResultMap(Session{State: responseState}, attemptID, audioID, feedback, advanced)
+	results, _ := state["shadow_results"].(map[string]any)
+	if results == nil {
+		results = map[string]any{}
+	}
+	results[p.RequestID] = response
+	state["shadow_results"] = results
+	if _, err = tx.Exec(c.UserContext(), "UPDATE learning_sessions SET state=$1,updated_at=now() WHERE id=$2", asJSON(state), session.ID); err != nil {
+		return err
+	}
+	if advanced {
+		unitID := textValue(state["ebook_unit_id"])
+		version := textValue(state["ebook_version"])
+		seedState := map[string]any{}
+		if version == ebook.LearnEbookCourseVersion {
+			if lesson, ok := a.courseSessionLesson(state); ok {
+				seedState, err = a.ebookCourseSeedState(c.UserContext(), user(c).ID, lesson)
+				if err != nil {
+					return err
+				}
+			}
+		}
+		if _, err = tx.Exec(c.UserContext(), "INSERT INTO ebook_progress(user_id,unit_id,version,state) VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING", user(c).ID, unitID, version, asJSON(seedState)); err != nil {
+			return err
+		}
+		var progressRaw []byte
+		if err = tx.QueryRow(c.UserContext(), "SELECT state FROM ebook_progress WHERE user_id=$1 AND unit_id=$2 AND version=$3 FOR UPDATE", user(c).ID, unitID, version).Scan(&progressRaw); err != nil {
+			return err
+		}
+		progress := ebookCourseState(progressRaw)
+		ebookCourseMergeMap(progress, "completed_steps", map[string]bool{"shadowing": index >= len(lines)})
+		if index >= len(lines) {
+			progress["learned"] = ebookCourseAllSteps(progress)
+			if progress["learned"] == true {
+				progress["completed_at"] = time.Now().UTC().Format(time.RFC3339)
+			}
+		}
+		if _, err = tx.Exec(c.UserContext(), "UPDATE ebook_progress SET state=$1,updated_at=now() WHERE user_id=$2 AND unit_id=$3 AND version=$4", asJSON(progress), user(c).ID, unitID, version); err != nil {
+			return err
+		}
+	}
+	if err = tx.Commit(c.UserContext()); err != nil {
+		return err
+	}
+	return c.JSON(response)
+}
+
 func (a *App) completeSession(c *fiber.Ctx) error {
 	s, e := a.findSession(c)
 	if e != nil {
@@ -500,12 +708,38 @@ func (a *App) completeSession(c *fiber.Ctx) error {
 	if bookID := textValue(s.State["ebook_unit_id"]); bookID != "" {
 		ready := lessonProgress(s)
 		if ready != nil && ready.Ready {
-			field := "speaking_completed"
-			if s.Mode == "listening" {
-				field = "listening_completed"
-			}
-			if _, e = tx.Exec(c.UserContext(), "INSERT INTO ebook_progress(user_id,unit_id,version,state) VALUES($1,$2,$3,$4) ON CONFLICT(user_id,unit_id,version) DO UPDATE SET state=ebook_progress.state||excluded.state,updated_at=now()", user(c).ID, bookID, textValue(s.State["ebook_version"]), asJSON(fiber.Map{field: true})); e != nil {
-				return e
+			if lesson, ok := a.courseSessionLesson(s.State); ok {
+				field := "speaking"
+				if s.State["ebook_activity"] == "shadowing" {
+					field = "shadowing"
+				}
+				var progressRaw []byte
+				if e = tx.QueryRow(c.UserContext(), "SELECT state FROM ebook_progress WHERE user_id=$1 AND unit_id=$2 AND version=$3 FOR UPDATE", user(c).ID, ebookCourseStorageID(lesson), ebook.LearnEbookCourseVersion).Scan(&progressRaw); e == pgx.ErrNoRows {
+					seedState, seedErr := a.ebookCourseSeedState(c.UserContext(), user(c).ID, lesson)
+					if seedErr != nil {
+						return seedErr
+					}
+					progressRaw = asJSON(seedState)
+				} else if e != nil {
+					return e
+				}
+				progress := ebookCourseState(progressRaw)
+				ebookCourseMergeMap(progress, "completed_steps", map[string]bool{field: true})
+				if ebookCourseAllSteps(progress) {
+					progress["learned"] = true
+					progress["completed_at"] = time.Now().UTC().Format(time.RFC3339)
+				}
+				if _, e = tx.Exec(c.UserContext(), "INSERT INTO ebook_progress(user_id,unit_id,version,state) VALUES($1,$2,$3,$4) ON CONFLICT(user_id,unit_id,version) DO UPDATE SET state=excluded.state,updated_at=now()", user(c).ID, ebookCourseStorageID(lesson), ebook.LearnEbookCourseVersion, asJSON(progress)); e != nil {
+					return e
+				}
+			} else {
+				field := "speaking_completed"
+				if s.Mode == "listening" {
+					field = "listening_completed"
+				}
+				if _, e = tx.Exec(c.UserContext(), "INSERT INTO ebook_progress(user_id,unit_id,version,state) VALUES($1,$2,$3,$4) ON CONFLICT(user_id,unit_id,version) DO UPDATE SET state=ebook_progress.state||excluded.state,updated_at=now()", user(c).ID, bookID, textValue(s.State["ebook_version"]), asJSON(fiber.Map{field: true})); e != nil {
+					return e
+				}
 			}
 		}
 	}
