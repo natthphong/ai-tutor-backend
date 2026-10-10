@@ -5482,6 +5482,75 @@
           }
         }
       }
+    },
+    "/account/reset": {
+      "post": {
+        "operationId": "reset_learning_data",
+        "summary": "Clear the signed-in learner's own learning data so they can start over.",
+        "description": "scope=library clears My collection and the review queue (saved vocabulary, mistakes, every scheduled review); lesson progress stays and finished units are not scheduled again. scope=all also clears lesson progress and practice history. The account, settings, Daily Meet entries, custom scenarios and the AI usage ledger are always kept. This cannot be undone.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountResetRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Data cleared",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountResetResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing scope or the confirmation word was not typed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Login required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A Live session is still active",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many attempts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -8259,6 +8328,53 @@
           "wrong",
           "right",
           "why_th"
+        ]
+      },
+      "AccountResetRequest": {
+        "type": "object",
+        "properties": {
+          "confirm": {
+            "type": "string",
+            "description": "The learner must type the word delete (case-insensitive)."
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "library",
+              "all"
+            ]
+          }
+        },
+        "required": [
+          "confirm",
+          "scope"
+        ]
+      },
+      "AccountResetResult": {
+        "type": "object",
+        "properties": {
+          "reset": {
+            "type": "boolean"
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "library",
+              "all"
+            ]
+          },
+          "deleted": {
+            "type": "object",
+            "description": "Rows removed per table.",
+            "additionalProperties": {
+              "type": "integer"
+            }
+          }
+        },
+        "required": [
+          "reset",
+          "scope",
+          "deleted"
         ]
       }
     }

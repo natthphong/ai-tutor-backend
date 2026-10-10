@@ -220,7 +220,26 @@ func ebookCourseBoolMap(value any) map[string]any {
 	return result
 }
 
+// ebookCourseImplyReading settles the two self-paced reading steps once the
+// quiz is passed. The client only reports them when the learner leaves a step
+// with Next, so a learner who moved with the step bar or the practice buttons
+// could pass every assessed step and still never reach 100%. Passing all eight
+// quiz items is stronger evidence of having read the unit than a button press.
+func ebookCourseImplyReading(state map[string]any) {
+	if state == nil {
+		return
+	}
+	completed := ebookCourseBoolMap(state["completed_steps"])
+	if completed["quiz"] != true || (completed["understand"] == true && completed["examples"] == true) {
+		return
+	}
+	completed["understand"] = true
+	completed["examples"] = true
+	state["completed_steps"] = completed
+}
+
 func ebookCourseAllSteps(state map[string]any) bool {
+	ebookCourseImplyReading(state)
 	completed := ebookCourseBoolMap(state["completed_steps"])
 	for _, step := range ebookCourseSteps {
 		if completed[step] != true {
@@ -243,6 +262,7 @@ func ebookCourseActive(state map[string]any) bool {
 }
 
 func ebookCourseStatus(state map[string]any, reviewDue bool) (string, int, int) {
+	ebookCourseImplyReading(state)
 	completed := ebookCourseBoolMap(state["completed_steps"])
 	completedCount := 0
 	for _, step := range ebookCourseSteps {
@@ -562,6 +582,10 @@ func (a *App) ebookCourseUnit(c *fiber.Ctx, lesson ebook.Lesson) error {
 		state = asJSON(seed)
 	} else if err != nil {
 		return err
+	} else {
+		stored := ebookCourseState(state)
+		ebookCourseImplyReading(stored)
+		state = asJSON(stored)
 	}
 	var pack any = ebookCoursePublicPack(lesson, nil)
 	// The redesigned course is bundled and validated at startup, so it never

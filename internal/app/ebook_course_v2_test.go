@@ -112,6 +112,13 @@ func TestEbookCourseDeterministicQuizKindsNeverCallTheModel(t *testing.T) {
 func ebookCourseFinishUnit(t *testing.T, a *App, client featureHTTP, lesson ebook.Lesson) {
 	t.Helper()
 	client.call(200, "PATCH", "/ebook/units/"+lesson.ID+"/progress", map[string]any{"current_step": 3, "completed_steps": map[string]bool{"understand": true, "examples": true}})
+	ebookCoursePassAssessedSteps(t, a, client, lesson)
+}
+
+// ebookCoursePassAssessedSteps passes the quiz, listening, shadowing and
+// speaking steps without ever reporting the two reading steps.
+func ebookCoursePassAssessedSteps(t *testing.T, a *App, client featureHTTP, lesson ebook.Lesson) {
+	t.Helper()
 	answers := map[string]string{}
 	for _, quiz := range lesson.Quiz {
 		answers[quiz.ID] = quiz.Answers[0]
@@ -217,6 +224,65 @@ func TestEbookCourseLearnedUnitEntersSpacedReviewEvenWhenEveryAnswerWasRight(t *
 	}
 	if status := ebookCourseString(ebookCourseUnit(other.call(200, "GET", "/ebook", nil), first.ID), "status"); status != "unlearned" {
 		t.Fatalf("another learner saw this learner's progress: %q", status)
+	}
+}
+
+// A learner who moves with the step bar or "Start speaking practice" never
+// sends the reading steps. Passing the speaking step must still finish the unit.
+func TestEbookCourseFinishesUnitWhenReadingStepsWereNeverReported(t *testing.T) {
+	a, owner, _, _ := ebookFixture(t)
+	defer ebookCoursePassingAI(a)()
+	path := a.Course.Path()
+	lesson := path[0]
+	owner.call(200, "PATCH", "/ebook/units/"+lesson.ID+"/progress", map[string]any{"current_step": 3})
+	ebookCoursePassAssessedSteps(t, a, owner, lesson)
+
+	catalog := owner.call(200, "GET", "/ebook", nil)
+	unit := ebookCourseUnit(catalog, lesson.ID)
+	if ebookCourseString(unit, "status") != "learned" || ebookCourseNumber(unit, "percent") != 100 {
+		t.Fatalf("unit after passing quiz, listening, shadowing and speaking = %#v, want learned at 100%%", unit)
+	}
+	if ebookCourseString(catalog, "recommended_unit_id") != path[1].ID {
+		t.Fatalf("recommended unit = %q, want the next unit %q", ebookCourseString(catalog, "recommended_unit_id"), path[1].ID)
+	}
+	progress := ebookCourseObject(owner.call(200, "GET", "/ebook/units/"+lesson.ID, nil)["progress"])
+	completed := ebookCourseObject(progress["completed_steps"])
+	for _, step := range ebookCourseSteps {
+		if completed[step] != true {
+			t.Fatalf("step %s is not complete in the unit detail: %#v", step, progress)
+		}
+	}
+	if progress["learned"] != true || ebookCourseString(progress, "completed_at") == "" {
+		t.Fatalf("finished unit was not marked learned: %#v", progress)
+	}
+	var ownerID string
+	if err := a.DB.QueryRow(context.Background(), "SELECT id::text FROM users WHERE username='ebook-owner'").Scan(&ownerID); err != nil {
+		t.Fatal(err)
+	}
+	var scheduled int
+	if err := a.DB.QueryRow(context.Background(), "SELECT count(*) FROM review_items WHERE user_id=$1 AND key LIKE $2", ownerID, "ebook:"+ebook.LearnEbookCourseVersion+":"+lesson.UnitID+":review-%").Scan(&scheduled); err != nil {
+		t.Fatal(err)
+	}
+	if scheduled != len(lesson.Review) {
+		t.Fatalf("finished unit scheduled %d review prompts, want %d", scheduled, len(lesson.Review))
+	}
+
+	// A unit stored before this rule (assessed steps passed, reading never
+	// reported) is shown as finished too, and reading alone finishes nothing.
+	stuck := map[string]any{"current_step": 5, "completed_steps": map[string]bool{"quiz": true, "shadowing": true, "speaking": true}}
+	onlyRead := map[string]any{"current_step": 2, "completed_steps": map[string]bool{"shadowing": true, "speaking": true}}
+	for unit, state := range map[string]map[string]any{path[2].UnitID: stuck, path[3].UnitID: onlyRead} {
+		if _, err := a.DB.Exec(context.Background(), "INSERT INTO ebook_progress(user_id,unit_id,version,state) VALUES($1,$2,$3,$4)", ownerID, unit, ebook.LearnEbookCourseVersion, asJSON(state)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	owner.call(200, "PATCH", "/ebook/units/"+lesson.ID+"/progress", map[string]any{"current_step": 5})
+	healed := owner.call(200, "GET", "/ebook", nil)
+	if unit := ebookCourseUnit(healed, path[2].ID); ebookCourseNumber(unit, "percent") != 100 || ebookCourseString(unit, "status") != "learned" {
+		t.Fatalf("stored unit with every assessed step passed = %#v, want learned at 100%%", unit)
+	}
+	if unit := ebookCourseUnit(healed, path[3].ID); ebookCourseNumber(unit, "percent") != 40 || ebookCourseString(unit, "status") != "learning" {
+		t.Fatalf("unit without a passed quiz = %#v, want learning at 40%%", unit)
 	}
 }
 

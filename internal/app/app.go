@@ -175,6 +175,7 @@ func (a *App) routes() {
 	g.Get("/admin/invitations", a.listInvitations)
 	g.Delete("/admin/invitations/:id", a.revokeInvitation)
 	g.Patch("/profile", a.profile)
+	g.Post("/account/reset", limiter.New(limiter.Config{Max: 5, Expiration: time.Minute}), a.resetLearning)
 	g.Get("/curriculum", a.curriculum)
 	g.Get("/lessons/:id", a.lesson)
 	g.Get("/daily-plan", a.daily)
