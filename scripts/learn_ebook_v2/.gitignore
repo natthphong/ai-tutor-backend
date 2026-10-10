@@ -1,0 +1,12 @@
+# Working files of a generation run. The committed result is
+# internal/ebook/learn_ebook_v2.json.
+/units/
+/units_before_repair/
+/reviews/
+/solves/
+/syllabus/draft_*.json
+/syllabus.json
+/tmp/
+/empty/
+*.log
+__pycache__/

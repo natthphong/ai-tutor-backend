@@ -117,8 +117,14 @@ func (a *App) reviews(c *fiber.Ctx) error {
 	if e := a.refreshReviewCues(c.UserContext(), user(c).ID); e != nil {
 		return e
 	}
-	return a.jsonRows(c, "SELECT coalesce(jsonb_agg(to_jsonb(r)-'user_id' ORDER BY due_at),'[]'::jsonb) FROM review_items r WHERE user_id=$1 AND due_at<=now()", user(c).ID)
+	// One sitting is capped so a missed week never becomes an unbounded
+	// queue; the most overdue items come first and the rest stay due.
+	return a.jsonRows(c, "SELECT coalesce(jsonb_agg(to_jsonb(r)-'user_id' ORDER BY due_at),'[]'::jsonb) FROM (SELECT * FROM review_items WHERE user_id=$1 AND due_at<=now() ORDER BY due_at LIMIT $2) r", user(c).ID, reviewSessionLimit)
 }
+
+// reviewSessionLimit keeps a review sitting inside a 30-minute study day.
+const reviewSessionLimit = 15
+
 func (a *App) job(c *fiber.Ctx) error {
 	if !validID(c.Params("id")) {
 		return fail(c, 404, "ไม่พบงาน")

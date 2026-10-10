@@ -61,19 +61,19 @@ The four engines are orchestrated in a single tutor call where possible; review 
 
 ## Learn Ebook — interactive course
 
-Learn Ebook is a bundled, versioned 145-lesson course. Every lesson contains one practical grammar concept, three bilingual examples, exactly ten contextual vocabulary items, five mini-quiz items, three listen-and-repeat lines copied verbatim from the lesson examples, and a speaking transfer task. Learner state is tracked as `unlearned`, `learning`, `learned`, or `review`, with five additive steps: understand, examples, quiz, shadowing, and speaking. Existing Ebook progress and the private source book remain readable.
+Learn Ebook is a bundled, versioned 145-lesson course (`2026-10-10.v2`) that takes a learner from A1 to B1/B2. Every lesson teaches one grammar point with its own Thai explanation, usage notes, sentence forms, common Thai-learner mistakes and a contrast with the structure it is confused with; six bilingual examples; ten vocabulary terms that are new across the whole course and used in the lesson's own sentences; eight quiz items (two choice, two fill, reorder, fix, translate, write); three listen-first comprehension items; a speaking task; and two review prompts. Lessons carry a CEFR level and a `path_order`, so the catalog, the `recommended_unit_id` and the daily plan follow an A1-first path instead of source-book order. Learner state is tracked as `unlearned`, `learning`, `learned`, or `review`, with five additive steps: understand, examples, quiz, shadowing, and speaking. Existing Ebook progress and the private source book remain readable.
 
-The authored course is static and validated before the application opens its database. Opening a redesigned lesson therefore returns `ready` immediately and incurs no AI preparation cost. Deterministic choice answers are checked in Go; original written answers that are not an exact sample match are assessed together by the configured Gemini tutor so valid personal sentences are accepted. Revealing an answer is recorded in owner-scoped progress. Shadowing advances only from clear, goal-matching audio and uses the same sentence shown in the lesson. The progress PATCH accepts navigation, drafts, review requests, vocabulary saves, and the self-paced understand/examples steps; quiz, shadowing, speaking, learned state, and completion time are advanced only by backend assessment.
+The course is static and validated before the application opens its database. Opening a lesson returns `ready` immediately and incurs no AI preparation cost. Choice, fill and reorder answers are checked in Go against the answer key (case, outer punctuation and common contractions do not matter); fix, translate and write answers that are not an accepted answer are assessed by the configured Gemini tutor so valid alternatives are accepted. A wrong answer returns the rule, not the key; revealing an answer is recorded in owner-scoped progress. Listening lines are heard before they are read: the public lesson withholds their meaning and answer, and a shadowing session cannot start until all three are answered correctly. Shadowing advances only from clear, goal-matching audio. When all five steps are complete the unit always enters spaced review — its two review prompts are scheduled for +1 and +3 days and its vocabulary is added to the library — even when every quiz answer was right. `GET /review` returns at most 15 due items per sitting, most overdue first. Progress recorded on course `2026-09-20.v1` is carried over on read: a learned unit stays learned and is flagged for review, an unfinished unit restarts; the old rows are never rewritten.
 
-Rebuild and audit the course after changing its generator:
+The lessons were written by Codex CLI (`gpt-6-luna`, reasoning `high`) from a hand-made unit plan, gated by an automatic rule check and a separate editor pass. The pipeline, prompts and plan are in `scripts/learn_ebook_v2/` (see its README); it never reads the private source book. Audit the committed course after any change:
 
 ```sh
-python3 scripts/generate_learn_ebook_course.py
+python3 scripts/test_learn_ebook_course.py
 go test ./internal/ebook -count=1
-TEST_DATABASE_URL='<dedicated toko_*_test DSN>' go test ./internal/app -run 'TestEbookCourse|TestEbookShadowing' -count=1
+TEST_DATABASE_URL='<dedicated toko_*_test DSN>' go test ./internal/app -run 'TestEbookCourse|TestEbookShadowing|TestReviewSitting|TestCourseAnswerKey' -count=1
 ```
 
-The generator reads only unit titles from private `.ebook/manifest.json`; it does not read or copy extracted prose, exercises, answer keys, or page images. The generated file must always audit to 145 lessons, 1,450 vocabulary entries, 725 quiz items, and 435 verbatim shadowing lines.
+The course must always audit to 145 lessons, 870 examples, 1,450 globally unique vocabulary terms, 1,160 quiz items, 435 listening lines and 290 review prompts.
 
 The optional private reference contains 392 pages and 145 units. Import the source locally; neither the original PDF nor the imported `.ebook/` directory belongs in Git:
 

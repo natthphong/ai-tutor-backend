@@ -27,21 +27,21 @@ No test calls Gemini. Backend integration tests use a local fake provider, while
 
 ## Learn Ebook fixtures
 
-The redesigned interactive course is generated from metadata and committed as `internal/ebook/learn_ebook_v1.json`. Its fast content contract checks do not need PostgreSQL:
+The interactive course is committed as `internal/ebook/learn_ebook_v2.json` (written with the Codex pipeline in `scripts/learn_ebook_v2/`). Its fast content checks need neither PostgreSQL nor any AI provider:
 
 ```sh
-python3 scripts/generate_learn_ebook_course.py
+python3 scripts/test_learn_ebook_course.py
 go test ./internal/ebook -count=1
 ```
 
-The API regression suite uses the local fake Gemini provider and the disposable test database. It covers all four progress states, five-step persistence, public answer redaction, choice-ID compatibility, flexible written-answer assessment, idempotent submissions, revealed-answer tracking, owner isolation, and audio-only shadowing advancement:
+The API regression suite uses the local fake Gemini provider and the disposable test database. It covers all four progress states, five-step persistence, public answer redaction, choice-ID compatibility, deterministic checking of choice/fill/reorder without a model call, flexible written-answer assessment, idempotent submissions, revealed-answer tracking, owner isolation, the listen-first gate, audio-only shadowing advancement, spaced review of a learned unit, carry-over from the previous course version, and the review sitting cap:
 
 ```sh
 TEST_DATABASE_URL='postgres://toko:toko-local-only@localhost:55432/toko_loop_test?sslmode=disable' \
-  go test ./internal/app -run 'TestEbookCourse|TestEbookShadowing' -count=1
+  go test ./internal/app -run 'TestEbookCourse|TestEbookShadowing|TestReviewSitting|TestCourseAnswerKey' -count=1
 ```
 
-When lesson content changes, add or tighten a corpus assertion in `internal/ebook/course_test.go`; do not inspect all 145 lessons manually as the only validation. The test must preserve the fixed audit totals of 145 lessons, 1,450 vocabulary items, 725 quiz items, and 435 shadowing lines.
+When lesson content changes, add or tighten a corpus assertion in `internal/ebook/course_test.go`; do not inspect all 145 lessons manually as the only validation. The tests must preserve the fixed audit totals of 145 lessons, 870 examples, 1,450 globally unique vocabulary terms, 1,160 quiz items, 435 listening lines (shadowed after they are heard) and 290 review prompts.
 
 The supplied book is imported locally into ignored `.ebook/`; it is never committed or copied into test output. `internal/ebook/book_test.go` builds only synthetic manifests and packs. It verifies the expected 392-page/145-unit manifest shape, source-derived item-ID coverage, answer sanitization for learners, and rejection of omitted, invented, or repeated question IDs. Run the local importer only with the private source file:
 

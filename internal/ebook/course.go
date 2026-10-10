@@ -4,20 +4,35 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 )
 
 // learnEbookJSON is authored course content. It intentionally contains no
 // extracted reference-book prose, exercise text, answer key, or page image.
 //
-//go:embed learn_ebook_v1.json
+//go:embed learn_ebook_v2.json
 var learnEbookJSON []byte
 
 const (
 	LearnEbookCourseID      = "learn-ebook"
-	LearnEbookCourseVersion = "2026-09-20.v1"
+	LearnEbookCourseVersion = "2026-10-10.v2"
 	LearnEbookLessonCount   = 145
 )
+
+// LearnEbookPreviousCourseVersions lists earlier bundled course versions whose
+// learner progress is carried into the current version. Lesson IDs are stable
+// across versions; quiz content is not.
+var LearnEbookPreviousCourseVersions = []string{"2026-09-20.v1"}
+
+// LearnEbookLevels is the recommended CEFR order of the course path.
+var LearnEbookLevels = []string{"A1", "A2", "B1", "B2"}
+
+// LearnEbookQuizKinds is the fixed order of quiz item kinds in every lesson.
+// choice and reorder are checked deterministically, fill against accepted
+// fillers, and fix/translate/write fall back to the tutor model only when the
+// answer is not one of the accepted answers.
+var LearnEbookQuizKinds = []string{"choice", "choice", "fill", "fill", "reorder", "fix", "translate", "write"}
 
 type CourseReference struct {
 	ID        string `json:"id"`
@@ -43,6 +58,16 @@ func (c *Course) Lesson(id string) (Lesson, bool) {
 		}
 	}
 	return Lesson{}, false
+}
+
+// Path returns the lessons in the recommended learning order (A1 first).
+func (c *Course) Path() []Lesson {
+	if c == nil {
+		return nil
+	}
+	path := append([]Lesson(nil), c.Lessons...)
+	sort.SliceStable(path, func(i, j int) bool { return path[i].PathOrder < path[j].PathOrder })
+	return path
 }
 
 type Example struct {
@@ -71,38 +96,91 @@ type QuizItem struct {
 type PracticeTask struct {
 	PromptEN          string   `json:"prompt_en"`
 	PromptTH          string   `json:"prompt_th"`
-	TargetVocabulary  []string `json:"target_vocabulary"`
+	TargetVocabulary  []string `json:"target_vocabulary,omitempty"`
 	SuccessCriteriaTH []string `json:"success_criteria_th"`
 }
 
+type Form struct {
+	LabelTH   string `json:"label_th"`
+	Pattern   string `json:"pattern"`
+	ExampleEN string `json:"example_en"`
+	ExampleTH string `json:"example_th"`
+}
+
+type Mistake struct {
+	Wrong string `json:"wrong"`
+	Right string `json:"right"`
+	WhyTH string `json:"why_th"`
+}
+
+// ListeningItem is heard before it is read: the learner answers a Thai
+// comprehension question about audio_en, then shadows the same line.
+type ListeningItem struct {
+	ID         string   `json:"id"`
+	AudioEN    string   `json:"audio_en"`
+	MeaningTH  string   `json:"meaning_th,omitempty"`
+	QuestionTH string   `json:"question_th"`
+	OptionsTH  []string `json:"options_th"`
+	AnswerTH   string   `json:"answer_th,omitempty"`
+}
+
+// ReviewPrompt is a new production task scheduled after the unit is learned.
+type ReviewPrompt struct {
+	ID       string `json:"id"`
+	PromptTH string `json:"prompt_th"`
+	TargetEN string `json:"target_en"`
+	TargetTH string `json:"target_th"`
+}
+
 type Lesson struct {
-	ID              string       `json:"id"`
-	UnitID          string       `json:"unit_id"`
-	Ordinal         int          `json:"ordinal"`
-	Title           string       `json:"title"`
-	ContextKeywords []string     `json:"context_keywords,omitempty"`
-	GoalTH          string       `json:"goal_th"`
-	ExplanationTH   string       `json:"explanation_th"`
-	Pattern         string       `json:"pattern"`
-	Examples        []Example    `json:"examples"`
-	Vocabulary      []Vocabulary `json:"vocabulary"`
-	Quiz            []QuizItem   `json:"quiz"`
-	Shadowing       []string     `json:"shadowing"`
-	Speaking        PracticeTask `json:"speaking"`
-	Listening       PracticeTask `json:"listening"`
-	ConceptTags     []string     `json:"concept_tags"`
+	ID             string          `json:"id"`
+	UnitID         string          `json:"unit_id"`
+	Ordinal        int             `json:"ordinal"`
+	PathOrder      int             `json:"path_order"`
+	Level          string          `json:"level"`
+	Title          string          `json:"title"`
+	TitleTH        string          `json:"title_th"`
+	ThemeEN        string          `json:"theme_en"`
+	ThemeTH        string          `json:"theme_th"`
+	Domain         string          `json:"domain"`
+	GoalTH         string          `json:"goal_th"`
+	ExplanationTH  string          `json:"explanation_th"`
+	Pattern        string          `json:"pattern"`
+	UsageTH        []string        `json:"usage_th"`
+	Forms          []Form          `json:"forms"`
+	SignalWords    []string        `json:"signal_words"`
+	CommonMistakes []Mistake       `json:"common_mistakes"`
+	CompareTH      string          `json:"compare_th"`
+	Examples       []Example       `json:"examples"`
+	Vocabulary     []Vocabulary    `json:"vocabulary"`
+	Quiz           []QuizItem      `json:"quiz"`
+	Listening      []ListeningItem `json:"listening_items"`
+	Shadowing      []string        `json:"shadowing"`
+	Speaking       PracticeTask    `json:"speaking"`
+	Review         []ReviewPrompt  `json:"review,omitempty"`
+	ConceptTags    []string        `json:"concept_tags"`
 }
 
 type Audit struct {
-	Lessons        int `json:"lessons"`
-	Vocabulary     int `json:"vocabulary"`
-	QuizItems      int `json:"quiz_items"`
-	ShadowingLines int `json:"shadowing_lines"`
+	Lessons         int `json:"lessons"`
+	Examples        int `json:"examples"`
+	Vocabulary      int `json:"vocabulary"`
+	UniqueTerms     int `json:"unique_terms"`
+	QuizItems       int `json:"quiz_items"`
+	ListeningItems  int `json:"listening_items"`
+	ShadowingLines  int `json:"shadowing_lines"`
+	ReviewPrompts   int `json:"review_prompts"`
+	UniqueTeachings int `json:"unique_explanations"`
 }
 
 func (a Audit) String() string {
-	return fmt.Sprintf("lessons=%d vocabulary=%d quiz_items=%d shadowing_lines=%d", a.Lessons, a.Vocabulary, a.QuizItems, a.ShadowingLines)
+	return fmt.Sprintf("lessons=%d examples=%d vocabulary=%d unique_terms=%d quiz_items=%d listening_items=%d shadowing_lines=%d review_prompts=%d unique_explanations=%d",
+		a.Lessons, a.Examples, a.Vocabulary, a.UniqueTerms, a.QuizItems, a.ListeningItems, a.ShadowingLines, a.ReviewPrompts, a.UniqueTeachings)
 }
+
+// MinUniqueTerms is the floor for globally distinct vocabulary terms. The
+// first course version repeated 136 terms across 1,450 entries.
+const MinUniqueTerms = 1400
 
 // LoadCourse loads the embedded, versioned course and validates it before the
 // application opens its database. This keeps malformed content out of a live
@@ -124,11 +202,22 @@ func LoadCourseBytes(data []byte) (*Course, error) {
 
 func (c Course) Audit() Audit {
 	a := Audit{Lessons: len(c.Lessons)}
+	terms := map[string]bool{}
+	teachings := map[string]bool{}
 	for _, lesson := range c.Lessons {
+		a.Examples += len(lesson.Examples)
 		a.Vocabulary += len(lesson.Vocabulary)
 		a.QuizItems += len(lesson.Quiz)
+		a.ListeningItems += len(lesson.Listening)
 		a.ShadowingLines += len(lesson.Shadowing)
+		a.ReviewPrompts += len(lesson.Review)
+		for _, word := range lesson.Vocabulary {
+			terms[normalizeCourseText(word.Term)] = true
+		}
+		teachings[normalizeCourseText(lesson.ExplanationTH)] = true
 	}
+	a.UniqueTerms = len(terms)
+	a.UniqueTeachings = len(teachings)
 	return a
 }
 
@@ -151,28 +240,60 @@ func (c Course) Validate() error {
 
 	seenIDs := map[string]bool{}
 	seenUnits := map[string]bool{}
-	seenPatterns := map[string]bool{}
-	seenExamples := map[string]int{}
+	seenPath := map[int]bool{}
+	seenExamples := map[string]string{}
+	levelRank := map[string]int{}
+	for index, level := range LearnEbookLevels {
+		levelRank[level] = index
+	}
 	for i, lesson := range c.Lessons {
-		if err := lesson.validate(i+1, seenIDs, seenUnits, seenPatterns); err != nil {
+		if err := lesson.validate(i+1, seenIDs, seenUnits); err != nil {
 			return err
 		}
+		if lesson.PathOrder < 1 || lesson.PathOrder > LearnEbookLessonCount || seenPath[lesson.PathOrder] {
+			return fmt.Errorf("lesson %s has an invalid or repeated path_order %d", lesson.ID, lesson.PathOrder)
+		}
+		seenPath[lesson.PathOrder] = true
 		for _, example := range lesson.Examples {
 			key := normalizeCourseText(example.EN)
-			seenExamples[key]++
-			if seenExamples[key] > 2 {
-				return fmt.Errorf("Learn Ebook repeats the same example more than twice: %q", example.EN)
+			if other, repeated := seenExamples[key]; repeated {
+				return fmt.Errorf("Learn Ebook repeats an example in %s and %s: %q", other, lesson.ID, example.EN)
 			}
+			seenExamples[key] = lesson.ID
 		}
 	}
+	// The path never steps down a level, so a learner who starts at A1 meets
+	// every easier unit before a harder one.
+	previous := 0
+	for _, lesson := range c.Path() {
+		rank := levelRank[lesson.Level]
+		if rank < previous {
+			return fmt.Errorf("lesson %s (%s) appears after a higher level in the learning path", lesson.ID, lesson.Level)
+		}
+		previous = rank
+	}
 	got := c.Audit()
-	if got != (Audit{Lessons: 145, Vocabulary: 1450, QuizItems: 725, ShadowingLines: 435}) {
-		return fmt.Errorf("Learn Ebook audit totals are %s, want lessons=145 vocabulary=1450 quiz_items=725 shadowing_lines=435", got.String())
+	want := Audit{Lessons: 145, Examples: 870, Vocabulary: 1450, QuizItems: 1160, ListeningItems: 435, ShadowingLines: 435, ReviewPrompts: 290, UniqueTeachings: 145}
+	want.UniqueTerms = got.UniqueTerms
+	if got != want {
+		return fmt.Errorf("Learn Ebook audit totals are %s, want %s", got.String(), want.String())
+	}
+	if got.UniqueTerms < MinUniqueTerms {
+		return fmt.Errorf("Learn Ebook has %d globally unique vocabulary terms, want at least %d", got.UniqueTerms, MinUniqueTerms)
 	}
 	return nil
 }
 
-func (l Lesson) validate(expectedOrdinal int, seenIDs, seenUnits, seenPatterns map[string]bool) error {
+func hasThai(text string) bool {
+	for _, r := range text {
+		if r >= 0x0E00 && r <= 0x0E7F {
+			return true
+		}
+	}
+	return false
+}
+
+func (l Lesson) validate(expectedOrdinal int, seenIDs, seenUnits map[string]bool) error {
 	if l.Ordinal != expectedOrdinal || l.ID != fmt.Sprintf("ebook-%03d", expectedOrdinal) || l.UnitID != fmt.Sprintf("%d", expectedOrdinal) {
 		return fmt.Errorf("lesson %d has unstable id/unit/ordinal: id=%q unit_id=%q ordinal=%d", expectedOrdinal, l.ID, l.UnitID, l.Ordinal)
 	}
@@ -181,36 +302,48 @@ func (l Lesson) validate(expectedOrdinal int, seenIDs, seenUnits, seenPatterns m
 	}
 	seenIDs[l.ID] = true
 	seenUnits[l.UnitID] = true
-	if strings.TrimSpace(l.Title) == "" || strings.TrimSpace(l.GoalTH) == "" || strings.TrimSpace(l.ExplanationTH) == "" || strings.TrimSpace(l.Pattern) == "" {
+	validLevel := false
+	for _, level := range LearnEbookLevels {
+		validLevel = validLevel || l.Level == level
+	}
+	if !validLevel {
+		return fmt.Errorf("lesson %s has invalid level %q", l.ID, l.Level)
+	}
+	if strings.TrimSpace(l.Title) == "" || strings.TrimSpace(l.Pattern) == "" || strings.TrimSpace(l.ThemeEN) == "" {
 		return fmt.Errorf("lesson %s has incomplete concept content", l.ID)
 	}
-	if len(l.ContextKeywords) < 2 {
-		return fmt.Errorf("lesson %s needs at least two context keywords", l.ID)
+	if !hasThai(l.TitleTH) || !hasThai(l.GoalTH) || !hasThai(l.ExplanationTH) || !hasThai(l.ThemeTH) {
+		return fmt.Errorf("lesson %s is missing Thai teaching text", l.ID)
 	}
-	seenContext := map[string]bool{}
-	for _, keyword := range l.ContextKeywords {
-		key := normalizeCourseText(keyword)
-		if key == "" || seenContext[key] {
-			return fmt.Errorf("lesson %s has duplicate or empty context keyword", l.ID)
+	if len([]rune(l.ExplanationTH)) < 200 {
+		return fmt.Errorf("lesson %s explanation is too short to teach the grammar point", l.ID)
+	}
+	if len(l.UsageTH) < 2 || len(l.UsageTH) > 4 {
+		return fmt.Errorf("lesson %s has %d usage notes, want 2-4", l.ID, len(l.UsageTH))
+	}
+	if len(l.Forms) < 2 || len(l.Forms) > 4 {
+		return fmt.Errorf("lesson %s has %d forms, want 2-4", l.ID, len(l.Forms))
+	}
+	for _, form := range l.Forms {
+		if strings.TrimSpace(form.LabelTH) == "" || strings.TrimSpace(form.Pattern) == "" || strings.TrimSpace(form.ExampleEN) == "" || !hasThai(form.ExampleTH) {
+			return fmt.Errorf("lesson %s has an incomplete form", l.ID)
 		}
-		seenContext[key] = true
 	}
-	lessonEvidence := normalizeCourseText(l.GoalTH + " " + l.Pattern + " " + strings.Join(l.ConceptTags, " "))
-	if !strings.Contains(lessonEvidence, normalizeCourseText(l.Title)) {
-		return fmt.Errorf("lesson %s does not mention its grammar title in goal, pattern, or tags", l.ID)
+	if len(l.CommonMistakes) < 2 || len(l.CommonMistakes) > 3 {
+		return fmt.Errorf("lesson %s has %d common mistakes, want 2-3", l.ID, len(l.CommonMistakes))
 	}
-	patternKey := normalizeCourseText(l.Pattern)
-	if seenPatterns[patternKey] {
-		return fmt.Errorf("lesson %s repeats a pattern", l.ID)
+	for _, mistake := range l.CommonMistakes {
+		if strings.TrimSpace(mistake.Wrong) == "" || normalizeCourseText(mistake.Wrong) == normalizeCourseText(mistake.Right) || !hasThai(mistake.WhyTH) {
+			return fmt.Errorf("lesson %s has an invalid common mistake", l.ID)
+		}
 	}
-	seenPatterns[patternKey] = true
 
-	if len(l.Examples) != 3 {
-		return fmt.Errorf("lesson %s has %d examples, want 3", l.ID, len(l.Examples))
+	if len(l.Examples) != 6 {
+		return fmt.Errorf("lesson %s has %d examples, want 6", l.ID, len(l.Examples))
 	}
 	seenExamples := map[string]bool{}
 	for _, example := range l.Examples {
-		if strings.TrimSpace(example.EN) == "" || strings.TrimSpace(example.TH) == "" {
+		if strings.TrimSpace(example.EN) == "" || hasThai(example.EN) || !hasThai(example.TH) {
 			return fmt.Errorf("lesson %s has an incomplete example", l.ID)
 		}
 		key := normalizeCourseText(example.EN)
@@ -219,19 +352,6 @@ func (l Lesson) validate(expectedOrdinal int, seenIDs, seenUnits, seenPatterns m
 		}
 		seenExamples[key] = true
 	}
-	contextText := ""
-	for _, example := range l.Examples {
-		contextText += " " + normalizeCourseText(example.EN)
-	}
-	contextHits := 0
-	for _, keyword := range l.ContextKeywords {
-		if strings.Contains(contextText, normalizeCourseText(keyword)) {
-			contextHits++
-		}
-	}
-	if contextHits < 2 {
-		return fmt.Errorf("lesson %s examples do not contain two context keywords", l.ID)
-	}
 
 	if len(l.Vocabulary) != 10 {
 		return fmt.Errorf("lesson %s has %d vocabulary items, want 10", l.ID, len(l.Vocabulary))
@@ -239,7 +359,7 @@ func (l Lesson) validate(expectedOrdinal int, seenIDs, seenUnits, seenPatterns m
 	seenWords := map[string]bool{}
 	wordIDs := map[string]bool{}
 	for _, word := range l.Vocabulary {
-		if strings.TrimSpace(word.ID) == "" || strings.TrimSpace(word.Term) == "" || strings.TrimSpace(word.MeaningTH) == "" || strings.TrimSpace(word.ExampleEN) == "" || strings.TrimSpace(word.ExampleTH) == "" {
+		if strings.TrimSpace(word.ID) == "" || strings.TrimSpace(word.Term) == "" || !hasThai(word.MeaningTH) || strings.TrimSpace(word.ExampleEN) == "" || !hasThai(word.ExampleTH) {
 			return fmt.Errorf("lesson %s has incomplete vocabulary", l.ID)
 		}
 		if wordIDs[word.ID] {
@@ -253,25 +373,32 @@ func (l Lesson) validate(expectedOrdinal int, seenIDs, seenUnits, seenPatterns m
 		seenWords[key] = true
 	}
 
-	if len(l.Quiz) != 5 {
-		return fmt.Errorf("lesson %s has %d quiz items, want 5", l.ID, len(l.Quiz))
+	if len(l.Quiz) != len(LearnEbookQuizKinds) {
+		return fmt.Errorf("lesson %s has %d quiz items, want %d", l.ID, len(l.Quiz), len(LearnEbookQuizKinds))
 	}
-	seenQuiz := map[string]bool{}
 	for i, q := range l.Quiz {
 		wantID := fmt.Sprintf("quiz-%02d", i+1)
-		if q.ID != wantID || seenQuiz[q.ID] {
+		if q.ID != wantID {
 			return fmt.Errorf("lesson %s has unstable quiz id %q, want %q", l.ID, q.ID, wantID)
 		}
-		seenQuiz[q.ID] = true
-		if q.Kind != "choice" && q.Kind != "write" {
-			return fmt.Errorf("lesson %s quiz %s has invalid kind %q", l.ID, q.ID, q.Kind)
+		if q.Kind != LearnEbookQuizKinds[i] {
+			return fmt.Errorf("lesson %s quiz %s has kind %q, want %q", l.ID, q.ID, q.Kind, LearnEbookQuizKinds[i])
 		}
-		if strings.TrimSpace(q.PromptEN) == "" || strings.TrimSpace(q.PromptTH) == "" || len(q.Answers) == 0 || strings.TrimSpace(q.ExplanationTH) == "" {
+		if strings.TrimSpace(q.PromptEN) == "" || !hasThai(q.PromptTH) || len(q.Answers) == 0 || !hasThai(q.ExplanationTH) {
 			return fmt.Errorf("lesson %s quiz %s is incomplete", l.ID, q.ID)
 		}
-		if q.Kind == "choice" {
-			if len(q.Options) < 2 {
-				return fmt.Errorf("lesson %s quiz %s needs at least two options", l.ID, q.ID)
+		for _, answer := range q.Answers {
+			if strings.TrimSpace(answer) == "" {
+				return fmt.Errorf("lesson %s quiz %s has an empty accepted answer", l.ID, q.ID)
+			}
+		}
+		switch q.Kind {
+		case "choice":
+			if strings.Count(q.PromptEN, "___") != 1 {
+				return fmt.Errorf("lesson %s quiz %s needs exactly one blank", l.ID, q.ID)
+			}
+			if len(q.Options) != 3 {
+				return fmt.Errorf("lesson %s quiz %s needs three options", l.ID, q.ID)
 			}
 			options := map[string]bool{}
 			for _, option := range q.Options {
@@ -280,104 +407,139 @@ func (l Lesson) validate(expectedOrdinal int, seenIDs, seenUnits, seenPatterns m
 				}
 				options[normalizeCourseText(option)] = true
 			}
+			if len(q.Answers) != 1 || !options[normalizeCourseText(q.Answers[0])] {
+				return fmt.Errorf("lesson %s quiz %s answer is not exactly one option", l.ID, q.ID)
+			}
+		case "fill":
+			if strings.Count(q.PromptEN, "___") != 1 || len(q.Options) != 0 {
+				return fmt.Errorf("lesson %s quiz %s needs exactly one blank and no options", l.ID, q.ID)
+			}
+		case "reorder":
+			want := strings.Fields(q.Answers[0])
+			got := append([]string(nil), q.Options...)
+			if len(want) < 4 || len(got) != len(want) {
+				return fmt.Errorf("lesson %s quiz %s tokens do not rebuild its answer", l.ID, q.ID)
+			}
+			if strings.Join(got, " ") == strings.Join(want, " ") {
+				return fmt.Errorf("lesson %s quiz %s tokens are not shuffled", l.ID, q.ID)
+			}
+			sort.Strings(want)
+			sort.Strings(got)
+			if strings.Join(got, " ") != strings.Join(want, " ") {
+				return fmt.Errorf("lesson %s quiz %s tokens do not rebuild its answer", l.ID, q.ID)
+			}
+		case "fix":
 			for _, answer := range q.Answers {
-				if !options[normalizeCourseText(answer)] {
-					return fmt.Errorf("lesson %s quiz %s answer is not an option", l.ID, q.ID)
+				if normalizeCourseText(answer) == normalizeCourseText(q.PromptEN) {
+					return fmt.Errorf("lesson %s quiz %s shows a sentence without a mistake", l.ID, q.ID)
 				}
 			}
+			fallthrough
+		default:
+			if len(q.Options) != 0 {
+				return fmt.Errorf("lesson %s quiz %s must not have options", l.ID, q.ID)
+			}
+		}
+	}
+
+	if len(l.Listening) != 3 {
+		return fmt.Errorf("lesson %s has %d listening items, want 3", l.ID, len(l.Listening))
+	}
+	for i, item := range l.Listening {
+		if item.ID != fmt.Sprintf("listen-%02d", i+1) {
+			return fmt.Errorf("lesson %s has unstable listening id %q", l.ID, item.ID)
+		}
+		if strings.TrimSpace(item.AudioEN) == "" || hasThai(item.AudioEN) || !hasThai(item.MeaningTH) || !hasThai(item.QuestionTH) || len(item.OptionsTH) != 3 {
+			return fmt.Errorf("lesson %s listening %s is incomplete", l.ID, item.ID)
+		}
+		if seenExamples[normalizeCourseText(item.AudioEN)] {
+			return fmt.Errorf("lesson %s listening %s repeats a lesson example; listening must be heard first", l.ID, item.ID)
+		}
+		found := 0
+		options := map[string]bool{}
+		for _, option := range item.OptionsTH {
+			if strings.TrimSpace(option) == "" || options[option] {
+				return fmt.Errorf("lesson %s listening %s has invalid options", l.ID, item.ID)
+			}
+			options[option] = true
+			if option == item.AnswerTH {
+				found++
+			}
+		}
+		if found != 1 {
+			return fmt.Errorf("lesson %s listening %s answer is not exactly one option", l.ID, item.ID)
 		}
 	}
 
 	if len(l.Shadowing) != 3 {
 		return fmt.Errorf("lesson %s has %d shadowing lines, want 3", l.ID, len(l.Shadowing))
 	}
-	seenShadowing := map[string]bool{}
-	for _, line := range l.Shadowing {
-		if strings.TrimSpace(line) == "" || seenShadowing[line] {
-			return fmt.Errorf("lesson %s has duplicate or empty shadowing line", l.ID)
-		}
-		seenShadowing[line] = true
-		found := false
-		for _, example := range l.Examples {
-			if line == example.EN {
-				found = true
-				break
-			}
-		}
-		if !found {
-			return fmt.Errorf("lesson %s shadowing line is not verbatim from an example", l.ID)
+	for i, line := range l.Shadowing {
+		if line != l.Listening[i].AudioEN {
+			return fmt.Errorf("lesson %s shadowing line %d is not the listening line the learner just heard", l.ID, i+1)
 		}
 	}
 
-	if err := validatePracticeTask(l.ID, "speaking", l.Speaking, wordIDs); err != nil {
-		return err
+	if strings.TrimSpace(l.Speaking.PromptEN) == "" || !hasThai(l.Speaking.PromptTH) || len(l.Speaking.SuccessCriteriaTH) < 2 {
+		return fmt.Errorf("lesson %s speaking task is incomplete", l.ID)
 	}
-	if err := validatePracticeTask(l.ID, "listening", l.Listening, wordIDs); err != nil {
-		return err
+	for _, wordID := range l.Speaking.TargetVocabulary {
+		if !wordIDs[wordID] {
+			return fmt.Errorf("lesson %s speaking task references invalid vocabulary %q", l.ID, wordID)
+		}
+	}
+	if len(l.Review) != 2 {
+		return fmt.Errorf("lesson %s has %d review prompts, want 2", l.ID, len(l.Review))
+	}
+	for i, prompt := range l.Review {
+		if prompt.ID != fmt.Sprintf("review-%02d", i+1) || !hasThai(prompt.PromptTH) || strings.TrimSpace(prompt.TargetEN) == "" || hasThai(prompt.TargetEN) || !hasThai(prompt.TargetTH) {
+			return fmt.Errorf("lesson %s review prompt %d is incomplete", l.ID, i+1)
+		}
+		if seenExamples[normalizeCourseText(prompt.TargetEN)] {
+			return fmt.Errorf("lesson %s review prompt %d repeats a lesson example", l.ID, i+1)
+		}
 	}
 	if len(l.ConceptTags) == 0 {
 		return fmt.Errorf("lesson %s has no concept tags", l.ID)
 	}
-	if err := validateLessonTextQuality(l); err != nil {
-		return err
-	}
-	return nil
+	return validateLessonTextQuality(l)
 }
 
 func validateLessonTextQuality(l Lesson) error {
-	banned := []string{
-		"todo", "placeholder", "word1", "vocab-1", "example sentence", "fixture",
-		"the lesson form", "an unrelated form", "wrong time", "moonlight", "is ready for",
-		"we discussed the",
-		"discussed the health", "discussed the participant", "finished the airport map",
-		"the the", "some the",
-	}
-	texts := []string{l.Title, l.GoalTH, l.ExplanationTH, l.Pattern}
-	texts = append(texts, l.ContextKeywords...)
-	texts = append(texts, l.ConceptTags...)
+	banned := []string{"todo", "placeholder", "lorem ipsum", "word1", "vocab-1"}
+	doubled := map[string]bool{"the": true, "a": true, "an": true, "to": true, "of": true, "in": true, "is": true, "are": true, "and": true}
+	texts := []string{l.Title, l.Pattern, l.ThemeEN}
 	for _, example := range l.Examples {
-		texts = append(texts, example.EN, example.TH)
+		texts = append(texts, example.EN)
 	}
 	for _, word := range l.Vocabulary {
-		texts = append(texts, word.Term, word.MeaningTH, word.ExampleEN, word.ExampleTH)
+		texts = append(texts, word.Term, word.ExampleEN)
 	}
 	for _, quiz := range l.Quiz {
-		texts = append(texts, quiz.PromptEN, quiz.PromptTH, quiz.ExplanationTH)
-		texts = append(texts, quiz.Options...)
 		texts = append(texts, quiz.Answers...)
 	}
-	texts = append(texts, l.Shadowing...)
-	texts = append(texts, l.Speaking.PromptEN, l.Speaking.PromptTH)
-	texts = append(texts, l.Speaking.SuccessCriteriaTH...)
-	texts = append(texts, l.Listening.PromptEN, l.Listening.PromptTH)
-	texts = append(texts, l.Listening.SuccessCriteriaTH...)
+	for _, item := range l.Listening {
+		texts = append(texts, item.AudioEN)
+	}
+	for _, prompt := range l.Review {
+		texts = append(texts, prompt.TargetEN)
+	}
+	texts = append(texts, l.Speaking.PromptEN)
 	for _, text := range texts {
 		lower := normalizeCourseText(text)
 		for _, token := range banned {
 			if strings.Contains(lower, token) {
-				return fmt.Errorf("lesson %s contains banned placeholder or awkward template %q", l.ID, token)
+				return fmt.Errorf("lesson %s contains placeholder text %q in %q", l.ID, token, text)
 			}
 		}
-		fields := strings.Fields(lower)
-		for i := 0; i+2 < len(fields); i++ {
-			if fields[i] == "a" && fields[i+1] == "short" && (fields[i+2] == "a" || fields[i+2] == "an" || fields[i+2] == "the") {
-				return fmt.Errorf("lesson %s contains doubled article in listening template", l.ID)
+		// A repeated function word ("the the", "to to") is a writing slip.
+		words := strings.Fields(lower)
+		for i := 1; i < len(words); i++ {
+			word := strings.Trim(words[i], ".,?!;:\"'")
+			if doubled[word] && word == strings.Trim(words[i-1], ".,?!;:\"'") && words[i-1] == strings.Trim(words[i-1], ".,?!;:") {
+				return fmt.Errorf("lesson %s repeats %q in %q", l.ID, word, text)
 			}
 		}
-	}
-	return nil
-}
-
-func validatePracticeTask(lessonID, name string, task PracticeTask, wordIDs map[string]bool) error {
-	if strings.TrimSpace(task.PromptEN) == "" || strings.TrimSpace(task.PromptTH) == "" || len(task.TargetVocabulary) == 0 || len(task.SuccessCriteriaTH) < 2 {
-		return fmt.Errorf("lesson %s %s task is incomplete", lessonID, name)
-	}
-	seen := map[string]bool{}
-	for _, wordID := range task.TargetVocabulary {
-		if !wordIDs[wordID] || seen[wordID] {
-			return fmt.Errorf("lesson %s %s task references invalid vocabulary %q", lessonID, name, wordID)
-		}
-		seen[wordID] = true
 	}
 	return nil
 }
@@ -403,7 +565,6 @@ func (c Course) Public() Course {
 
 func (l Lesson) Public() Lesson {
 	out := l
-	out.ContextKeywords = append([]string(nil), l.ContextKeywords...)
 	out.Quiz = make([]QuizItem, len(l.Quiz))
 	for i, quiz := range l.Quiz {
 		out.Quiz[i] = quiz
@@ -413,13 +574,24 @@ func (l Lesson) Public() Lesson {
 			out.Quiz[i].Options = append([]string(nil), quiz.Options...)
 		}
 	}
+	out.Listening = make([]ListeningItem, len(l.Listening))
+	for i, item := range l.Listening {
+		out.Listening[i] = item
+		out.Listening[i].AnswerTH = ""
+		out.Listening[i].MeaningTH = ""
+		out.Listening[i].OptionsTH = append([]string(nil), item.OptionsTH...)
+	}
+	// Review prompts are scheduled server-side after the unit is learned.
+	out.Review = nil
+	out.UsageTH = append([]string(nil), l.UsageTH...)
+	out.Forms = append([]Form(nil), l.Forms...)
+	out.SignalWords = append([]string(nil), l.SignalWords...)
+	out.CommonMistakes = append([]Mistake(nil), l.CommonMistakes...)
 	out.Examples = append([]Example(nil), l.Examples...)
 	out.Vocabulary = append([]Vocabulary(nil), l.Vocabulary...)
 	out.Shadowing = append([]string(nil), l.Shadowing...)
 	out.ConceptTags = append([]string(nil), l.ConceptTags...)
 	out.Speaking.TargetVocabulary = append([]string(nil), l.Speaking.TargetVocabulary...)
 	out.Speaking.SuccessCriteriaTH = append([]string(nil), l.Speaking.SuccessCriteriaTH...)
-	out.Listening.TargetVocabulary = append([]string(nil), l.Listening.TargetVocabulary...)
-	out.Listening.SuccessCriteriaTH = append([]string(nil), l.Listening.SuccessCriteriaTH...)
 	return out
 }

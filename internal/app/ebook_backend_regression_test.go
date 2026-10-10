@@ -98,6 +98,7 @@ func TestEbookShadowingReplayIsIdenticalAfterSessionCompletion(t *testing.T) {
 
 	catalog := owner.call(200, "GET", "/ebook", nil)
 	unitID := ebookCourseString(ebookCourseObject(ebookCourseArray(catalog, "units", "lessons")[0]), "id", "unit_id")
+	ebookCoursePassListening(t, a, owner, unitID)
 	started := owner.call(201, "POST", "/ebook/units/"+unitID+"/sessions", map[string]any{"mode": "shadowing", "request_id": uuid.NewString()})
 	sessionID := ebookCourseString(started, "id", "session_id")
 	requestID := uuid.NewString()
@@ -151,6 +152,8 @@ func TestEbookShadowingRejectsRequestIDUsedForAnotherSession(t *testing.T) {
 	firstID := ebookCourseString(ebookCourseObject(units[0]), "id")
 	secondID := ebookCourseString(ebookCourseObject(units[1]), "id")
 	requestID := uuid.NewString()
+	ebookCoursePassListening(t, a, owner, firstID)
+	ebookCoursePassListening(t, a, owner, secondID)
 	first := owner.call(201, "POST", "/ebook/units/"+firstID+"/sessions", map[string]any{"mode": "shadowing", "request_id": uuid.NewString()})
 	owner.audioTurn(ebookCourseString(first, "id", "session_id"), requestID)
 	second := owner.call(201, "POST", "/ebook/units/"+secondID+"/sessions", map[string]any{"mode": "shadowing", "request_id": uuid.NewString()})

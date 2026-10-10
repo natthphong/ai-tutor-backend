@@ -1,0 +1,1280 @@
+{
+ "units": [
+  {
+   "ordinal": 9,
+   "theme_en": "Fixing a software release",
+   "theme_th": "แก้ปัญหาก่อนปล่อยซอฟต์แวร์",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "debug",
+     "pos": "verb",
+     "meaning_th": "แก้ข้อผิดพลาดในโปรแกรม"
+    },
+    {
+     "term": "test",
+     "pos": "verb",
+     "meaning_th": "ทดสอบ"
+    },
+    {
+     "term": "troubleshoot",
+     "pos": "verb",
+     "meaning_th": "วิเคราะห์และแก้ปัญหา"
+    },
+    {
+     "term": "patch",
+     "pos": "noun",
+     "meaning_th": "ชุดแก้ไขซอฟต์แวร์"
+    },
+    {
+     "term": "crash",
+     "pos": "noun",
+     "meaning_th": "การหยุดทำงานกะทันหัน"
+    },
+    {
+     "term": "error",
+     "pos": "noun",
+     "meaning_th": "ข้อผิดพลาด"
+    },
+    {
+     "term": "version",
+     "pos": "noun",
+     "meaning_th": "รุ่นของซอฟต์แวร์"
+    },
+    {
+     "term": "stable",
+     "pos": "adjective",
+     "meaning_th": "ทำงานได้อย่างเสถียร"
+    },
+    {
+     "term": "feedback",
+     "pos": "noun",
+     "meaning_th": "ความคิดเห็นตอบกลับ"
+    },
+    {
+     "term": "developer",
+     "pos": "noun",
+     "meaning_th": "นักพัฒนาซอฟต์แวร์"
+    }
+   ]
+  },
+  {
+   "ordinal": 10,
+   "theme_en": "Baking a birthday cake",
+   "theme_th": "ทำเค้กวันเกิด",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "bake",
+     "pos": "verb",
+     "meaning_th": "อบ"
+    },
+    {
+     "term": "stir",
+     "pos": "verb",
+     "meaning_th": "คนส่วนผสม"
+    },
+    {
+     "term": "measure",
+     "pos": "verb",
+     "meaning_th": "ตวง"
+    },
+    {
+     "term": "mix",
+     "pos": "verb",
+     "meaning_th": "ผสม"
+    },
+    {
+     "term": "ingredient",
+     "pos": "noun",
+     "meaning_th": "ส่วนผสม"
+    },
+    {
+     "term": "batter",
+     "pos": "noun",
+     "meaning_th": "แป้งเค้กเหลว"
+    },
+    {
+     "term": "oven",
+     "pos": "noun",
+     "meaning_th": "เตาอบ"
+    },
+    {
+     "term": "birthday",
+     "pos": "noun",
+     "meaning_th": "วันเกิด"
+    },
+    {
+     "term": "sweet",
+     "pos": "adjective",
+     "meaning_th": "หวาน"
+    },
+    {
+     "term": "carefully",
+     "pos": "adverb",
+     "meaning_th": "อย่างระมัดระวัง"
+    }
+   ]
+  },
+  {
+   "ordinal": 11,
+   "theme_en": "Dealing with a new roommate",
+   "theme_th": "ปรับตัวอยู่กับเพื่อนร่วมห้องคนใหม่",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "complain",
+     "pos": "verb",
+     "meaning_th": "ร้องเรียน"
+    },
+    {
+     "term": "knock",
+     "pos": "verb",
+     "meaning_th": "เคาะ"
+    },
+    {
+     "term": "argue",
+     "pos": "verb",
+     "meaning_th": "โต้เถียง"
+    },
+    {
+     "term": "sleep",
+     "pos": "verb",
+     "meaning_th": "นอนหลับ"
+    },
+    {
+     "term": "roommate",
+     "pos": "noun",
+     "meaning_th": "เพื่อนร่วมห้อง"
+    },
+    {
+     "term": "landlord",
+     "pos": "noun",
+     "meaning_th": "เจ้าของบ้านเช่า"
+    },
+    {
+     "term": "tenant",
+     "pos": "noun",
+     "meaning_th": "ผู้เช่า"
+    },
+    {
+     "term": "lease",
+     "pos": "noun",
+     "meaning_th": "สัญญาเช่า"
+    },
+    {
+     "term": "noise",
+     "pos": "noun",
+     "meaning_th": "เสียงรบกวน"
+    },
+    {
+     "term": "loud",
+     "pos": "adjective",
+     "meaning_th": "เสียงดัง"
+    }
+   ]
+  },
+  {
+   "ordinal": 13,
+   "theme_en": "Changing careers",
+   "theme_th": "เปลี่ยนสายอาชีพ",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "career",
+     "pos": "noun",
+     "meaning_th": "สายอาชีพ"
+    },
+    {
+     "term": "resign",
+     "pos": "verb",
+     "meaning_th": "ลาออก"
+    },
+    {
+     "term": "hire",
+     "pos": "verb",
+     "meaning_th": "จ้างงาน"
+    },
+    {
+     "term": "promote",
+     "pos": "verb",
+     "meaning_th": "เลื่อนตำแหน่ง"
+    },
+    {
+     "term": "skill",
+     "pos": "noun",
+     "meaning_th": "ทักษะ"
+    },
+    {
+     "term": "qualification",
+     "pos": "noun",
+     "meaning_th": "คุณสมบัติ"
+    },
+    {
+     "term": "reference",
+     "pos": "noun",
+     "meaning_th": "บุคคลอ้างอิง"
+    },
+    {
+     "term": "employer",
+     "pos": "noun",
+     "meaning_th": "นายจ้าง"
+    },
+    {
+     "term": "applicant",
+     "pos": "noun",
+     "meaning_th": "ผู้สมัครงาน"
+    },
+    {
+     "term": "confident",
+     "pos": "adjective",
+     "meaning_th": "มั่นใจ"
+    }
+   ]
+  },
+  {
+   "ordinal": 14,
+   "theme_en": "Reviewing Last Week’s Sales",
+   "theme_th": "ทบทวนยอดขายของสัปดาห์ที่แล้ว",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "sell",
+     "pos": "verb",
+     "meaning_th": "ขาย"
+    },
+    {
+     "term": "rise",
+     "pos": "verb",
+     "meaning_th": "เพิ่มขึ้น"
+    },
+    {
+     "term": "fall",
+     "pos": "verb",
+     "meaning_th": "ลดลง"
+    },
+    {
+     "term": "achieve",
+     "pos": "verb",
+     "meaning_th": "ทำได้ตามเป้า"
+    },
+    {
+     "term": "disappointing",
+     "pos": "adjective",
+     "meaning_th": "น่าผิดหวัง"
+    },
+    {
+     "term": "figure",
+     "pos": "noun",
+     "meaning_th": "ตัวเลข"
+    },
+    {
+     "term": "profit",
+     "pos": "noun",
+     "meaning_th": "กำไร"
+    },
+    {
+     "term": "loss",
+     "pos": "noun",
+     "meaning_th": "ผลขาดทุน"
+    },
+    {
+     "term": "target",
+     "pos": "noun",
+     "meaning_th": "เป้าหมาย"
+    },
+    {
+     "term": "trend",
+     "pos": "noun",
+     "meaning_th": "แนวโน้ม"
+    }
+   ]
+  },
+  {
+   "ordinal": 15,
+   "theme_en": "Investigating a service problem",
+   "theme_th": "ตรวจสอบปัญหาการให้บริการ",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "investigate",
+     "pos": "verb",
+     "meaning_th": "ตรวจสอบ"
+    },
+    {
+     "term": "apologize",
+     "pos": "verb",
+     "meaning_th": "ขอโทษ"
+    },
+    {
+     "term": "resolve",
+     "pos": "verb",
+     "meaning_th": "แก้ไขให้เรียบร้อย"
+    },
+    {
+     "term": "promise",
+     "pos": "verb",
+     "meaning_th": "ให้คำมั่น"
+    },
+    {
+     "term": "issue",
+     "pos": "noun",
+     "meaning_th": "ปัญหา"
+    },
+    {
+     "term": "fault",
+     "pos": "noun",
+     "meaning_th": "ข้อบกพร่อง"
+    },
+    {
+     "term": "policy",
+     "pos": "noun",
+     "meaning_th": "นโยบาย"
+    },
+    {
+     "term": "evidence",
+     "pos": "noun",
+     "meaning_th": "หลักฐาน"
+    },
+    {
+     "term": "dissatisfied",
+     "pos": "adjective",
+     "meaning_th": "ไม่พอใจ"
+    },
+    {
+     "term": "agent",
+     "pos": "noun",
+     "meaning_th": "เจ้าหน้าที่บริการ"
+    }
+   ]
+  },
+  {
+   "ordinal": 23,
+   "theme_en": "Organizing a Staff Event",
+   "theme_th": "จัดงานสังสรรค์ของพนักงาน",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "contact",
+     "pos": "verb",
+     "meaning_th": "ติดต่อ"
+    },
+    {
+     "term": "reserve",
+     "pos": "verb",
+     "meaning_th": "จองไว้"
+    },
+    {
+     "term": "postpone",
+     "pos": "verb",
+     "meaning_th": "เลื่อนออกไป"
+    },
+    {
+     "term": "celebrate",
+     "pos": "verb",
+     "meaning_th": "ฉลอง"
+    },
+    {
+     "term": "venue",
+     "pos": "noun",
+     "meaning_th": "สถานที่จัดงาน"
+    },
+    {
+     "term": "date",
+     "pos": "noun",
+     "meaning_th": "วันที่"
+    },
+    {
+     "term": "staff",
+     "pos": "noun",
+     "meaning_th": "พนักงาน"
+    },
+    {
+     "term": "decoration",
+     "pos": "noun",
+     "meaning_th": "ของตกแต่ง"
+    },
+    {
+     "term": "entertainment",
+     "pos": "noun",
+     "meaning_th": "ความบันเทิง"
+    },
+    {
+     "term": "festive",
+     "pos": "adjective",
+     "meaning_th": "รื่นเริง"
+    }
+   ]
+  },
+  {
+   "ordinal": 25,
+   "theme_en": "Sending a client proposal",
+   "theme_th": "ส่งข้อเสนอให้ลูกค้า",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "client",
+     "pos": "noun",
+     "meaning_th": "ลูกค้า"
+    },
+    {
+     "term": "proposal",
+     "pos": "noun",
+     "meaning_th": "ข้อเสนอ"
+    },
+    {
+     "term": "approve",
+     "pos": "verb",
+     "meaning_th": "อนุมัติ"
+    },
+    {
+     "term": "attach",
+     "pos": "verb",
+     "meaning_th": "แนบไฟล์"
+    },
+    {
+     "term": "submit",
+     "pos": "verb",
+     "meaning_th": "ส่งเพื่อพิจารณา"
+    },
+    {
+     "term": "revise",
+     "pos": "verb",
+     "meaning_th": "ปรับแก้"
+    },
+    {
+     "term": "quote",
+     "pos": "noun",
+     "meaning_th": "ใบเสนอราคา"
+    },
+    {
+     "term": "confirm",
+     "pos": "verb",
+     "meaning_th": "ยืนยัน"
+    },
+    {
+     "term": "document",
+     "pos": "noun",
+     "meaning_th": "เอกสาร"
+    },
+    {
+     "term": "draft",
+     "pos": "noun",
+     "meaning_th": "ฉบับร่าง"
+    }
+   ]
+  },
+  {
+   "ordinal": 27,
+   "theme_en": "Getting help after a breakdown",
+   "theme_th": "ขอความช่วยเหลือเมื่อรถเสีย",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "mechanic",
+     "pos": "noun",
+     "meaning_th": "ช่างซ่อมรถ"
+    },
+    {
+     "term": "tow",
+     "pos": "verb",
+     "meaning_th": "ลากรถ"
+    },
+    {
+     "term": "engine",
+     "pos": "noun",
+     "meaning_th": "เครื่องยนต์"
+    },
+    {
+     "term": "flat tire",
+     "pos": "phrase",
+     "meaning_th": "ยางแบน"
+    },
+    {
+     "term": "restart",
+     "pos": "verb",
+     "meaning_th": "สตาร์ตใหม่"
+    },
+    {
+     "term": "fail",
+     "pos": "verb",
+     "meaning_th": "ขัดข้อง"
+    },
+    {
+     "term": "breakdown",
+     "pos": "noun",
+     "meaning_th": "รถเสีย"
+    },
+    {
+     "term": "spare",
+     "pos": "adjective",
+     "meaning_th": "สำรอง"
+    },
+    {
+     "term": "stranded",
+     "pos": "adjective",
+     "meaning_th": "ติดค้างไปไหนไม่ได้"
+    },
+    {
+     "term": "roadside assistance",
+     "pos": "phrase",
+     "meaning_th": "บริการช่วยเหลือฉุกเฉินบนถนน"
+    }
+   ]
+  },
+  {
+   "ordinal": 28,
+   "theme_en": "Solving an office mix-up",
+   "theme_th": "แก้ปัญหาสับสนในสำนักงาน",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "suspect",
+     "pos": "verb",
+     "meaning_th": "สงสัย"
+    },
+    {
+     "term": "hide",
+     "pos": "verb",
+     "meaning_th": "ซ่อน"
+    },
+    {
+     "term": "notice",
+     "pos": "verb",
+     "meaning_th": "สังเกตเห็น"
+    },
+    {
+     "term": "clue",
+     "pos": "noun",
+     "meaning_th": "เบาะแส"
+    },
+    {
+     "term": "drawer",
+     "pos": "noun",
+     "meaning_th": "ลิ้นชัก"
+    },
+    {
+     "term": "copy",
+     "pos": "noun",
+     "meaning_th": "สำเนา"
+    },
+    {
+     "term": "folder",
+     "pos": "noun",
+     "meaning_th": "แฟ้มเอกสาร"
+    },
+    {
+     "term": "mix-up",
+     "pos": "noun",
+     "meaning_th": "ความสับสนผิดพลาด"
+    },
+    {
+     "term": "identical",
+     "pos": "adjective",
+     "meaning_th": "เหมือนกันทุกอย่าง"
+    },
+    {
+     "term": "mistakenly",
+     "pos": "adverb",
+     "meaning_th": "โดยเข้าใจผิด"
+    }
+   ]
+  },
+  {
+   "ordinal": 30,
+   "theme_en": "Looking for a lost pet",
+   "theme_th": "ตามหาสัตว์เลี้ยงที่หายไป",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "escape",
+     "pos": "verb",
+     "meaning_th": "หนีออกไป"
+    },
+    {
+     "term": "wander",
+     "pos": "verb",
+     "meaning_th": "เดินเตร่"
+    },
+    {
+     "term": "bark",
+     "pos": "verb",
+     "meaning_th": "เห่า"
+    },
+    {
+     "term": "chase",
+     "pos": "verb",
+     "meaning_th": "ไล่ตาม"
+    },
+    {
+     "term": "collar",
+     "pos": "noun",
+     "meaning_th": "ปลอกคอ"
+    },
+    {
+     "term": "leash",
+     "pos": "noun",
+     "meaning_th": "สายจูง"
+    },
+    {
+     "term": "yard",
+     "pos": "noun",
+     "meaning_th": "สนามในบ้าน"
+    },
+    {
+     "term": "owner",
+     "pos": "noun",
+     "meaning_th": "เจ้าของ"
+    },
+    {
+     "term": "pet",
+     "pos": "noun",
+     "meaning_th": "สัตว์เลี้ยง"
+    },
+    {
+     "term": "frightened",
+     "pos": "adjective",
+     "meaning_th": "ตกใจกลัว"
+    }
+   ]
+  },
+  {
+   "ordinal": 32,
+   "theme_en": "Following Office Security Rules",
+   "theme_th": "ปฏิบัติตามกฎความปลอดภัยในสำนักงาน",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "lock",
+     "pos": "verb",
+     "meaning_th": "ล็อก"
+    },
+    {
+     "term": "protect",
+     "pos": "verb",
+     "meaning_th": "ปกป้อง"
+    },
+    {
+     "term": "display",
+     "pos": "verb",
+     "meaning_th": "แสดงให้เห็น"
+    },
+    {
+     "term": "security",
+     "pos": "noun",
+     "meaning_th": "ความปลอดภัย"
+    },
+    {
+     "term": "visitor",
+     "pos": "noun",
+     "meaning_th": "ผู้มาติดต่อ"
+    },
+    {
+     "term": "access",
+     "pos": "noun",
+     "meaning_th": "สิทธิ์เข้าใช้"
+    },
+    {
+     "term": "equipment",
+     "pos": "noun",
+     "meaning_th": "อุปกรณ์"
+    },
+    {
+     "term": "confidential",
+     "pos": "adjective",
+     "meaning_th": "เป็นความลับ"
+    },
+    {
+     "term": "permission",
+     "pos": "noun",
+     "meaning_th": "การอนุญาต"
+    },
+    {
+     "term": "supervisor",
+     "pos": "noun",
+     "meaning_th": "หัวหน้างาน"
+    }
+   ]
+  },
+  {
+   "ordinal": 35,
+   "theme_en": "Getting Ready for a Job Fair",
+   "theme_th": "เตรียมตัวไปงานนัดพบแรงงาน",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "practice",
+     "pos": "verb",
+     "meaning_th": "ฝึกฝน"
+    },
+    {
+     "term": "rehearse",
+     "pos": "verb",
+     "meaning_th": "ซ้อมพูด"
+    },
+    {
+     "term": "greet",
+     "pos": "verb",
+     "meaning_th": "ทักทาย"
+    },
+    {
+     "term": "polish",
+     "pos": "verb",
+     "meaning_th": "ปรับให้ดีขึ้น"
+    },
+    {
+     "term": "booth",
+     "pos": "noun",
+     "meaning_th": "บูธ"
+    },
+    {
+     "term": "candidate",
+     "pos": "noun",
+     "meaning_th": "ผู้สมัครงาน"
+    },
+    {
+     "term": "recruiter",
+     "pos": "noun",
+     "meaning_th": "ผู้สรรหาพนักงาน"
+    },
+    {
+     "term": "handout",
+     "pos": "noun",
+     "meaning_th": "เอกสารแจก"
+    },
+    {
+     "term": "professional",
+     "pos": "adjective",
+     "meaning_th": "เป็นมืออาชีพ"
+    },
+    {
+     "term": "neat",
+     "pos": "adjective",
+     "meaning_th": "เรียบร้อย"
+    }
+   ]
+  },
+  {
+   "ordinal": 36,
+   "theme_en": "Planning a Family Reunion",
+   "theme_th": "วางแผนงานรวมญาติ",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "relative",
+     "pos": "noun",
+     "meaning_th": "ญาติ"
+    },
+    {
+     "term": "reunion",
+     "pos": "noun",
+     "meaning_th": "งานรวมญาติ"
+    },
+    {
+     "term": "childhood",
+     "pos": "noun",
+     "meaning_th": "วัยเด็ก"
+    },
+    {
+     "term": "tradition",
+     "pos": "noun",
+     "meaning_th": "ประเพณีของครอบครัว"
+    },
+    {
+     "term": "gather",
+     "pos": "verb",
+     "meaning_th": "มารวมตัวกัน"
+    },
+    {
+     "term": "reconnect",
+     "pos": "verb",
+     "meaning_th": "กลับมาติดต่อกัน"
+    },
+    {
+     "term": "catch up",
+     "pos": "phrase",
+     "meaning_th": "พูดคุยอัปเดตเรื่องราว"
+    },
+    {
+     "term": "miss",
+     "pos": "verb",
+     "meaning_th": "คิดถึง"
+    },
+    {
+     "term": "familiar",
+     "pos": "adjective",
+     "meaning_th": "คุ้นเคย"
+    },
+    {
+     "term": "perhaps",
+     "pos": "adverb",
+     "meaning_th": "บางที"
+    }
+   ]
+  },
+  {
+   "ordinal": 38,
+   "theme_en": "Saving for a first home",
+   "theme_th": "เก็บเงินซื้อบ้านหลังแรก",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "mortgage",
+     "pos": "noun",
+     "meaning_th": "สินเชื่อบ้าน"
+    },
+    {
+     "term": "deposit",
+     "pos": "noun",
+     "meaning_th": "เงินมัดจำ"
+    },
+    {
+     "term": "afford",
+     "pos": "verb",
+     "meaning_th": "มีเงินพอซื้อ"
+    },
+    {
+     "term": "borrow",
+     "pos": "verb",
+     "meaning_th": "ยืมเงิน"
+    },
+    {
+     "term": "payment",
+     "pos": "noun",
+     "meaning_th": "เงินที่ชำระ"
+    },
+    {
+     "term": "income",
+     "pos": "noun",
+     "meaning_th": "รายได้"
+    },
+    {
+     "term": "debt",
+     "pos": "noun",
+     "meaning_th": "หนี้สิน"
+    },
+    {
+     "term": "loan",
+     "pos": "noun",
+     "meaning_th": "เงินกู้"
+    },
+    {
+     "term": "interest",
+     "pos": "noun",
+     "meaning_th": "ดอกเบี้ย"
+    },
+    {
+     "term": "repay",
+     "pos": "verb",
+     "meaning_th": "ชำระคืน"
+    }
+   ]
+  },
+  {
+   "ordinal": 39,
+   "theme_en": "Wanting a calmer daily life",
+   "theme_th": "อยากใช้ชีวิตประจำวันที่สงบขึ้น",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "relax",
+     "pos": "verb",
+     "meaning_th": "ผ่อนคลาย"
+    },
+    {
+     "term": "manage",
+     "pos": "verb",
+     "meaning_th": "จัดการ"
+    },
+    {
+     "term": "prioritize",
+     "pos": "verb",
+     "meaning_th": "จัดลำดับความสำคัญ"
+    },
+    {
+     "term": "reduce",
+     "pos": "verb",
+     "meaning_th": "ลด"
+    },
+    {
+     "term": "pressure",
+     "pos": "noun",
+     "meaning_th": "ความกดดัน"
+    },
+    {
+     "term": "stress",
+     "pos": "noun",
+     "meaning_th": "ความเครียด"
+    },
+    {
+     "term": "leisure",
+     "pos": "noun",
+     "meaning_th": "เวลาว่าง"
+    },
+    {
+     "term": "break",
+     "pos": "noun",
+     "meaning_th": "ช่วงพัก"
+    },
+    {
+     "term": "calm",
+     "pos": "adjective",
+     "meaning_th": "สงบ"
+    },
+    {
+     "term": "overwhelmed",
+     "pos": "adjective",
+     "meaning_th": "รู้สึกหนักเกินรับไหว"
+    }
+   ]
+  },
+  {
+   "ordinal": 43,
+   "theme_en": "Producing a Team Newsletter",
+   "theme_th": "จัดทำจดหมายข่าวของทีม",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "publish",
+     "pos": "verb",
+     "meaning_th": "ตีพิมพ์"
+    },
+    {
+     "term": "proofread",
+     "pos": "verb",
+     "meaning_th": "ตรวจแก้คำผิด"
+    },
+    {
+     "term": "distribute",
+     "pos": "verb",
+     "meaning_th": "แจกจ่าย"
+    },
+    {
+     "term": "article",
+     "pos": "noun",
+     "meaning_th": "บทความ"
+    },
+    {
+     "term": "headline",
+     "pos": "noun",
+     "meaning_th": "พาดหัวข่าว"
+    },
+    {
+     "term": "layout",
+     "pos": "noun",
+     "meaning_th": "การจัดหน้า"
+    },
+    {
+     "term": "editor",
+     "pos": "noun",
+     "meaning_th": "บรรณาธิการ"
+    },
+    {
+     "term": "author",
+     "pos": "noun",
+     "meaning_th": "ผู้เขียน"
+    },
+    {
+     "term": "page",
+     "pos": "noun",
+     "meaning_th": "หน้า"
+    },
+    {
+     "term": "accurate",
+     "pos": "adjective",
+     "meaning_th": "ถูกต้องแม่นยำ"
+    }
+   ]
+  },
+  {
+   "ordinal": 45,
+   "theme_en": "Sharing a community garden",
+   "theme_th": "ร่วมดูแลสวนชุมชน",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "plant",
+     "pos": "verb",
+     "meaning_th": "ปลูก"
+    },
+    {
+     "term": "weed",
+     "pos": "verb",
+     "meaning_th": "กำจัดวัชพืช"
+    },
+    {
+     "term": "grow",
+     "pos": "verb",
+     "meaning_th": "เติบโต"
+    },
+    {
+     "term": "harvest",
+     "pos": "verb",
+     "meaning_th": "เก็บเกี่ยว"
+    },
+    {
+     "term": "soil",
+     "pos": "noun",
+     "meaning_th": "ดิน"
+    },
+    {
+     "term": "tool",
+     "pos": "noun",
+     "meaning_th": "เครื่องมือ"
+    },
+    {
+     "term": "seed",
+     "pos": "noun",
+     "meaning_th": "เมล็ดพันธุ์"
+    },
+    {
+     "term": "responsible",
+     "pos": "adjective",
+     "meaning_th": "มีความรับผิดชอบ"
+    },
+    {
+     "term": "fence",
+     "pos": "noun",
+     "meaning_th": "รั้ว"
+    },
+    {
+     "term": "gardener",
+     "pos": "noun",
+     "meaning_th": "คนทำสวน"
+    }
+   ]
+  },
+  {
+   "ordinal": 46,
+   "theme_en": "Getting a Haircut for a Wedding",
+   "theme_th": "ตัดผมเตรียมไปงานแต่ง",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "trim",
+     "pos": "verb",
+     "meaning_th": "เล็ม"
+    },
+    {
+     "term": "dye",
+     "pos": "verb",
+     "meaning_th": "ย้อมสี"
+    },
+    {
+     "term": "straighten",
+     "pos": "verb",
+     "meaning_th": "ยืดให้ตรง"
+    },
+    {
+     "term": "bleach",
+     "pos": "verb",
+     "meaning_th": "ฟอกสี"
+    },
+    {
+     "term": "stylist",
+     "pos": "noun",
+     "meaning_th": "ช่างทำผม"
+    },
+    {
+     "term": "salon",
+     "pos": "noun",
+     "meaning_th": "ร้านทำผม"
+    },
+    {
+     "term": "haircut",
+     "pos": "noun",
+     "meaning_th": "ทรงผม"
+    },
+    {
+     "term": "fringe",
+     "pos": "noun",
+     "meaning_th": "ผมหน้าม้า"
+    },
+    {
+     "term": "length",
+     "pos": "noun",
+     "meaning_th": "ความยาว"
+    },
+    {
+     "term": "curly",
+     "pos": "adjective",
+     "meaning_th": "หยิก"
+    }
+   ]
+  },
+  {
+   "ordinal": 47,
+   "theme_en": "Describing a doctor appointment",
+   "theme_th": "เล่าเรื่องการนัดพบแพทย์",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "prescribe",
+     "pos": "verb",
+     "meaning_th": "สั่งยา"
+    },
+    {
+     "term": "mention",
+     "pos": "verb",
+     "meaning_th": "กล่าวถึง"
+    },
+    {
+     "term": "hurt",
+     "pos": "verb",
+     "meaning_th": "เจ็บ"
+    },
+    {
+     "term": "tablet",
+     "pos": "noun",
+     "meaning_th": "ยาเม็ด"
+    },
+    {
+     "term": "pain",
+     "pos": "noun",
+     "meaning_th": "ความเจ็บปวด"
+    },
+    {
+     "term": "headache",
+     "pos": "noun",
+     "meaning_th": "อาการปวดหัว"
+    },
+    {
+     "term": "dosage",
+     "pos": "noun",
+     "meaning_th": "ขนาดยาที่ใช้"
+    },
+    {
+     "term": "appointment",
+     "pos": "noun",
+     "meaning_th": "นัดหมาย"
+    },
+    {
+     "term": "pharmacy",
+     "pos": "noun",
+     "meaning_th": "ร้านขายยา"
+    },
+    {
+     "term": "mild",
+     "pos": "adjective",
+     "meaning_th": "ไม่รุนแรง"
+    }
+   ]
+  },
+  {
+   "ordinal": 48,
+   "theme_en": "Passing on Shift Instructions",
+   "theme_th": "ถ่ายทอดคำแนะนำระหว่างเปลี่ยนกะ",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "remind",
+     "pos": "verb",
+     "meaning_th": "เตือนให้จำ"
+    },
+    {
+     "term": "warn",
+     "pos": "verb",
+     "meaning_th": "เตือนให้ระวัง"
+    },
+    {
+     "term": "repeat",
+     "pos": "verb",
+     "meaning_th": "พูดซ้ำ"
+    },
+    {
+     "term": "pass on",
+     "pos": "phrasal verb",
+     "meaning_th": "ถ่ายทอดต่อ"
+    },
+    {
+     "term": "instruction",
+     "pos": "noun",
+     "meaning_th": "คำสั่ง"
+    },
+    {
+     "term": "procedure",
+     "pos": "noun",
+     "meaning_th": "ขั้นตอนการทำงาน"
+    },
+    {
+     "term": "shift",
+     "pos": "noun",
+     "meaning_th": "กะทำงาน"
+    },
+    {
+     "term": "detail",
+     "pos": "noun",
+     "meaning_th": "รายละเอียด"
+    },
+    {
+     "term": "safety",
+     "pos": "noun",
+     "meaning_th": "ความปลอดภัย"
+    },
+    {
+     "term": "important",
+     "pos": "adjective",
+     "meaning_th": "สำคัญ"
+    }
+   ]
+  },
+  {
+   "ordinal": 50,
+   "theme_en": "Finding a building downtown",
+   "theme_th": "หาทางไปยังอาคารในใจกลางเมือง",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "navigate",
+     "pos": "verb",
+     "meaning_th": "หาทางไป"
+    },
+    {
+     "term": "pass",
+     "pos": "verb",
+     "meaning_th": "ผ่าน"
+    },
+    {
+     "term": "reach",
+     "pos": "verb",
+     "meaning_th": "ไปถึง"
+    },
+    {
+     "term": "block",
+     "pos": "noun",
+     "meaning_th": "ช่วงถนนหนึ่งบล็อก"
+    },
+    {
+     "term": "intersection",
+     "pos": "noun",
+     "meaning_th": "ทางแยก"
+    },
+    {
+     "term": "landmark",
+     "pos": "noun",
+     "meaning_th": "จุดสังเกตสำคัญ"
+    },
+    {
+     "term": "direction",
+     "pos": "noun",
+     "meaning_th": "ทิศทาง"
+    },
+    {
+     "term": "avenue",
+     "pos": "noun",
+     "meaning_th": "ถนนสายใหญ่"
+    },
+    {
+     "term": "crossroads",
+     "pos": "noun",
+     "meaning_th": "สี่แยก"
+    },
+    {
+     "term": "straight",
+     "pos": "adverb",
+     "meaning_th": "ตรงไป"
+    }
+   ]
+  }
+ ]
+}

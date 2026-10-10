@@ -1,0 +1,1 @@
+{"type":"object","additionalProperties":false,"required":["replacements"],"properties":{"replacements":{"type":"array","items":{"type":"object","additionalProperties":false,"required":["ordinal","old","term","pos","meaning_th"],"properties":{"ordinal":{"type":"integer"},"old":{"type":"string"},"term":{"type":"string"},"pos":{"type":"string"},"meaning_th":{"type":"string"}}}}}}

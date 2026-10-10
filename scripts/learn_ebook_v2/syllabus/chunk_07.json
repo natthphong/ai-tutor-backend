@@ -1,0 +1,1222 @@
+{
+ "units": [
+  {
+   "ordinal": 16,
+   "theme_en": "A delayed system rollout",
+   "theme_th": "การเปิดใช้ระบบที่ล่าช้า",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "monitor",
+     "pos": "verb",
+     "meaning_th": "ติดตาม"
+    },
+    {
+     "term": "struggle",
+     "pos": "verb",
+     "meaning_th": "พยายามอย่างยากลำบาก"
+    },
+    {
+     "term": "coordinate",
+     "pos": "verb",
+     "meaning_th": "ประสานงาน"
+    },
+    {
+     "term": "negotiate",
+     "pos": "verb",
+     "meaning_th": "เจรจา"
+    },
+    {
+     "term": "rollout",
+     "pos": "noun",
+     "meaning_th": "การเปิดใช้งาน"
+    },
+    {
+     "term": "disruption",
+     "pos": "noun",
+     "meaning_th": "การหยุดชะงัก"
+    },
+    {
+     "term": "technician",
+     "pos": "noun",
+     "meaning_th": "ช่างเทคนิค"
+    },
+    {
+     "term": "system",
+     "pos": "noun",
+     "meaning_th": "ระบบ"
+    },
+    {
+     "term": "prolonged",
+     "pos": "adjective",
+     "meaning_th": "ยืดเยื้อ"
+    },
+    {
+     "term": "consistently",
+     "pos": "adverb",
+     "meaning_th": "อย่างสม่ำเสมอ"
+    }
+   ]
+  },
+  {
+   "ordinal": 24,
+   "theme_en": "Preparing for an annual audit",
+   "theme_th": "การเตรียมตัวตรวจสอบบัญชีประจำปี",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "analyze",
+     "pos": "verb",
+     "meaning_th": "วิเคราะห์"
+    },
+    {
+     "term": "verify",
+     "pos": "verb",
+     "meaning_th": "ตรวจสอบความถูกต้อง"
+    },
+    {
+     "term": "reconcile",
+     "pos": "verb",
+     "meaning_th": "กระทบยอด"
+    },
+    {
+     "term": "double-check",
+     "pos": "verb",
+     "meaning_th": "ตรวจทานอีกครั้ง"
+    },
+    {
+     "term": "audit",
+     "pos": "noun",
+     "meaning_th": "การตรวจสอบบัญชี"
+    },
+    {
+     "term": "accountant",
+     "pos": "noun",
+     "meaning_th": "นักบัญชี"
+    },
+    {
+     "term": "records",
+     "pos": "noun",
+     "meaning_th": "บันทึกข้อมูล"
+    },
+    {
+     "term": "figures",
+     "pos": "noun",
+     "meaning_th": "ตัวเลข"
+    },
+    {
+     "term": "financial",
+     "pos": "adjective",
+     "meaning_th": "เกี่ยวกับการเงิน"
+    },
+    {
+     "term": "accurately",
+     "pos": "adverb",
+     "meaning_th": "อย่างแม่นยำ"
+    }
+   ]
+  },
+  {
+   "ordinal": 34,
+   "theme_en": "Handling a billing dispute",
+   "theme_th": "การจัดการข้อโต้แย้งเรื่องการเรียกเก็บเงิน",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "clarify",
+     "pos": "verb",
+     "meaning_th": "ชี้แจง"
+    },
+    {
+     "term": "compensate",
+     "pos": "verb",
+     "meaning_th": "ชดเชย"
+    },
+    {
+     "term": "urge",
+     "pos": "verb",
+     "meaning_th": "กระตุ้นหรือเสนออย่างหนักแน่น"
+    },
+    {
+     "term": "insist",
+     "pos": "verb",
+     "meaning_th": "ยืนกราน"
+    },
+    {
+     "term": "waive",
+     "pos": "verb",
+     "meaning_th": "ยกเว้น"
+    },
+    {
+     "term": "transaction",
+     "pos": "noun",
+     "meaning_th": "ธุรกรรม"
+    },
+    {
+     "term": "billing",
+     "pos": "noun",
+     "meaning_th": "การเรียกเก็บเงิน"
+    },
+    {
+     "term": "explanation",
+     "pos": "noun",
+     "meaning_th": "คำอธิบาย"
+    },
+    {
+     "term": "unreasonable",
+     "pos": "adjective",
+     "meaning_th": "ไม่สมเหตุสมผล"
+    },
+    {
+     "term": "politely",
+     "pos": "adverb",
+     "meaning_th": "อย่างสุภาพ"
+    }
+   ]
+  },
+  {
+   "ordinal": 40,
+   "theme_en": "A forgotten gym membership",
+   "theme_th": "การลืมต่อสมาชิกฟิตเนส",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "renew",
+     "pos": "verb",
+     "meaning_th": "ต่ออายุ"
+    },
+    {
+     "term": "expire",
+     "pos": "verb",
+     "meaning_th": "หมดอายุ"
+    },
+    {
+     "term": "overlook",
+     "pos": "verb",
+     "meaning_th": "มองข้าม"
+    },
+    {
+     "term": "lapse",
+     "pos": "verb",
+     "meaning_th": "สิ้นสุดลง"
+    },
+    {
+     "term": "membership",
+     "pos": "noun",
+     "meaning_th": "การเป็นสมาชิก"
+    },
+    {
+     "term": "expiry",
+     "pos": "noun",
+     "meaning_th": "วันหมดอายุ"
+    },
+    {
+     "term": "subscription",
+     "pos": "noun",
+     "meaning_th": "การสมัครสมาชิกแบบต่อเนื่อง"
+    },
+    {
+     "term": "annual",
+     "pos": "adjective",
+     "meaning_th": "รายปี"
+    },
+    {
+     "term": "valid",
+     "pos": "adjective",
+     "meaning_th": "ยังใช้ได้"
+    },
+    {
+     "term": "automatically",
+     "pos": "adverb",
+     "meaning_th": "โดยอัตโนมัติ"
+    }
+   ]
+  },
+  {
+   "ordinal": 41,
+   "theme_en": "Planning a small wedding",
+   "theme_th": "การวางแผนงานแต่งงานเล็ก ๆ",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "marry",
+     "pos": "verb",
+     "meaning_th": "แต่งงาน"
+    },
+    {
+     "term": "propose",
+     "pos": "verb",
+     "meaning_th": "ขอแต่งงาน"
+    },
+    {
+     "term": "desire",
+     "pos": "verb",
+     "meaning_th": "ปรารถนา"
+    },
+    {
+     "term": "wish",
+     "pos": "verb",
+     "meaning_th": "ปรารถนา"
+    },
+    {
+     "term": "wedding",
+     "pos": "noun",
+     "meaning_th": "งานแต่งงาน"
+    },
+    {
+     "term": "engagement",
+     "pos": "noun",
+     "meaning_th": "การหมั้น"
+    },
+    {
+     "term": "fiancé",
+     "pos": "noun",
+     "meaning_th": "คู่หมั้นชาย"
+    },
+    {
+     "term": "celebration",
+     "pos": "noun",
+     "meaning_th": "งานเฉลิมฉลอง"
+    },
+    {
+     "term": "ideal",
+     "pos": "adjective",
+     "meaning_th": "ในอุดมคติ"
+    },
+    {
+     "term": "someday",
+     "pos": "adverb",
+     "meaning_th": "สักวันหนึ่ง"
+    }
+   ]
+  },
+  {
+   "ordinal": 44,
+   "theme_en": "Making a product in a factory",
+   "theme_th": "การผลิตสินค้าในโรงงาน",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "manufacture",
+     "pos": "verb",
+     "meaning_th": "ผลิต"
+    },
+    {
+     "term": "assemble",
+     "pos": "verb",
+     "meaning_th": "ประกอบ"
+    },
+    {
+     "term": "process",
+     "pos": "verb",
+     "meaning_th": "แปรรูปหรือดำเนินการผลิต"
+    },
+    {
+     "term": "export",
+     "pos": "verb",
+     "meaning_th": "ส่งออก"
+    },
+    {
+     "term": "factory",
+     "pos": "noun",
+     "meaning_th": "โรงงาน"
+    },
+    {
+     "term": "packaging",
+     "pos": "noun",
+     "meaning_th": "บรรจุภัณฑ์"
+    },
+    {
+     "term": "shipment",
+     "pos": "noun",
+     "meaning_th": "สินค้าที่จัดส่ง"
+    },
+    {
+     "term": "warehouse",
+     "pos": "noun",
+     "meaning_th": "คลังสินค้า"
+    },
+    {
+     "term": "durable",
+     "pos": "adjective",
+     "meaning_th": "ทนทาน"
+    },
+    {
+     "term": "overseas",
+     "pos": "adverb",
+     "meaning_th": "ไปต่างประเทศ"
+    }
+   ]
+  },
+  {
+   "ordinal": 62,
+   "theme_en": "Studying for a professional certificate",
+   "theme_th": "การเรียนเพื่อสอบประกาศนียบัตรวิชาชีพ",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "succeed in",
+     "pos": "phrase",
+     "meaning_th": "ประสบความสำเร็จในการ"
+    },
+    {
+     "term": "participate in",
+     "pos": "phrase",
+     "meaning_th": "เข้าร่วม"
+    },
+    {
+     "term": "specialize in",
+     "pos": "phrase",
+     "meaning_th": "เชี่ยวชาญด้าน"
+    },
+    {
+     "term": "persist in",
+     "pos": "phrase",
+     "meaning_th": "มุ่งมั่นทำต่อ"
+    },
+    {
+     "term": "concentrate on",
+     "pos": "phrase",
+     "meaning_th": "จดจ่อกับ"
+    },
+    {
+     "term": "enroll in",
+     "pos": "phrase",
+     "meaning_th": "ลงทะเบียนเรียน"
+    },
+    {
+     "term": "certificate",
+     "pos": "noun",
+     "meaning_th": "ประกาศนียบัตร"
+    },
+    {
+     "term": "coursework",
+     "pos": "noun",
+     "meaning_th": "งานในหลักสูตร"
+    },
+    {
+     "term": "demanding",
+     "pos": "adjective",
+     "meaning_th": "หนักและท้าทาย"
+    },
+    {
+     "term": "effectively",
+     "pos": "adverb",
+     "meaning_th": "อย่างมีประสิทธิภาพ"
+    }
+   ]
+  },
+  {
+   "ordinal": 63,
+   "theme_en": "Preparing for a charity run",
+   "theme_th": "การเตรียมตัววิ่งการกุศล",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "be worth",
+     "pos": "phrase",
+     "meaning_th": "คุ้มค่าที่จะ"
+    },
+    {
+     "term": "have difficulty",
+     "pos": "phrase",
+     "meaning_th": "มีปัญหาในการ"
+    },
+    {
+     "term": "go jogging",
+     "pos": "phrase",
+     "meaning_th": "ออกไปวิ่งเหยาะ ๆ"
+    },
+    {
+     "term": "no use",
+     "pos": "phrase",
+     "meaning_th": "ไม่มีประโยชน์ที่จะ"
+    },
+    {
+     "term": "jog",
+     "pos": "verb",
+     "meaning_th": "วิ่งเหยาะ ๆ"
+    },
+    {
+     "term": "breathe",
+     "pos": "verb",
+     "meaning_th": "หายใจ"
+    },
+    {
+     "term": "persist",
+     "pos": "verb",
+     "meaning_th": "มุ่งมั่นต่อไป"
+    },
+    {
+     "term": "stamina",
+     "pos": "noun",
+     "meaning_th": "ความอึด"
+    },
+    {
+     "term": "distance",
+     "pos": "noun",
+     "meaning_th": "ระยะทาง"
+    },
+    {
+     "term": "strenuous",
+     "pos": "adjective",
+     "meaning_th": "ต้องใช้กำลังมาก"
+    }
+   ]
+  },
+  {
+   "ordinal": 66,
+   "theme_en": "Joining a photography meetup",
+   "theme_th": "การเข้าร่วมกลุ่มนัดพบคนรักการถ่ายภาพ",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "approach",
+     "pos": "verb",
+     "meaning_th": "เข้าไปหา"
+    },
+    {
+     "term": "hesitate",
+     "pos": "verb",
+     "meaning_th": "ลังเล"
+    },
+    {
+     "term": "chat",
+     "pos": "verb",
+     "meaning_th": "พูดคุย"
+    },
+    {
+     "term": "socialize",
+     "pos": "verb",
+     "meaning_th": "เข้าสังคม"
+    },
+    {
+     "term": "stranger",
+     "pos": "noun",
+     "meaning_th": "คนแปลกหน้า"
+    },
+    {
+     "term": "small talk",
+     "pos": "phrase",
+     "meaning_th": "การคุยเรื่องทั่วไป"
+    },
+    {
+     "term": "meetup",
+     "pos": "noun",
+     "meaning_th": "การนัดพบกลุ่ม"
+    },
+    {
+     "term": "curious",
+     "pos": "adjective",
+     "meaning_th": "อยากรู้อยากเห็น"
+    },
+    {
+     "term": "awkward",
+     "pos": "adjective",
+     "meaning_th": "กระอักกระอ่วน"
+    },
+    {
+     "term": "socially",
+     "pos": "adverb",
+     "meaning_th": "ในเชิงสังคม"
+    }
+   ]
+  },
+  {
+   "ordinal": 68,
+   "theme_en": "A kitchen fire at home",
+   "theme_th": "ไฟไหม้ในครัวที่บ้าน",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "burn",
+     "pos": "verb",
+     "meaning_th": "ไหม้"
+    },
+    {
+     "term": "spread",
+     "pos": "verb",
+     "meaning_th": "ลุกลาม"
+    },
+    {
+     "term": "crawl",
+     "pos": "verb",
+     "meaning_th": "คลาน"
+    },
+    {
+     "term": "flame",
+     "pos": "noun",
+     "meaning_th": "เปลวไฟ"
+    },
+    {
+     "term": "smoke",
+     "pos": "noun",
+     "meaning_th": "ควัน"
+    },
+    {
+     "term": "ash",
+     "pos": "noun",
+     "meaning_th": "เถ้าถ่าน"
+    },
+    {
+     "term": "panic",
+     "pos": "noun",
+     "meaning_th": "ความตื่นตระหนก"
+    },
+    {
+     "term": "smoky",
+     "pos": "adjective",
+     "meaning_th": "มีควันมาก"
+    },
+    {
+     "term": "dangerous",
+     "pos": "adjective",
+     "meaning_th": "อันตราย"
+    },
+    {
+     "term": "rapidly",
+     "pos": "adverb",
+     "meaning_th": "อย่างรวดเร็ว"
+    }
+   ]
+  },
+  {
+   "ordinal": 95,
+   "theme_en": "A regional leadership workshop",
+   "theme_th": "การอบรมภาวะผู้นำระดับภูมิภาค",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "fund",
+     "pos": "verb",
+     "meaning_th": "ให้ทุน"
+    },
+    {
+     "term": "oversee",
+     "pos": "verb",
+     "meaning_th": "กำกับดูแล"
+    },
+    {
+     "term": "represent",
+     "pos": "verb",
+     "meaning_th": "เป็นตัวแทน"
+    },
+    {
+     "term": "executive",
+     "pos": "noun",
+     "meaning_th": "ผู้บริหาร"
+    },
+    {
+     "term": "consultant",
+     "pos": "noun",
+     "meaning_th": "ที่ปรึกษา"
+    },
+    {
+     "term": "facilitator",
+     "pos": "noun",
+     "meaning_th": "ผู้นำกระบวนการ"
+    },
+    {
+     "term": "keynote",
+     "pos": "noun",
+     "meaning_th": "ปาฐกถาหลัก"
+    },
+    {
+     "term": "sponsor",
+     "pos": "noun",
+     "meaning_th": "ผู้สนับสนุน"
+    },
+    {
+     "term": "influential",
+     "pos": "adjective",
+     "meaning_th": "ทรงอิทธิพล"
+    },
+    {
+     "term": "regional",
+     "pos": "adjective",
+     "meaning_th": "ระดับภูมิภาค"
+    }
+   ]
+  },
+  {
+   "ordinal": 96,
+   "theme_en": "Coordinating an international conference",
+   "theme_th": "การประสานงานการประชุมนานาชาติ",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "interact",
+     "pos": "verb",
+     "meaning_th": "มีปฏิสัมพันธ์"
+    },
+    {
+     "term": "collaborate",
+     "pos": "verb",
+     "meaning_th": "ร่วมมือกัน"
+    },
+    {
+     "term": "contribute",
+     "pos": "verb",
+     "meaning_th": "มีส่วนร่วม"
+    },
+    {
+     "term": "conference",
+     "pos": "noun",
+     "meaning_th": "การประชุม"
+    },
+    {
+     "term": "delegate",
+     "pos": "noun",
+     "meaning_th": "ผู้แทน"
+    },
+    {
+     "term": "panel",
+     "pos": "noun",
+     "meaning_th": "คณะผู้ร่วมอภิปราย"
+    },
+    {
+     "term": "speaker",
+     "pos": "noun",
+     "meaning_th": "ผู้บรรยาย"
+    },
+    {
+     "term": "diverse",
+     "pos": "adjective",
+     "meaning_th": "หลากหลาย"
+    },
+    {
+     "term": "global",
+     "pos": "adjective",
+     "meaning_th": "ทั่วโลก"
+    },
+    {
+     "term": "globally",
+     "pos": "adverb",
+     "meaning_th": "ทั่วโลก"
+    }
+   ]
+  },
+  {
+   "ordinal": 97,
+   "theme_en": "Responding to a road accident",
+   "theme_th": "การช่วยเหลือเมื่อเกิดอุบัติเหตุบนถนน",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "rescue",
+     "pos": "verb",
+     "meaning_th": "ช่วยชีวิต"
+    },
+    {
+     "term": "bystander",
+     "pos": "noun",
+     "meaning_th": "ผู้เห็นเหตุการณ์ที่อยู่ใกล้แต่ไม่ได้เกี่ยวข้อง"
+    },
+    {
+     "term": "alert",
+     "pos": "verb",
+     "meaning_th": "แจ้งเตือน"
+    },
+    {
+     "term": "witness",
+     "pos": "noun",
+     "meaning_th": "พยาน"
+    },
+    {
+     "term": "injury",
+     "pos": "noun",
+     "meaning_th": "การบาดเจ็บ"
+    },
+    {
+     "term": "ambulance",
+     "pos": "noun",
+     "meaning_th": "รถพยาบาล"
+    },
+    {
+     "term": "debris",
+     "pos": "noun",
+     "meaning_th": "เศษซาก"
+    },
+    {
+     "term": "unconscious",
+     "pos": "adjective",
+     "meaning_th": "หมดสติ"
+    },
+    {
+     "term": "bleeding",
+     "pos": "adjective",
+     "meaning_th": "มีเลือดออก"
+    },
+    {
+     "term": "cautiously",
+     "pos": "adverb",
+     "meaning_th": "อย่างระมัดระวัง"
+    }
+   ]
+  },
+  {
+   "ordinal": 116,
+   "theme_en": "During a neighborhood blackout",
+   "theme_th": "ระหว่างไฟดับในละแวกบ้าน",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "flicker",
+     "pos": "verb",
+     "meaning_th": "กะพริบ"
+    },
+    {
+     "term": "restore",
+     "pos": "verb",
+     "meaning_th": "ทำให้กลับคืน"
+    },
+    {
+     "term": "illuminate",
+     "pos": "verb",
+     "meaning_th": "ส่องสว่าง"
+    },
+    {
+     "term": "blackout",
+     "pos": "noun",
+     "meaning_th": "ไฟฟ้าดับ"
+    },
+    {
+     "term": "flashlight",
+     "pos": "noun",
+     "meaning_th": "ไฟฉาย"
+    },
+    {
+     "term": "darkness",
+     "pos": "noun",
+     "meaning_th": "ความมืด"
+    },
+    {
+     "term": "generator",
+     "pos": "noun",
+     "meaning_th": "เครื่องปั่นไฟ"
+    },
+    {
+     "term": "unusual",
+     "pos": "adjective",
+     "meaning_th": "ผิดปกติ"
+    },
+    {
+     "term": "momentary",
+     "pos": "adjective",
+     "meaning_th": "ชั่วขณะ"
+    },
+    {
+     "term": "temporarily",
+     "pos": "adverb",
+     "meaning_th": "ชั่วคราว"
+    }
+   ]
+  },
+  {
+   "ordinal": 118,
+   "theme_en": "A strange sound in the attic",
+   "theme_th": "เสียงแปลก ๆ ในห้องใต้หลังคา",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "echo",
+     "pos": "verb",
+     "meaning_th": "สะท้อนเสียง"
+    },
+    {
+     "term": "creak",
+     "pos": "verb",
+     "meaning_th": "ส่งเสียงเอี๊ยด"
+    },
+    {
+     "term": "whisper",
+     "pos": "verb",
+     "meaning_th": "กระซิบ"
+    },
+    {
+     "term": "appear",
+     "pos": "verb",
+     "meaning_th": "ดูเหมือน"
+    },
+    {
+     "term": "pretend",
+     "pos": "verb",
+     "meaning_th": "แกล้งทำ"
+    },
+    {
+     "term": "bang",
+     "pos": "noun",
+     "meaning_th": "เสียงปัง"
+    },
+    {
+     "term": "shadow",
+     "pos": "noun",
+     "meaning_th": "เงา"
+    },
+    {
+     "term": "attic",
+     "pos": "noun",
+     "meaning_th": "ห้องใต้หลังคา"
+    },
+    {
+     "term": "eerie",
+     "pos": "adjective",
+     "meaning_th": "ชวนขนลุก"
+    },
+    {
+     "term": "apparently",
+     "pos": "adverb",
+     "meaning_th": "ดูเหมือนว่า"
+    }
+   ]
+  },
+  {
+   "ordinal": 135,
+   "theme_en": "Investigating a workplace complaint",
+   "theme_th": "การสอบสวนข้อร้องเรียนในที่ทำงาน",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "accuse of",
+     "pos": "phrase",
+     "meaning_th": "กล่าวหาว่า"
+    },
+    {
+     "term": "blame for",
+     "pos": "phrase",
+     "meaning_th": "ตำหนิเรื่อง"
+    },
+    {
+     "term": "suffer from",
+     "pos": "phrase",
+     "meaning_th": "ทุกข์ทรมานจาก"
+    },
+    {
+     "term": "congratulate on",
+     "pos": "phrase",
+     "meaning_th": "แสดงความยินดีเรื่อง"
+    },
+    {
+     "term": "prevent from",
+     "pos": "phrase",
+     "meaning_th": "ขัดขวางไม่ให้"
+    },
+    {
+     "term": "allegation",
+     "pos": "noun",
+     "meaning_th": "ข้อกล่าวหา"
+    },
+    {
+     "term": "misconduct",
+     "pos": "noun",
+     "meaning_th": "การประพฤติมิชอบ"
+    },
+    {
+     "term": "complainant",
+     "pos": "noun",
+     "meaning_th": "ผู้ร้องเรียน"
+    },
+    {
+     "term": "unfair",
+     "pos": "adjective",
+     "meaning_th": "ไม่ยุติธรรม"
+    },
+    {
+     "term": "falsely",
+     "pos": "adverb",
+     "meaning_th": "อย่างเป็นเท็จ"
+    }
+   ]
+  },
+  {
+   "ordinal": 136,
+   "theme_en": "A minor road collision",
+   "theme_th": "อุบัติเหตุรถชนเล็กน้อย",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "believe in",
+     "pos": "phrase",
+     "meaning_th": "เชื่อมั่นใน"
+    },
+    {
+     "term": "crash into",
+     "pos": "phrase",
+     "meaning_th": "พุ่งชน"
+    },
+    {
+     "term": "fill with",
+     "pos": "phrase",
+     "meaning_th": "เติมเต็มด้วย"
+    },
+    {
+     "term": "happen to",
+     "pos": "phrase",
+     "meaning_th": "เกิดขึ้นกับ"
+    },
+    {
+     "term": "spend on",
+     "pos": "phrase",
+     "meaning_th": "ใช้จ่ายกับ"
+    },
+    {
+     "term": "collision",
+     "pos": "noun",
+     "meaning_th": "การชน"
+    },
+    {
+     "term": "vehicle",
+     "pos": "noun",
+     "meaning_th": "ยานพาหนะ"
+    },
+    {
+     "term": "impact",
+     "pos": "noun",
+     "meaning_th": "แรงกระแทก"
+    },
+    {
+     "term": "sudden",
+     "pos": "adjective",
+     "meaning_th": "กะทันหัน"
+    },
+    {
+     "term": "badly",
+     "pos": "adverb",
+     "meaning_th": "อย่างรุนแรง"
+    }
+   ]
+  },
+  {
+   "ordinal": 141,
+   "theme_en": "Managing a software demonstration",
+   "theme_th": "การจัดการสาธิตซอฟต์แวร์",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "put off",
+     "pos": "phrasal verb",
+     "meaning_th": "เลื่อนออกไป"
+    },
+    {
+     "term": "call off",
+     "pos": "phrasal verb",
+     "meaning_th": "ยกเลิก"
+    },
+    {
+     "term": "show off",
+     "pos": "phrasal verb",
+     "meaning_th": "อวด"
+    },
+    {
+     "term": "keep on",
+     "pos": "phrasal verb",
+     "meaning_th": "ทำต่อไป"
+    },
+    {
+     "term": "take on",
+     "pos": "phrasal verb",
+     "meaning_th": "รับหน้าที่หรือความรับผิดชอบ"
+    },
+    {
+     "term": "interruption",
+     "pos": "noun",
+     "meaning_th": "การขัดจังหวะ"
+    },
+    {
+     "term": "demonstration",
+     "pos": "noun",
+     "meaning_th": "การสาธิต"
+    },
+    {
+     "term": "software",
+     "pos": "noun",
+     "meaning_th": "ซอฟต์แวร์"
+    },
+    {
+     "term": "ongoing",
+     "pos": "adjective",
+     "meaning_th": "ที่ดำเนินอยู่"
+    },
+    {
+     "term": "reluctantly",
+     "pos": "adverb",
+     "meaning_th": "อย่างไม่เต็มใจ"
+    }
+   ]
+  },
+  {
+   "ordinal": 143,
+   "theme_en": "Family stories and career paths",
+   "theme_th": "เรื่องราวครอบครัวและเส้นทางอาชีพ",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "set up",
+     "pos": "phrasal verb",
+     "meaning_th": "ก่อตั้ง"
+    },
+    {
+     "term": "keep up",
+     "pos": "phrasal verb",
+     "meaning_th": "ตามให้ทัน"
+    },
+    {
+     "term": "make up",
+     "pos": "phrasal verb",
+     "meaning_th": "แต่งขึ้น"
+    },
+    {
+     "term": "end up",
+     "pos": "phrasal verb",
+     "meaning_th": "ลงเอย"
+    },
+    {
+     "term": "grow up",
+     "pos": "phrasal verb",
+     "meaning_th": "เติบโตขึ้น"
+    },
+    {
+     "term": "entrepreneur",
+     "pos": "noun",
+     "meaning_th": "ผู้ประกอบการ"
+    },
+    {
+     "term": "upbringing",
+     "pos": "noun",
+     "meaning_th": "การเลี้ยงดูในวัยเด็ก"
+    },
+    {
+     "term": "ambition",
+     "pos": "noun",
+     "meaning_th": "ความทะเยอทะยาน"
+    },
+    {
+     "term": "eventually",
+     "pos": "adverb",
+     "meaning_th": "ท้ายที่สุด"
+    },
+    {
+     "term": "ambitious",
+     "pos": "adjective",
+     "meaning_th": "ทะเยอทะยาน"
+    }
+   ]
+  },
+  {
+   "ordinal": 144,
+   "theme_en": "Pitching a process improvement",
+   "theme_th": "การนำเสนอแนวทางปรับปรุงกระบวนการ",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "bring up",
+     "pos": "phrasal verb",
+     "meaning_th": "ยกประเด็นขึ้นมา"
+    },
+    {
+     "term": "come up with",
+     "pos": "phrasal verb",
+     "meaning_th": "คิดขึ้นมา"
+    },
+    {
+     "term": "put up with",
+     "pos": "phrasal verb",
+     "meaning_th": "อดทนกับ"
+    },
+    {
+     "term": "draw up",
+     "pos": "phrasal verb",
+     "meaning_th": "ร่างหรือจัดทำแผน"
+    },
+    {
+     "term": "brainstorm",
+     "pos": "verb",
+     "meaning_th": "ระดมความคิด"
+    },
+    {
+     "term": "pitch",
+     "pos": "verb",
+     "meaning_th": "นำเสนอแนวคิด"
+    },
+    {
+     "term": "bottleneck",
+     "pos": "noun",
+     "meaning_th": "จุดคอขวด"
+    },
+    {
+     "term": "inefficiency",
+     "pos": "noun",
+     "meaning_th": "ความไม่มีประสิทธิภาพ"
+    },
+    {
+     "term": "workflow",
+     "pos": "noun",
+     "meaning_th": "ขั้นตอนการทำงาน"
+    },
+    {
+     "term": "practical",
+     "pos": "adjective",
+     "meaning_th": "นำไปใช้ได้จริง"
+    }
+   ]
+  },
+  {
+   "ordinal": 145,
+   "theme_en": "Resolving a supplier overcharge",
+   "theme_th": "การแก้ไขปัญหาซัพพลายเออร์เรียกเก็บเงินเกิน",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "go away",
+     "pos": "phrasal verb",
+     "meaning_th": "หายไป"
+    },
+    {
+     "term": "call back",
+     "pos": "phrasal verb",
+     "meaning_th": "โทรกลับ"
+    },
+    {
+     "term": "pay back",
+     "pos": "phrasal verb",
+     "meaning_th": "ชดใช้เงิน"
+    },
+    {
+     "term": "get back to",
+     "pos": "phrasal verb",
+     "meaning_th": "ติดต่อกลับ"
+    },
+    {
+     "term": "reimburse",
+     "pos": "verb",
+     "meaning_th": "คืนเงิน"
+    },
+    {
+     "term": "dispute",
+     "pos": "noun",
+     "meaning_th": "ข้อโต้แย้ง"
+    },
+    {
+     "term": "overcharge",
+     "pos": "noun",
+     "meaning_th": "การเรียกเก็บเงินเกิน"
+    },
+    {
+     "term": "supplier",
+     "pos": "noun",
+     "meaning_th": "ผู้จัดหา"
+    },
+    {
+     "term": "outstanding",
+     "pos": "adjective",
+     "meaning_th": "ค้างชำระ"
+    },
+    {
+     "term": "promptly",
+     "pos": "adverb",
+     "meaning_th": "อย่างรวดเร็ว"
+    }
+   ]
+  }
+ ]
+}

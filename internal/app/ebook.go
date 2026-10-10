@@ -48,7 +48,7 @@ func (a *App) courseLesson(id string) (ebook.Lesson, bool) {
 }
 
 func (a *App) courseSessionLesson(state map[string]any) (ebook.Lesson, bool) {
-	if a.Course == nil || textValue(state["ebook_version"]) != ebook.LearnEbookCourseVersion {
+	if a.Course == nil || !ebookCourseKnownVersion(textValue(state["ebook_version"])) {
 		return ebook.Lesson{}, false
 	}
 	lessonID := textValue(state["ebook_lesson_id"])
@@ -56,6 +56,20 @@ func (a *App) courseSessionLesson(state map[string]any) (ebook.Lesson, bool) {
 		lessonID = textValue(state["ebook_unit_id"])
 	}
 	return a.Course.Lesson(lessonID)
+}
+
+// ebookCourseKnownVersion reports whether a stored version belongs to the
+// bundled course (current or an earlier release with the same stable IDs).
+func ebookCourseKnownVersion(version string) bool {
+	if version == ebook.LearnEbookCourseVersion {
+		return true
+	}
+	for _, previous := range ebook.LearnEbookPreviousCourseVersions {
+		if version == previous {
+			return true
+		}
+	}
+	return false
 }
 
 func ebookCourseStorageID(lesson ebook.Lesson) string {
@@ -110,8 +124,74 @@ func ebookCourseUpgradeLegacyState(state map[string]any) map[string]any {
 	return state
 }
 
+// ebookCourseUpgradePreviousState carries progress from an earlier course
+// version. Lesson IDs are stable but the teaching content and quiz are new, so
+// a learned unit stays learned and is flagged for review, while an unfinished
+// unit restarts at step one and keeps only its saved vocabulary.
+func ebookCourseUpgradePreviousState(state map[string]any, version string) map[string]any {
+	if len(state) == 0 {
+		return nil
+	}
+	out := map[string]any{"migrated_from": version, "current_step": 1}
+	if saved := ebookCourseBoolMap(state["vocabulary_saved"]); len(saved) > 0 {
+		out["vocabulary_saved"] = saved
+	}
+	if page := int(number(state["page"], 0)); page > 0 {
+		out["page"] = page
+	}
+	if ebookCourseAllSteps(state) && state["learned"] != false {
+		completed := map[string]any{}
+		for _, step := range ebookCourseSteps {
+			completed[step] = true
+		}
+		out["completed_steps"] = completed
+		out["learned"] = true
+		out["review_requested"] = true
+		if at := textValue(state["completed_at"]); at != "" {
+			out["completed_at"] = at
+		}
+	}
+	return out
+}
+
+// ebookCoursePreviousStates loads every carried-over state for a learner,
+// keyed by storage unit ID. Newer previous versions win over older ones.
+func (a *App) ebookCoursePreviousStates(ctx context.Context, uid string) (map[string]map[string]any, error) {
+	result := map[string]map[string]any{}
+	for i := len(ebook.LearnEbookPreviousCourseVersions) - 1; i >= 0; i-- {
+		version := ebook.LearnEbookPreviousCourseVersions[i]
+		rows, err := a.ebookCourseProgressRows(ctx, uid, version)
+		if err != nil {
+			return nil, err
+		}
+		for id, state := range rows {
+			if _, exists := result[id]; exists {
+				continue
+			}
+			if upgraded := ebookCourseUpgradePreviousState(state, version); upgraded != nil {
+				result[id] = upgraded
+			}
+		}
+	}
+	return result, nil
+}
+
 func (a *App) ebookCourseSeedState(ctx context.Context, uid string, lesson ebook.Lesson) (map[string]any, error) {
 	state := map[string]any{}
+	for i := len(ebook.LearnEbookPreviousCourseVersions) - 1; i >= 0; i-- {
+		version := ebook.LearnEbookPreviousCourseVersions[i]
+		var raw []byte
+		err := a.DB.QueryRow(ctx, "SELECT state FROM ebook_progress WHERE user_id=$1 AND unit_id=$2 AND version=$3", uid, ebookCourseStorageID(lesson), version).Scan(&raw)
+		if err == pgx.ErrNoRows {
+			continue
+		}
+		if err != nil {
+			return nil, err
+		}
+		if upgraded := ebookCourseUpgradePreviousState(ebookCourseState(raw), version); upgraded != nil {
+			return upgraded, nil
+		}
+	}
 	if a.Book == nil || a.Book.Version == ebook.LearnEbookCourseVersion {
 		return state, nil
 	}
@@ -281,6 +361,10 @@ func (a *App) ebookCourseCatalog(c *fiber.Ctx) error {
 			return err
 		}
 	}
+	previousProgress, err := a.ebookCoursePreviousStates(c.UserContext(), user(c).ID)
+	if err != nil {
+		return err
+	}
 	combinedProgress := map[string]map[string]any{}
 	for id, state := range legacyProgress {
 		combinedProgress[id] = state
@@ -315,11 +399,16 @@ func (a *App) ebookCourseCatalog(c *fiber.Ctx) error {
 		}
 	}
 	units := make([]fiber.Map, 0, len(a.Course.Lessons))
+	statuses := map[string]string{}
+	completedAll := map[string]bool{}
 	for _, lesson := range a.Course.Lessons {
 		id := ebookCourseStorageID(lesson)
 		state := progress[id]
 		if state == nil {
 			state = progress[lesson.ID]
+		}
+		if state == nil {
+			state = previousProgress[id]
 		}
 		if state == nil {
 			state = ebookCourseUpgradeLegacyState(legacyProgress[id])
@@ -329,11 +418,17 @@ func (a *App) ebookCourseCatalog(c *fiber.Ctx) error {
 		}
 		due := dueReviews[id] || dueReviews[lesson.ID]
 		status, percent, current := ebookCourseStatus(state, due)
+		statuses[lesson.ID] = status
+		completedAll[lesson.ID] = percent == 100
 		unit := fiber.Map{
 			"id":            lesson.ID,
 			"unit_id":       lesson.UnitID,
 			"number":        lesson.Ordinal,
 			"title":         lesson.Title,
+			"title_th":      lesson.TitleTH,
+			"level":         lesson.Level,
+			"path_order":    lesson.PathOrder,
+			"theme_th":      lesson.ThemeTH,
 			"status":        status,
 			"percent":       percent,
 			"current_step":  current,
@@ -354,14 +449,57 @@ func (a *App) ebookCourseCatalog(c *fiber.Ctx) error {
 		pageCount = a.Book.PageCount
 	}
 	return c.JSON(fiber.Map{
-		"title":      a.Course.Title,
-		"version":    a.Course.Version,
-		"page_count": pageCount,
-		"units":      units,
-		"progress":   json.RawMessage(asJSON(combinedProgress)),
-		"cursor":     cursor,
+		"title":               a.Course.Title,
+		"version":             a.Course.Version,
+		"page_count":          pageCount,
+		"units":               units,
+		"progress":            json.RawMessage(asJSON(combinedProgress)),
+		"cursor":              cursor,
+		"recommended_unit_id": ebookCourseRecommended(a.Course, completedAll),
+		"path":                ebookCoursePathSummary(a.Course, statuses, completedAll),
 	})
 }
+
+// ebookCourseRecommended is the first lesson of the learning path (A1 first,
+// not source-book order) that the learner has not completed yet.
+func ebookCourseRecommended(course *ebook.Course, completedAll map[string]bool) string {
+	path := course.Path()
+	for _, lesson := range path {
+		if !completedAll[lesson.ID] {
+			return lesson.ID
+		}
+	}
+	if len(path) > 0 {
+		return path[0].ID
+	}
+	return ""
+}
+
+func ebookCoursePathSummary(course *ebook.Course, statuses map[string]string, completedAll map[string]bool) fiber.Map {
+	levels := make([]fiber.Map, 0, len(ebook.LearnEbookLevels))
+	learned, reviewing := 0, 0
+	for _, level := range ebook.LearnEbookLevels {
+		total, done := 0, 0
+		for _, lesson := range course.Lessons {
+			if lesson.Level != level {
+				continue
+			}
+			total++
+			if completedAll[lesson.ID] {
+				done++
+			}
+		}
+		learned += done
+		levels = append(levels, fiber.Map{"level": level, "total": total, "learned": done})
+	}
+	for _, status := range statuses {
+		if status == "review" {
+			reviewing++
+		}
+	}
+	return fiber.Map{"total": len(course.Lessons), "learned": learned, "review": reviewing, "levels": levels}
+}
+
 func (a *App) ebookPage(c *fiber.Ctx) error {
 	if a.Book == nil {
 		return fail(c, 503, "ยังไม่ได้ติดตั้งหนังสือ")
@@ -417,17 +555,11 @@ func (a *App) ebookCourseUnit(c *fiber.Ctx, lesson ebook.Lesson) error {
 	unitID := ebookCourseStorageID(lesson)
 	var state []byte
 	if err := a.DB.QueryRow(c.UserContext(), "SELECT state FROM ebook_progress WHERE user_id=$1 AND unit_id=$2 AND version=$3", user(c).ID, unitID, ebook.LearnEbookCourseVersion).Scan(&state); err == pgx.ErrNoRows {
-		if a.Book != nil && a.Book.Version != ebook.LearnEbookCourseVersion {
-			legacy, legacyErr := a.ebookCourseLegacyUnit(lesson)
-			if legacyErr {
-				if legacyErr := a.DB.QueryRow(c.UserContext(), "SELECT state FROM ebook_progress WHERE user_id=$1 AND unit_id=$2 AND version=$3", user(c).ID, legacy.ID, a.Book.Version).Scan(&state); legacyErr == nil {
-					state = asJSON(ebookCourseUpgradeLegacyState(ebookCourseState(state)))
-				}
-			}
+		seed, seedErr := a.ebookCourseSeedState(c.UserContext(), user(c).ID, lesson)
+		if seedErr != nil {
+			return seedErr
 		}
-		if len(state) == 0 {
-			state = []byte("{}")
-		}
+		state = asJSON(seed)
 	} else if err != nil {
 		return err
 	}
@@ -489,30 +621,47 @@ func ebookCoursePublicPack(lesson ebook.Lesson, originalBook fiber.Map) fiber.Ma
 	}
 	vocabulary := make([]fiber.Map, 0, len(lesson.Vocabulary))
 	for _, word := range lesson.Vocabulary {
-		vocabulary = append(vocabulary, fiber.Map{"id": word.ID, "term": word.Term, "meaning": word.MeaningTH, "example": word.ExampleEN})
+		vocabulary = append(vocabulary, fiber.Map{"id": word.ID, "term": word.Term, "meaning": word.MeaningTH, "example": word.ExampleEN, "example_th": word.ExampleTH})
 	}
 	questions := make([]fiber.Map, 0, len(lesson.Quiz))
 	for _, quiz := range lesson.Quiz {
 		options := make([]fiber.Map, 0, len(quiz.Options))
-		for index, option := range quiz.Options {
+		tokens := []string{}
+		if quiz.Kind == "reorder" {
+			// Tokens are not radio options; older clients fall back to typing.
+			tokens = append(tokens, quiz.Options...)
+		} else {
+			for index, option := range quiz.Options {
+				options = append(options, fiber.Map{"id": fmt.Sprintf("%d", index+1), "text": option})
+			}
+		}
+		questions = append(questions, fiber.Map{"id": quiz.ID, "kind": quiz.Kind, "prompt": quiz.PromptEN, "instruction_th": quiz.PromptTH, "options": options, "tokens": tokens})
+	}
+	listening := make([]fiber.Map, 0, len(lesson.Listening))
+	for _, item := range lesson.Listening {
+		options := make([]fiber.Map, 0, len(item.OptionsTH))
+		for index, option := range item.OptionsTH {
 			options = append(options, fiber.Map{"id": fmt.Sprintf("%d", index+1), "text": option})
 		}
-		questions = append(questions, fiber.Map{"id": quiz.ID, "kind": quiz.Kind, "prompt": quiz.PromptEN, "instruction_th": quiz.PromptTH, "options": options})
+		// The sentence is sent for text-to-speech only; the client keeps it
+		// hidden until the learner answers. The answer key stays here.
+		listening = append(listening, fiber.Map{"id": item.ID, "sentence": item.AudioEN, "question_th": item.QuestionTH, "options": options})
 	}
 	shadowing := make([]fiber.Map, 0, len(lesson.Shadowing))
 	for _, line := range lesson.Shadowing {
-		meaning := ""
-		for _, example := range lesson.Examples {
-			if example.EN == line {
-				meaning = example.TH
-				break
-			}
-		}
-		item := fiber.Map{"lesson_example": line, "sentence": line, "meaning": meaning}
+		item := fiber.Map{"lesson_example": line, "sentence": line, "meaning": ebookCourseLineMeaning(lesson, line)}
 		if sourcePage > 0 {
 			item["source_page"] = sourcePage
 		}
 		shadowing = append(shadowing, item)
+	}
+	forms := make([]fiber.Map, 0, len(lesson.Forms))
+	for _, form := range lesson.Forms {
+		forms = append(forms, fiber.Map{"label": form.LabelTH, "pattern": form.Pattern, "sentence": form.ExampleEN, "meaning": form.ExampleTH})
+	}
+	mistakes := make([]fiber.Map, 0, len(lesson.CommonMistakes))
+	for _, mistake := range lesson.CommonMistakes {
+		mistakes = append(mistakes, fiber.Map{"wrong": mistake.Wrong, "right": mistake.Right, "why_th": mistake.WhyTH})
 	}
 	if originalBook == nil {
 		originalBook = fiber.Map{"available": false}
@@ -525,21 +674,34 @@ func ebookCoursePublicPack(lesson ebook.Lesson, originalBook fiber.Map) fiber.Ma
 		{"id": "speaking", "title": "Use it", "status": "available"},
 	}
 	return fiber.Map{
+		"title":               lesson.Title,
+		"title_th":            lesson.TitleTH,
+		"level":               lesson.Level,
+		"path_order":          lesson.PathOrder,
+		"theme":               lesson.ThemeEN,
+		"theme_th":            lesson.ThemeTH,
 		"explanation":         lesson.ExplanationTH,
 		"explanation_th":      lesson.ExplanationTH,
 		"goal":                lesson.GoalTH,
 		"goal_th":             lesson.GoalTH,
 		"pattern":             lesson.Pattern,
+		"notes":               append([]string{}, lesson.UsageTH...),
+		"forms":               forms,
+		"signal_words":        append([]string{}, lesson.SignalWords...),
+		"common_mistakes":     mistakes,
+		"compare_th":          lesson.CompareTH,
 		"examples":            examples,
 		"vocabulary":          vocabulary,
 		"questions":           questions,
+		"listening_items":     listening,
 		"concept_steps":       steps,
 		"original_book":       originalBook,
 		"shadowing_sentences": shadowing,
 		"speaking_prompt":     lesson.Speaking.PromptEN,
 		"speaking_th":         lesson.Speaking.PromptTH,
-		"listening_prompt":    lesson.Listening.PromptEN,
-		"listening_th":        lesson.Listening.PromptTH,
+		"speaking_criteria":   append([]string{}, lesson.Speaking.SuccessCriteriaTH...),
+		"listening_prompt":    "Listen first. Answer what you heard, then shadow the same line.",
+		"listening_th":        "ฟังก่อนโดยไม่ดูข้อความ ตอบคำถามจากสิ่งที่ได้ยิน แล้วพูดตามประโยคเดิม",
 		"useful_phrases":      ebookLessonExampleSentences(lesson),
 		"version":             ebook.LearnEbookCourseVersion,
 		"is_redesigned":       true,
@@ -647,6 +809,45 @@ func (a *App) ebookProgress(c *fiber.Ctx) error {
 		return e
 	}
 	return c.JSON(fiber.Map{"saved": true})
+}
+
+// ebookCourseReviewDelays spaces the unit's review prompts so that a learned
+// unit comes back the next day and again after the first interval.
+var ebookCourseReviewDelays = []int{1, 3}
+
+// ebookCourseMarkLearned finishes a unit once all five steps are complete. A
+// finished unit always enters spaced review, even when every quiz answer was
+// right: its production prompts are scheduled and its vocabulary is added to
+// the learner's library. It is idempotent per learner and unit.
+func (a *App) ebookCourseMarkLearned(ctx context.Context, tx pgx.Tx, uid string, lesson ebook.Lesson, state map[string]any) error {
+	if state["learned"] == nil {
+		state["learned"] = true
+	}
+	if textValue(state["completed_at"]) == "" {
+		state["completed_at"] = time.Now().UTC().Format(time.RFC3339)
+	}
+	if state["review_enrolled"] == true {
+		return nil
+	}
+	unitID := ebookCourseStorageID(lesson)
+	title := fmt.Sprintf("ทบทวน Unit %d · %s", lesson.Ordinal, lesson.Title)
+	for index, prompt := range lesson.Review {
+		days := ebookCourseReviewDelays[len(ebookCourseReviewDelays)-1]
+		if index < len(ebookCourseReviewDelays) {
+			days = ebookCourseReviewDelays[index]
+		}
+		key := "ebook:" + ebook.LearnEbookCourseVersion + ":" + unitID + ":" + prompt.ID
+		if _, err := tx.Exec(ctx, `INSERT INTO review_items(id,user_id,key,kind,title,prompt,target,meaning,due_at,cue_version) VALUES($1,$2,$3,'pattern',$4,$5,$6,$7,now()+make_interval(days => $8),1) ON CONFLICT(user_id,key) DO NOTHING`, uuid.NewString(), uid, key, title, prompt.PromptTH, prompt.TargetEN, prompt.TargetTH, days); err != nil {
+			return err
+		}
+	}
+	for _, word := range lesson.Vocabulary {
+		if _, err := tx.Exec(ctx, "INSERT INTO vocabulary(id,user_id,term,meaning,example) VALUES($1,$2,$3,$4,$5) ON CONFLICT(user_id,term) DO NOTHING", uuid.NewString(), uid, word.Term, word.MeaningTH, word.ExampleEN); err != nil {
+			return err
+		}
+	}
+	state["review_enrolled"] = true
+	return nil
 }
 
 func ebookCourseValidStep(step string) bool {
@@ -770,11 +971,8 @@ func (a *App) ebookCourseProgress(c *fiber.Ctx, lesson ebook.Lesson) error {
 		state["review_requested"] = *input.ReviewRequested
 	}
 	if ebookCourseAllSteps(state) {
-		if state["learned"] == nil {
-			state["learned"] = true
-		}
-		if textValue(state["completed_at"]) == "" {
-			state["completed_at"] = time.Now().UTC().Format(time.RFC3339)
+		if err = a.ebookCourseMarkLearned(c.UserContext(), tx, user(c).ID, lesson, state); err != nil {
+			return err
 		}
 	}
 	if _, err = tx.Exec(c.UserContext(), "UPDATE ebook_progress SET state=$1,updated_at=now() WHERE user_id=$2 AND unit_id=$3 AND version=$4", asJSON(state), user(c).ID, unitID, ebook.LearnEbookCourseVersion); err != nil {
@@ -927,16 +1125,37 @@ func (a *App) ebookSession(c *fiber.Ctx) error {
 func ebookCourseShadowTargets(lesson ebook.Lesson) ([]string, []string) {
 	meanings := make([]string, 0, len(lesson.Shadowing))
 	for _, line := range lesson.Shadowing {
-		meaning := ""
-		for _, example := range lesson.Examples {
-			if example.EN == line {
-				meaning = example.TH
-				break
-			}
-		}
-		meanings = append(meanings, meaning)
+		meanings = append(meanings, ebookCourseLineMeaning(lesson, line))
 	}
 	return append([]string(nil), lesson.Shadowing...), meanings
+}
+
+// ebookCourseLineMeaning finds the Thai meaning of a shadowing line. Lines are
+// the listening sentences of the lesson; examples are kept as a fallback.
+func ebookCourseLineMeaning(lesson ebook.Lesson, line string) string {
+	for _, item := range lesson.Listening {
+		if item.AudioEN == line {
+			return item.MeaningTH
+		}
+	}
+	for _, example := range lesson.Examples {
+		if example.EN == line {
+			return example.TH
+		}
+	}
+	return ""
+}
+
+// ebookCourseListeningDone reports whether every listening item of the lesson
+// was answered correctly. Shadowing opens only after the learner has listened.
+func ebookCourseListeningDone(state map[string]any, lesson ebook.Lesson) bool {
+	scores := ebookCourseBoolMap(state["listening_scores"])
+	for _, item := range lesson.Listening {
+		if scores[item.ID] != true {
+			return false
+		}
+	}
+	return true
 }
 
 func (a *App) ebookCourseSession(c *fiber.Ctx, lesson ebook.Lesson) error {
@@ -952,6 +1171,17 @@ func (a *App) ebookCourseSession(c *fiber.Ctx, lesson ebook.Lesson) error {
 		skill = "shadowing"
 	}
 	unitID := ebookCourseStorageID(lesson)
+	if skill == "shadowing" {
+		// Listen first: the learner answers each line by ear before the
+		// text is shown for shadowing.
+		var raw []byte
+		if err := a.DB.QueryRow(c.UserContext(), "SELECT state FROM ebook_progress WHERE user_id=$1 AND unit_id=$2 AND version=$3", user(c).ID, unitID, ebook.LearnEbookCourseVersion).Scan(&raw); err != nil && err != pgx.ErrNoRows {
+			return err
+		}
+		if !ebookCourseListeningDone(ebookCourseState(raw), lesson) {
+			return fail(c, 409, "ฟังและตอบคำถามให้ครบ 3 ประโยคก่อน แล้วค่อยเริ่มพูดตาม")
+		}
+	}
 	tx, err := a.DB.Begin(c.UserContext())
 	if err != nil {
 		return err

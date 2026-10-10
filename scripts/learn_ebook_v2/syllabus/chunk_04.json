@@ -1,0 +1,1280 @@
+{
+ "units": [
+  {
+   "ordinal": 52,
+   "theme_en": "Checking a Team Update",
+   "theme_th": "ตรวจสอบความคืบหน้าของทีม",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "expect",
+     "pos": "verb",
+     "meaning_th": "คาดหวัง"
+    },
+    {
+     "term": "happen",
+     "pos": "verb",
+     "meaning_th": "เกิดขึ้น"
+    },
+    {
+     "term": "remain",
+     "pos": "verb",
+     "meaning_th": "ยังคงอยู่"
+    },
+    {
+     "term": "result",
+     "pos": "noun",
+     "meaning_th": "ผลลัพธ์"
+    },
+    {
+     "term": "concern",
+     "pos": "noun",
+     "meaning_th": "ข้อกังวล"
+    },
+    {
+     "term": "comment",
+     "pos": "noun",
+     "meaning_th": "ความคิดเห็น"
+    },
+    {
+     "term": "situation",
+     "pos": "noun",
+     "meaning_th": "สถานการณ์"
+    },
+    {
+     "term": "outcome",
+     "pos": "noun",
+     "meaning_th": "ผลที่เกิดขึ้น"
+    },
+    {
+     "term": "smooth",
+     "pos": "adjective",
+     "meaning_th": "ราบรื่น"
+    },
+    {
+     "term": "likely",
+     "pos": "adverb",
+     "meaning_th": "มีแนวโน้ม"
+    }
+   ]
+  },
+  {
+   "ordinal": 55,
+   "theme_en": "Training New Café Staff",
+   "theme_th": "ฝึกพนักงานใหม่ในคาเฟ่",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "tell",
+     "pos": "verb",
+     "meaning_th": "บอกให้ทำ"
+    },
+    {
+     "term": "let",
+     "pos": "verb",
+     "meaning_th": "อนุญาตให้ทำ"
+    },
+    {
+     "term": "make",
+     "pos": "verb",
+     "meaning_th": "บังคับให้ทำ"
+    },
+    {
+     "term": "allow",
+     "pos": "verb",
+     "meaning_th": "อนุญาตให้"
+    },
+    {
+     "term": "force",
+     "pos": "verb",
+     "meaning_th": "บังคับให้"
+    },
+    {
+     "term": "encourage",
+     "pos": "verb",
+     "meaning_th": "สนับสนุนให้ทำ"
+    },
+    {
+     "term": "trainee",
+     "pos": "noun",
+     "meaning_th": "ผู้ฝึกงาน"
+    },
+    {
+     "term": "newcomer",
+     "pos": "noun",
+     "meaning_th": "พนักงานใหม่"
+    },
+    {
+     "term": "choice",
+     "pos": "noun",
+     "meaning_th": "ทางเลือก"
+    },
+    {
+     "term": "behavior",
+     "pos": "noun",
+     "meaning_th": "พฤติกรรม"
+    }
+   ]
+  },
+  {
+   "ordinal": 56,
+   "theme_en": "Choosing a New Hobby",
+   "theme_th": "เลือกงานอดิเรกใหม่",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "regret",
+     "pos": "verb",
+     "meaning_th": "เสียใจ"
+    },
+    {
+     "term": "go on",
+     "pos": "phrasal verb",
+     "meaning_th": "ทำต่อไป"
+    },
+    {
+     "term": "mean",
+     "pos": "verb",
+     "meaning_th": "หมายถึง"
+    },
+    {
+     "term": "quit",
+     "pos": "verb",
+     "meaning_th": "เลิกทำ"
+    },
+    {
+     "term": "decision",
+     "pos": "noun",
+     "meaning_th": "การตัดสินใจ"
+    },
+    {
+     "term": "mistake",
+     "pos": "noun",
+     "meaning_th": "ข้อผิดพลาด"
+    },
+    {
+     "term": "chance",
+     "pos": "noun",
+     "meaning_th": "โอกาส"
+    },
+    {
+     "term": "intention",
+     "pos": "noun",
+     "meaning_th": "ความตั้งใจ"
+    },
+    {
+     "term": "worthwhile",
+     "pos": "adjective",
+     "meaning_th": "คุ้มค่า"
+    },
+    {
+     "term": "immediately",
+     "pos": "adverb",
+     "meaning_th": "ทันที"
+    }
+   ]
+  },
+  {
+   "ordinal": 57,
+   "theme_en": "Returning to Evening Classes",
+   "theme_th": "กลับไปเรียนภาคค่ำ",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "hope",
+     "pos": "verb",
+     "meaning_th": "หวัง"
+    },
+    {
+     "term": "start",
+     "pos": "verb",
+     "meaning_th": "เริ่ม"
+    },
+    {
+     "term": "love",
+     "pos": "verb",
+     "meaning_th": "ชอบมาก"
+    },
+    {
+     "term": "give up",
+     "pos": "phrasal verb",
+     "meaning_th": "เลิกทำ"
+    },
+    {
+     "term": "carry on",
+     "pos": "phrasal verb",
+     "meaning_th": "ทำต่อไป"
+    },
+    {
+     "term": "look forward to",
+     "pos": "phrase",
+     "meaning_th": "ตั้งตารอ"
+    },
+    {
+     "term": "goal",
+     "pos": "noun",
+     "meaning_th": "เป้าหมาย"
+    },
+    {
+     "term": "effort",
+     "pos": "noun",
+     "meaning_th": "ความพยายาม"
+    },
+    {
+     "term": "subject",
+     "pos": "noun",
+     "meaning_th": "วิชา"
+    },
+    {
+     "term": "confidence",
+     "pos": "noun",
+     "meaning_th": "ความมั่นใจ"
+    }
+   ]
+  },
+  {
+   "ordinal": 59,
+   "theme_en": "Choosing a Weekend Activity",
+   "theme_th": "เลือกกิจกรรมช่วงสุดสัปดาห์",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "option",
+     "pos": "noun",
+     "meaning_th": "ตัวเลือก"
+    },
+    {
+     "term": "instead",
+     "pos": "adverb",
+     "meaning_th": "แทน"
+    },
+    {
+     "term": "activity",
+     "pos": "noun",
+     "meaning_th": "กิจกรรม"
+    },
+    {
+     "term": "outdoors",
+     "pos": "adverb",
+     "meaning_th": "กลางแจ้ง"
+    },
+    {
+     "term": "indoors",
+     "pos": "adverb",
+     "meaning_th": "ในร่ม"
+    },
+    {
+     "term": "suggest",
+     "pos": "verb",
+     "meaning_th": "เสนอ"
+    },
+    {
+     "term": "consider",
+     "pos": "verb",
+     "meaning_th": "พิจารณา"
+    },
+    {
+     "term": "go out",
+     "pos": "phrasal verb",
+     "meaning_th": "ออกไปข้างนอก"
+    },
+    {
+     "term": "take up",
+     "pos": "phrasal verb",
+     "meaning_th": "เริ่มทำ"
+    },
+    {
+     "term": "active",
+     "pos": "adjective",
+     "meaning_th": "กระฉับกระเฉง"
+    }
+   ]
+  },
+  {
+   "ordinal": 60,
+   "theme_en": "Preparing for a Presentation",
+   "theme_th": "เตรียมตัวสำหรับการนำเสนอ",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "benefit from",
+     "pos": "phrase",
+     "meaning_th": "ได้ประโยชน์จาก"
+    },
+    {
+     "term": "worry about",
+     "pos": "phrase",
+     "meaning_th": "กังวลเกี่ยวกับ"
+    },
+    {
+     "term": "result in",
+     "pos": "phrase",
+     "meaning_th": "ส่งผลให้เกิด"
+    },
+    {
+     "term": "object to",
+     "pos": "phrase",
+     "meaning_th": "คัดค้าน"
+    },
+    {
+     "term": "strategy",
+     "pos": "noun",
+     "meaning_th": "กลยุทธ์"
+    },
+    {
+     "term": "success",
+     "pos": "noun",
+     "meaning_th": "ความสำเร็จ"
+    },
+    {
+     "term": "risk",
+     "pos": "noun",
+     "meaning_th": "ความเสี่ยง"
+    },
+    {
+     "term": "purpose",
+     "pos": "noun",
+     "meaning_th": "จุดประสงค์"
+    },
+    {
+     "term": "effective",
+     "pos": "adjective",
+     "meaning_th": "มีประสิทธิภาพ"
+    },
+    {
+     "term": "dependent",
+     "pos": "adjective",
+     "meaning_th": "ขึ้นอยู่กับ"
+    }
+   ]
+  },
+  {
+   "ordinal": 61,
+   "theme_en": "Joining a New Team",
+   "theme_th": "เข้าร่วมทีมใหม่",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "adapt",
+     "pos": "verb",
+     "meaning_th": "ปรับตัว"
+    },
+    {
+     "term": "adjust",
+     "pos": "verb",
+     "meaning_th": "ปรับเปลี่ยน"
+    },
+    {
+     "term": "cope with",
+     "pos": "phrase",
+     "meaning_th": "รับมือกับ"
+    },
+    {
+     "term": "fit in",
+     "pos": "phrasal verb",
+     "meaning_th": "เข้ากับคนอื่นได้"
+    },
+    {
+     "term": "culture",
+     "pos": "noun",
+     "meaning_th": "วัฒนธรรม"
+    },
+    {
+     "term": "expectation",
+     "pos": "noun",
+     "meaning_th": "ความคาดหวัง"
+    },
+    {
+     "term": "environment",
+     "pos": "noun",
+     "meaning_th": "สภาพแวดล้อม"
+    },
+    {
+     "term": "pace",
+     "pos": "noun",
+     "meaning_th": "จังหวะการทำงาน"
+    },
+    {
+     "term": "flexible",
+     "pos": "adjective",
+     "meaning_th": "ยืดหยุ่น"
+    },
+    {
+     "term": "gradually",
+     "pos": "adverb",
+     "meaning_th": "ค่อย ๆ"
+    }
+   ]
+  },
+  {
+   "ordinal": 64,
+   "theme_en": "Setting Up an Online Meeting",
+   "theme_th": "ตั้งค่าการประชุมออนไลน์",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "mute",
+     "pos": "verb",
+     "meaning_th": "ปิดเสียง"
+    },
+    {
+     "term": "record",
+     "pos": "verb",
+     "meaning_th": "บันทึก"
+    },
+    {
+     "term": "log in",
+     "pos": "phrasal verb",
+     "meaning_th": "เข้าสู่ระบบ"
+    },
+    {
+     "term": "agenda",
+     "pos": "noun",
+     "meaning_th": "ระเบียบวาระ"
+    },
+    {
+     "term": "microphone",
+     "pos": "noun",
+     "meaning_th": "ไมโครโฟน"
+    },
+    {
+     "term": "link",
+     "pos": "noun",
+     "meaning_th": "ลิงก์"
+    },
+    {
+     "term": "connection",
+     "pos": "noun",
+     "meaning_th": "การเชื่อมต่อ"
+    },
+    {
+     "term": "participant",
+     "pos": "noun",
+     "meaning_th": "ผู้เข้าร่วม"
+    },
+    {
+     "term": "clearly",
+     "pos": "adverb",
+     "meaning_th": "อย่างชัดเจน"
+    },
+    {
+     "term": "private",
+     "pos": "adjective",
+     "meaning_th": "ส่วนตัว"
+    }
+   ]
+  },
+  {
+   "ordinal": 65,
+   "theme_en": "Showing a Guest Around Town",
+   "theme_th": "พาแขกชมรอบเมือง",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "welcome",
+     "pos": "verb",
+     "meaning_th": "ต้อนรับ"
+    },
+    {
+     "term": "guide",
+     "pos": "verb",
+     "meaning_th": "นำทาง"
+    },
+    {
+     "term": "lead",
+     "pos": "verb",
+     "meaning_th": "พาไป"
+    },
+    {
+     "term": "considerate",
+     "pos": "adjective",
+     "meaning_th": "มีน้ำใจ"
+    },
+    {
+     "term": "convenient",
+     "pos": "adjective",
+     "meaning_th": "สะดวก"
+    },
+    {
+     "term": "downtown",
+     "pos": "noun",
+     "meaning_th": "ใจกลางเมือง"
+    },
+    {
+     "term": "shortcut",
+     "pos": "noun",
+     "meaning_th": "ทางลัด"
+    },
+    {
+     "term": "crosswalk",
+     "pos": "noun",
+     "meaning_th": "ทางม้าลาย"
+    },
+    {
+     "term": "district",
+     "pos": "noun",
+     "meaning_th": "ย่าน"
+    },
+    {
+     "term": "building",
+     "pos": "noun",
+     "meaning_th": "อาคาร"
+    }
+   ]
+  },
+  {
+   "ordinal": 67,
+   "theme_en": "Watching Children at Play",
+   "theme_th": "เฝ้าดูเด็ก ๆ เล่น",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "run",
+     "pos": "verb",
+     "meaning_th": "วิ่ง"
+    },
+    {
+     "term": "jump",
+     "pos": "verb",
+     "meaning_th": "กระโดด"
+    },
+    {
+     "term": "swing",
+     "pos": "verb",
+     "meaning_th": "แกว่งชิงช้า"
+    },
+    {
+     "term": "shout",
+     "pos": "verb",
+     "meaning_th": "ตะโกน"
+    },
+    {
+     "term": "playground",
+     "pos": "noun",
+     "meaning_th": "สนามเด็กเล่น"
+    },
+    {
+     "term": "ball",
+     "pos": "noun",
+     "meaning_th": "ลูกบอล"
+    },
+    {
+     "term": "parent",
+     "pos": "noun",
+     "meaning_th": "พ่อแม่"
+    },
+    {
+     "term": "turn",
+     "pos": "noun",
+     "meaning_th": "ตาเล่น"
+    },
+    {
+     "term": "sibling",
+     "pos": "noun",
+     "meaning_th": "พี่น้อง"
+    },
+    {
+     "term": "safe",
+     "pos": "adjective",
+     "meaning_th": "ปลอดภัย"
+    }
+   ]
+  },
+  {
+   "ordinal": 75,
+   "theme_en": "Children at a Daycare Center",
+   "theme_th": "เด็ก ๆ ที่ศูนย์รับเลี้ยงเด็ก",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "child",
+     "pos": "noun",
+     "meaning_th": "เด็ก"
+    },
+    {
+     "term": "adult",
+     "pos": "noun",
+     "meaning_th": "ผู้ใหญ่"
+    },
+    {
+     "term": "caregiver",
+     "pos": "noun",
+     "meaning_th": "ผู้ดูแลเด็ก"
+    },
+    {
+     "term": "daycare",
+     "pos": "noun",
+     "meaning_th": "ศูนย์รับเลี้ยงเด็ก"
+    },
+    {
+     "term": "behave",
+     "pos": "verb",
+     "meaning_th": "ประพฤติตัว"
+    },
+    {
+     "term": "feed",
+     "pos": "verb",
+     "meaning_th": "ป้อนอาหาร"
+    },
+    {
+     "term": "comfort",
+     "pos": "verb",
+     "meaning_th": "ปลอบใจ"
+    },
+    {
+     "term": "kind",
+     "pos": "adjective",
+     "meaning_th": "ใจดี"
+    },
+    {
+     "term": "group",
+     "pos": "noun",
+     "meaning_th": "กลุ่ม"
+    },
+    {
+     "term": "nap",
+     "pos": "noun",
+     "meaning_th": "การงีบหลับ"
+    }
+   ]
+  },
+  {
+   "ordinal": 76,
+   "theme_en": "Planning a Music Lesson",
+   "theme_th": "วางแผนบทเรียนดนตรี",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "instrument",
+     "pos": "noun",
+     "meaning_th": "เครื่องดนตรี"
+    },
+    {
+     "term": "guitar",
+     "pos": "noun",
+     "meaning_th": "กีตาร์"
+    },
+    {
+     "term": "violin",
+     "pos": "noun",
+     "meaning_th": "ไวโอลิน"
+    },
+    {
+     "term": "musician",
+     "pos": "noun",
+     "meaning_th": "นักดนตรี"
+    },
+    {
+     "term": "classical",
+     "pos": "adjective",
+     "meaning_th": "คลาสสิก"
+    },
+    {
+     "term": "melody",
+     "pos": "noun",
+     "meaning_th": "ทำนอง"
+    },
+    {
+     "term": "perform",
+     "pos": "verb",
+     "meaning_th": "แสดง"
+    },
+    {
+     "term": "compose",
+     "pos": "verb",
+     "meaning_th": "แต่งเพลง"
+    },
+    {
+     "term": "talented",
+     "pos": "adjective",
+     "meaning_th": "มีพรสวรรค์"
+    },
+    {
+     "term": "sound",
+     "pos": "noun",
+     "meaning_th": "เสียง"
+    }
+   ]
+  },
+  {
+   "ordinal": 77,
+   "theme_en": "Planning an International Trip",
+   "theme_th": "วางแผนเดินทางไปต่างประเทศ",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "continent",
+     "pos": "noun",
+     "meaning_th": "ทวีป"
+    },
+    {
+     "term": "country",
+     "pos": "noun",
+     "meaning_th": "ประเทศ"
+    },
+    {
+     "term": "capital",
+     "pos": "noun",
+     "meaning_th": "เมืองหลวง"
+    },
+    {
+     "term": "border",
+     "pos": "noun",
+     "meaning_th": "พรมแดน"
+    },
+    {
+     "term": "river",
+     "pos": "noun",
+     "meaning_th": "แม่น้ำ"
+    },
+    {
+     "term": "foreign",
+     "pos": "adjective",
+     "meaning_th": "ต่างประเทศ"
+    },
+    {
+     "term": "abroad",
+     "pos": "adverb",
+     "meaning_th": "ในต่างประเทศ"
+    },
+    {
+     "term": "flow",
+     "pos": "verb",
+     "meaning_th": "ไหล"
+    },
+    {
+     "term": "surround",
+     "pos": "verb",
+     "meaning_th": "ล้อมรอบ"
+    },
+    {
+     "term": "lie",
+     "pos": "verb",
+     "meaning_th": "ตั้งอยู่"
+    }
+   ]
+  },
+  {
+   "ordinal": 78,
+   "theme_en": "Comparing Company Headquarters",
+   "theme_th": "เปรียบเทียบสำนักงานใหญ่ของบริษัท",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "operate",
+     "pos": "verb",
+     "meaning_th": "ดำเนินงาน"
+    },
+    {
+     "term": "advertise",
+     "pos": "verb",
+     "meaning_th": "โฆษณา"
+    },
+    {
+     "term": "occupy",
+     "pos": "verb",
+     "meaning_th": "ครอบครอง"
+    },
+    {
+     "term": "headquarters",
+     "pos": "noun",
+     "meaning_th": "สำนักงานใหญ่"
+    },
+    {
+     "term": "branch",
+     "pos": "noun",
+     "meaning_th": "สาขา"
+    },
+    {
+     "term": "publisher",
+     "pos": "noun",
+     "meaning_th": "สำนักพิมพ์"
+    },
+    {
+     "term": "newspaper",
+     "pos": "noun",
+     "meaning_th": "หนังสือพิมพ์"
+    },
+    {
+     "term": "skyscraper",
+     "pos": "noun",
+     "meaning_th": "ตึกระฟ้า"
+    },
+    {
+     "term": "corporation",
+     "pos": "noun",
+     "meaning_th": "บริษัทขนาดใหญ่"
+    },
+    {
+     "term": "historic",
+     "pos": "adjective",
+     "meaning_th": "สำคัญทางประวัติศาสตร์"
+    }
+   ]
+  },
+  {
+   "ordinal": 83,
+   "theme_en": "Living Alone in a New Place",
+   "theme_th": "ใช้ชีวิตคนเดียวในที่อยู่ใหม่",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "rely on",
+     "pos": "phrase",
+     "meaning_th": "พึ่งพา"
+    },
+    {
+     "term": "depend on",
+     "pos": "phrase",
+     "meaning_th": "ขึ้นอยู่กับ"
+    },
+    {
+     "term": "furnish",
+     "pos": "verb",
+     "meaning_th": "ตกแต่งให้มีเฟอร์นิเจอร์"
+    },
+    {
+     "term": "maintain",
+     "pos": "verb",
+     "meaning_th": "ดูแลรักษา"
+    },
+    {
+     "term": "privacy",
+     "pos": "noun",
+     "meaning_th": "ความเป็นส่วนตัว"
+    },
+    {
+     "term": "independence",
+     "pos": "noun",
+     "meaning_th": "ความเป็นอิสระ"
+    },
+    {
+     "term": "freedom",
+     "pos": "noun",
+     "meaning_th": "อิสรภาพ"
+    },
+    {
+     "term": "responsibility",
+     "pos": "noun",
+     "meaning_th": "ความรับผิดชอบ"
+    },
+    {
+     "term": "independent",
+     "pos": "adjective",
+     "meaning_th": "พึ่งพาตนเอง"
+    },
+    {
+     "term": "privately",
+     "pos": "adverb",
+     "meaning_th": "เป็นการส่วนตัว"
+    }
+   ]
+  },
+  {
+   "ordinal": 88,
+   "theme_en": "Surveying Employee Opinions",
+   "theme_th": "สำรวจความคิดเห็นของพนักงาน",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "include",
+     "pos": "verb",
+     "meaning_th": "รวมถึง"
+    },
+    {
+     "term": "exclude",
+     "pos": "verb",
+     "meaning_th": "ไม่รวม"
+    },
+    {
+     "term": "reflect",
+     "pos": "verb",
+     "meaning_th": "สะท้อน"
+    },
+    {
+     "term": "survey",
+     "pos": "noun",
+     "meaning_th": "แบบสำรวจ"
+    },
+    {
+     "term": "employee",
+     "pos": "noun",
+     "meaning_th": "พนักงาน"
+    },
+    {
+     "term": "percentage",
+     "pos": "noun",
+     "meaning_th": "ร้อยละ"
+    },
+    {
+     "term": "majority",
+     "pos": "noun",
+     "meaning_th": "คนส่วนใหญ่"
+    },
+    {
+     "term": "minority",
+     "pos": "noun",
+     "meaning_th": "คนส่วนน้อย"
+    },
+    {
+     "term": "finding",
+     "pos": "noun",
+     "meaning_th": "ข้อค้นพบ"
+    },
+    {
+     "term": "representative",
+     "pos": "adjective",
+     "meaning_th": "เป็นตัวแทน"
+    }
+   ]
+  },
+  {
+   "ordinal": 89,
+   "theme_en": "Choosing a Dinner Spot",
+   "theme_th": "เลือกร้านสำหรับมื้อเย็น",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "dine",
+     "pos": "verb",
+     "meaning_th": "รับประทานอาหาร"
+    },
+    {
+     "term": "serve",
+     "pos": "verb",
+     "meaning_th": "เสิร์ฟ"
+    },
+    {
+     "term": "list",
+     "pos": "verb",
+     "meaning_th": "ลงรายการ"
+    },
+    {
+     "term": "cafe",
+     "pos": "noun",
+     "meaning_th": "คาเฟ่"
+    },
+    {
+     "term": "diner",
+     "pos": "noun",
+     "meaning_th": "ร้านอาหารเรียบง่าย"
+    },
+    {
+     "term": "waiter",
+     "pos": "noun",
+     "meaning_th": "พนักงานเสิร์ฟชาย"
+    },
+    {
+     "term": "server",
+     "pos": "noun",
+     "meaning_th": "พนักงานเสิร์ฟ"
+    },
+    {
+     "term": "appetizer",
+     "pos": "noun",
+     "meaning_th": "อาหารเรียกน้ำย่อย"
+    },
+    {
+     "term": "tip",
+     "pos": "noun",
+     "meaning_th": "เงินทิป"
+    },
+    {
+     "term": "portion",
+     "pos": "noun",
+     "meaning_th": "ปริมาณอาหาร"
+    }
+   ]
+  },
+  {
+   "ordinal": 90,
+   "theme_en": "Handling a Full Workday",
+   "theme_th": "จัดการวันทำงานที่แน่น",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "afternoon",
+     "pos": "noun",
+     "meaning_th": "ช่วงบ่าย"
+    },
+    {
+     "term": "morning",
+     "pos": "noun",
+     "meaning_th": "ช่วงเช้า"
+    },
+    {
+     "term": "hour",
+     "pos": "noun",
+     "meaning_th": "ชั่วโมง"
+    },
+    {
+     "term": "minute",
+     "pos": "noun",
+     "meaning_th": "นาที"
+    },
+    {
+     "term": "lunch",
+     "pos": "noun",
+     "meaning_th": "มื้อกลางวัน"
+    },
+    {
+     "term": "overtime",
+     "pos": "noun",
+     "meaning_th": "การทำงานล่วงเวลา"
+    },
+    {
+     "term": "last",
+     "pos": "verb",
+     "meaning_th": "กินเวลานาน"
+    },
+    {
+     "term": "fill",
+     "pos": "verb",
+     "meaning_th": "ทำให้เต็ม"
+    },
+    {
+     "term": "extend",
+     "pos": "verb",
+     "meaning_th": "ยืดเวลา"
+    },
+    {
+     "term": "day",
+     "pos": "noun",
+     "meaning_th": "วัน"
+    }
+   ]
+  },
+  {
+   "ordinal": 91,
+   "theme_en": "Buying Produce at a Market",
+   "theme_th": "ซื้อผักผลไม้ที่ตลาด",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "clock in",
+     "pos": "phrasal verb",
+     "meaning_th": "ลงเวลาเข้างาน"
+    },
+    {
+     "term": "clock out",
+     "pos": "phrasal verb",
+     "meaning_th": "ลงเวลาเลิกงาน"
+    },
+    {
+     "term": "track",
+     "pos": "verb",
+     "meaning_th": "ติดตาม"
+    },
+    {
+     "term": "vendor",
+     "pos": "noun",
+     "meaning_th": "พ่อค้าแม่ค้า"
+    },
+    {
+     "term": "stall",
+     "pos": "noun",
+     "meaning_th": "แผงขายของ"
+    },
+    {
+     "term": "kilogram",
+     "pos": "noun",
+     "meaning_th": "กิโลกรัม"
+    },
+    {
+     "term": "handful",
+     "pos": "noun",
+     "meaning_th": "หนึ่งกำมือ"
+    },
+    {
+     "term": "bunch",
+     "pos": "noun",
+     "meaning_th": "หนึ่งพวง"
+    },
+    {
+     "term": "seasonal",
+     "pos": "adjective",
+     "meaning_th": "ตามฤดูกาล"
+    },
+    {
+     "term": "juicy",
+     "pos": "adjective",
+     "meaning_th": "ฉ่ำน้ำ"
+    }
+   ]
+  },
+  {
+   "ordinal": 93,
+   "theme_en": "Planning a Product Launch",
+   "theme_th": "วางแผนเปิดตัวผลิตภัณฑ์",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "design",
+     "pos": "verb",
+     "meaning_th": "ออกแบบ"
+    },
+    {
+     "term": "shape",
+     "pos": "verb",
+     "meaning_th": "กำหนดรูปแบบ"
+    },
+    {
+     "term": "attract",
+     "pos": "verb",
+     "meaning_th": "ดึงดูด"
+    },
+    {
+     "term": "launch",
+     "pos": "noun",
+     "meaning_th": "การเปิดตัว"
+    },
+    {
+     "term": "product",
+     "pos": "noun",
+     "meaning_th": "ผลิตภัณฑ์"
+    },
+    {
+     "term": "marketing",
+     "pos": "noun",
+     "meaning_th": "การตลาด"
+    },
+    {
+     "term": "brand",
+     "pos": "noun",
+     "meaning_th": "แบรนด์"
+    },
+    {
+     "term": "appeal",
+     "pos": "noun",
+     "meaning_th": "ความน่าสนใจ"
+    },
+    {
+     "term": "campaign",
+     "pos": "noun",
+     "meaning_th": "แคมเปญ"
+    },
+    {
+     "term": "creative",
+     "pos": "adjective",
+     "meaning_th": "สร้างสรรค์"
+    }
+   ]
+  },
+  {
+   "ordinal": 94,
+   "theme_en": "Introducing New Department Leads",
+   "theme_th": "แนะนำหัวหน้าแผนกคนใหม่",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "department",
+     "pos": "noun",
+     "meaning_th": "แผนก"
+    },
+    {
+     "term": "director",
+     "pos": "noun",
+     "meaning_th": "ผู้อำนวยการ"
+    },
+    {
+     "term": "assistant",
+     "pos": "noun",
+     "meaning_th": "ผู้ช่วย"
+    },
+    {
+     "term": "role",
+     "pos": "noun",
+     "meaning_th": "บทบาท"
+    },
+    {
+     "term": "division",
+     "pos": "noun",
+     "meaning_th": "ฝ่าย"
+    },
+    {
+     "term": "personnel",
+     "pos": "noun",
+     "meaning_th": "บุคลากร"
+    },
+    {
+     "term": "senior",
+     "pos": "adjective",
+     "meaning_th": "อาวุโส"
+    },
+    {
+     "term": "recruit",
+     "pos": "verb",
+     "meaning_th": "รับสมัคร"
+    },
+    {
+     "term": "supervise",
+     "pos": "verb",
+     "meaning_th": "ดูแลควบคุม"
+    },
+    {
+     "term": "report to",
+     "pos": "phrase",
+     "meaning_th": "รายงานต่อ"
+    }
+   ]
+  },
+  {
+   "ordinal": 101,
+   "theme_en": "Clearing a Storage Room",
+   "theme_th": "จัดห้องเก็บของให้เป็นระเบียบ",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "good",
+     "pos": "adjective",
+     "meaning_th": "สภาพดี"
+    },
+    {
+     "term": "well",
+     "pos": "adverb",
+     "meaning_th": "ได้ดี"
+    },
+    {
+     "term": "hard",
+     "pos": "adverb",
+     "meaning_th": "อย่างหนัก"
+    },
+    {
+     "term": "late",
+     "pos": "adverb",
+     "meaning_th": "สาย"
+    },
+    {
+     "term": "hardly",
+     "pos": "adverb",
+     "meaning_th": "แทบจะไม่"
+    },
+    {
+     "term": "sort",
+     "pos": "verb",
+     "meaning_th": "คัดแยก"
+    },
+    {
+     "term": "throw away",
+     "pos": "phrasal verb",
+     "meaning_th": "ทิ้ง"
+    },
+    {
+     "term": "donate",
+     "pos": "verb",
+     "meaning_th": "บริจาค"
+    },
+    {
+     "term": "storage",
+     "pos": "noun",
+     "meaning_th": "ที่เก็บของ"
+    },
+    {
+     "term": "mess",
+     "pos": "noun",
+     "meaning_th": "ความรก"
+    }
+   ]
+  }
+ ]
+}

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5"
+	"tokoloop/internal/ebook"
 )
 
 // A learner may finish a lesson with help. Mastery still requires independent speech.
@@ -48,5 +49,47 @@ func (a *App) daily(c *fiber.Ctx) error {
 	if len(lesson) > 0 {
 		json.Unmarshal(lesson, &l)
 	}
-	return c.JSON(fiber.Map{"lesson": l, "due_count": due, "active_session_id": active, "minutes": number(u.Profile["daily_minutes"], 30), "blocks": []fiber.Map{{"kind": "review", "minutes": 5}, {"kind": "pattern", "minutes": 5}, {"kind": "drill", "minutes": 8}, {"kind": "conversation", "minutes": 10}, {"kind": "summary", "minutes": 2}}})
+	plan := fiber.Map{"lesson": l, "due_count": due, "active_session_id": active, "minutes": number(u.Profile["daily_minutes"], 30), "blocks": []fiber.Map{{"kind": "review", "minutes": 5}, {"kind": "pattern", "minutes": 5}, {"kind": "drill", "minutes": 8}, {"kind": "conversation", "minutes": 10}, {"kind": "summary", "minutes": 2}}}
+	if a.Course != nil {
+		ebookPlan, err := a.ebookDailyPlan(c, due)
+		if err != nil {
+			return err
+		}
+		plan["ebook"] = ebookPlan
+	}
+	return c.JSON(plan)
+}
+
+// ebookDailyPlan is the Learn Ebook part of today's plan: review what is due
+// first (capped), then continue the next unit on the A1-first learning path.
+func (a *App) ebookDailyPlan(c *fiber.Ctx, due int) (fiber.Map, error) {
+	uid := user(c).ID
+	current, err := a.ebookCourseProgressRows(c.UserContext(), uid, ebook.LearnEbookCourseVersion)
+	if err != nil {
+		return nil, err
+	}
+	previous, err := a.ebookCoursePreviousStates(c.UserContext(), uid)
+	if err != nil {
+		return nil, err
+	}
+	completedAll := map[string]bool{}
+	statuses := map[string]string{}
+	percents := map[string]int{}
+	for _, lesson := range a.Course.Lessons {
+		id := ebookCourseStorageID(lesson)
+		state := current[id]
+		if state == nil {
+			state = previous[id]
+		}
+		status, percent, _ := ebookCourseStatus(state, false)
+		statuses[lesson.ID] = status
+		percents[lesson.ID] = percent
+		completedAll[lesson.ID] = percent == 100
+	}
+	summary := ebookCoursePathSummary(a.Course, statuses, completedAll)
+	plan := fiber.Map{"total": summary["total"], "learned": summary["learned"], "levels": summary["levels"], "review_limit": reviewSessionLimit, "review_today": min(due, reviewSessionLimit)}
+	if next, ok := a.Course.Lesson(ebookCourseRecommended(a.Course, completedAll)); ok {
+		plan["next_unit"] = fiber.Map{"id": next.ID, "number": next.Ordinal, "title": next.Title, "title_th": next.TitleTH, "level": next.Level, "path_order": next.PathOrder, "theme_th": next.ThemeTH, "status": statuses[next.ID], "percent": percents[next.ID]}
+	}
+	return plan, nil
 }

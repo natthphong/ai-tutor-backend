@@ -1,0 +1,1280 @@
+{
+ "units": [
+  {
+   "ordinal": 102,
+   "theme_en": "Describing a dinner gathering",
+   "theme_th": "บรรยายงานเลี้ยงอาหารค่ำ",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "seem",
+     "pos": "verb",
+     "meaning_th": "ดูเหมือน"
+    },
+    {
+     "term": "feel",
+     "pos": "verb",
+     "meaning_th": "รู้สึก"
+    },
+    {
+     "term": "smell",
+     "pos": "verb",
+     "meaning_th": "มีกลิ่น"
+    },
+    {
+     "term": "spicy",
+     "pos": "adjective",
+     "meaning_th": "เผ็ด"
+    },
+    {
+     "term": "tasty",
+     "pos": "adjective",
+     "meaning_th": "อร่อย"
+    },
+    {
+     "term": "surprise",
+     "pos": "noun",
+     "meaning_th": "เรื่องน่าประหลาดใจ"
+    },
+    {
+     "term": "flavor",
+     "pos": "noun",
+     "meaning_th": "รสชาติ"
+    },
+    {
+     "term": "laughter",
+     "pos": "noun",
+     "meaning_th": "เสียงหัวเราะ"
+    },
+    {
+     "term": "candle",
+     "pos": "noun",
+     "meaning_th": "เทียน"
+    },
+    {
+     "term": "lively",
+     "pos": "adjective",
+     "meaning_th": "มีชีวิตชีวา"
+    }
+   ]
+  },
+  {
+   "ordinal": 104,
+   "theme_en": "Choosing clothes online",
+   "theme_th": "เลือกซื้อเสื้อผ้าทางออนไลน์",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "shop around",
+     "pos": "phrase",
+     "meaning_th": "เปรียบเทียบราคาหลายร้าน"
+    },
+    {
+     "term": "pick out",
+     "pos": "phrasal verb",
+     "meaning_th": "เลือกออกมา"
+    },
+    {
+     "term": "exchange",
+     "pos": "verb",
+     "meaning_th": "เปลี่ยนสินค้า"
+    },
+    {
+     "term": "reasonable",
+     "pos": "adjective",
+     "meaning_th": "สมเหตุสมผล"
+    },
+    {
+     "term": "plain",
+     "pos": "adjective",
+     "meaning_th": "เรียบ ไม่มีลวดลาย"
+    },
+    {
+     "term": "loose",
+     "pos": "adjective",
+     "meaning_th": "หลวม"
+    },
+    {
+     "term": "tight",
+     "pos": "adjective",
+     "meaning_th": "คับ"
+    },
+    {
+     "term": "bargain",
+     "pos": "noun",
+     "meaning_th": "ของราคาถูก"
+    },
+    {
+     "term": "quality",
+     "pos": "noun",
+     "meaning_th": "คุณภาพ"
+    },
+    {
+     "term": "discount",
+     "pos": "noun",
+     "meaning_th": "ส่วนลด"
+    }
+   ]
+  },
+  {
+   "ordinal": 106,
+   "theme_en": "Comparing commute times",
+   "theme_th": "เปรียบเทียบเวลาเดินทางไปทำงาน",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "speed up",
+     "pos": "phrasal verb",
+     "meaning_th": "เร่งความเร็ว"
+    },
+    {
+     "term": "slow down",
+     "pos": "phrasal verb",
+     "meaning_th": "ชะลอความเร็ว"
+    },
+    {
+     "term": "take longer",
+     "pos": "phrase",
+     "meaning_th": "ใช้เวลานานกว่า"
+    },
+    {
+     "term": "efficient",
+     "pos": "adjective",
+     "meaning_th": "มีประสิทธิภาพ"
+    },
+    {
+     "term": "punctual",
+     "pos": "adjective",
+     "meaning_th": "ตรงต่อเวลา"
+    },
+    {
+     "term": "journey",
+     "pos": "noun",
+     "meaning_th": "การเดินทาง"
+    },
+    {
+     "term": "fare",
+     "pos": "noun",
+     "meaning_th": "ค่าโดยสาร"
+    },
+    {
+     "term": "rush hour",
+     "pos": "noun",
+     "meaning_th": "ชั่วโมงเร่งด่วน"
+    },
+    {
+     "term": "passenger",
+     "pos": "noun",
+     "meaning_th": "ผู้โดยสาร"
+    },
+    {
+     "term": "congestion",
+     "pos": "noun",
+     "meaning_th": "การจราจรติดขัด"
+    }
+   ]
+  },
+  {
+   "ordinal": 107,
+   "theme_en": "Checking household electricity use",
+   "theme_th": "ตรวจสอบการใช้ไฟฟ้าในบ้าน",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "consume",
+     "pos": "verb",
+     "meaning_th": "ใช้พลังงาน"
+    },
+    {
+     "term": "waste",
+     "pos": "verb",
+     "meaning_th": "ใช้สิ้นเปลือง"
+    },
+    {
+     "term": "calculate",
+     "pos": "verb",
+     "meaning_th": "คำนวณ"
+    },
+    {
+     "term": "electricity",
+     "pos": "noun",
+     "meaning_th": "ไฟฟ้า"
+    },
+    {
+     "term": "meter",
+     "pos": "noun",
+     "meaning_th": "มิเตอร์"
+    },
+    {
+     "term": "usage",
+     "pos": "noun",
+     "meaning_th": "ปริมาณการใช้"
+    },
+    {
+     "term": "average",
+     "pos": "noun",
+     "meaning_th": "ค่าเฉลี่ย"
+    },
+    {
+     "term": "low",
+     "pos": "adjective",
+     "meaning_th": "ต่ำ"
+    },
+    {
+     "term": "high",
+     "pos": "adjective",
+     "meaning_th": "สูง"
+    },
+    {
+     "term": "appliance",
+     "pos": "noun",
+     "meaning_th": "เครื่องใช้ไฟฟ้า"
+    }
+   ]
+  },
+  {
+   "ordinal": 112,
+   "theme_en": "Launching a company website",
+   "theme_th": "เปิดตัวเว็บไซต์ของบริษัท",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "go live",
+     "pos": "phrase",
+     "meaning_th": "เริ่มใช้งานจริง"
+    },
+    {
+     "term": "freeze",
+     "pos": "verb",
+     "meaning_th": "ค้าง"
+    },
+    {
+     "term": "load",
+     "pos": "verb",
+     "meaning_th": "โหลดข้อมูล"
+    },
+    {
+     "term": "disconnect",
+     "pos": "verb",
+     "meaning_th": "ตัดการเชื่อมต่อ"
+    },
+    {
+     "term": "hold up",
+     "pos": "phrasal verb",
+     "meaning_th": "ทำให้ล่าช้า"
+    },
+    {
+     "term": "outage",
+     "pos": "noun",
+     "meaning_th": "ระบบขัดข้อง"
+    },
+    {
+     "term": "bandwidth",
+     "pos": "noun",
+     "meaning_th": "แบนด์วิดท์"
+    },
+    {
+     "term": "website",
+     "pos": "noun",
+     "meaning_th": "เว็บไซต์"
+    },
+    {
+     "term": "release",
+     "pos": "noun",
+     "meaning_th": "การเปิดตัว"
+    },
+    {
+     "term": "unexpectedly",
+     "pos": "adverb",
+     "meaning_th": "อย่างไม่คาดคิด"
+    }
+   ]
+  },
+  {
+   "ordinal": 113,
+   "theme_en": "Community event in bad weather",
+   "theme_th": "งานชุมชนท่ามกลางอากาศแปรปรวน",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "show up",
+     "pos": "phrasal verb",
+     "meaning_th": "มาปรากฏตัว"
+    },
+    {
+     "term": "take place",
+     "pos": "phrase",
+     "meaning_th": "จัดขึ้น"
+    },
+    {
+     "term": "go ahead",
+     "pos": "phrasal verb",
+     "meaning_th": "ดำเนินต่อไป"
+    },
+    {
+     "term": "muddy",
+     "pos": "adjective",
+     "meaning_th": "เต็มไปด้วยโคลน"
+    },
+    {
+     "term": "wet",
+     "pos": "adjective",
+     "meaning_th": "เปียก"
+    },
+    {
+     "term": "event",
+     "pos": "noun",
+     "meaning_th": "กิจกรรม"
+    },
+    {
+     "term": "organizer",
+     "pos": "noun",
+     "meaning_th": "ผู้จัดงาน"
+    },
+    {
+     "term": "patience",
+     "pos": "noun",
+     "meaning_th": "ความอดทน"
+    },
+    {
+     "term": "shelter",
+     "pos": "noun",
+     "meaning_th": "ที่หลบภัย"
+    },
+    {
+     "term": "cancellation",
+     "pos": "noun",
+     "meaning_th": "การยกเลิก"
+    }
+   ]
+  },
+  {
+   "ordinal": 114,
+   "theme_en": "Preparing for a client visit",
+   "theme_th": "เตรียมตัวไปพบลูกค้า",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "back up",
+     "pos": "phrasal verb",
+     "meaning_th": "สำรองข้อมูล"
+    },
+    {
+     "term": "duplicate",
+     "pos": "verb",
+     "meaning_th": "ทำสำเนา"
+    },
+    {
+     "term": "notify",
+     "pos": "verb",
+     "meaning_th": "แจ้งให้ทราบ"
+    },
+    {
+     "term": "passport",
+     "pos": "noun",
+     "meaning_th": "หนังสือเดินทาง"
+    },
+    {
+     "term": "itinerary",
+     "pos": "noun",
+     "meaning_th": "กำหนดการเดินทาง"
+    },
+    {
+     "term": "insurance",
+     "pos": "noun",
+     "meaning_th": "ประกันภัย"
+    },
+    {
+     "term": "adapter",
+     "pos": "noun",
+     "meaning_th": "อะแดปเตอร์"
+    },
+    {
+     "term": "portable",
+     "pos": "adjective",
+     "meaning_th": "พกพาสะดวก"
+    },
+    {
+     "term": "essential",
+     "pos": "adjective",
+     "meaning_th": "จำเป็น"
+    },
+    {
+     "term": "visa",
+     "pos": "noun",
+     "meaning_th": "วีซ่า"
+    }
+   ]
+  },
+  {
+   "ordinal": 115,
+   "theme_en": "Weekend babysitting arrangements",
+   "theme_th": "การฝากเลี้ยงเด็กช่วงสุดสัปดาห์",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "pick up",
+     "pos": "phrasal verb",
+     "meaning_th": "ไปรับ"
+    },
+    {
+     "term": "drop off",
+     "pos": "phrasal verb",
+     "meaning_th": "ไปส่ง"
+    },
+    {
+     "term": "check on",
+     "pos": "phrase",
+     "meaning_th": "แวะดูแล"
+    },
+    {
+     "term": "babysitter",
+     "pos": "noun",
+     "meaning_th": "พี่เลี้ยงเด็ก"
+    },
+    {
+     "term": "emergency",
+     "pos": "noun",
+     "meaning_th": "เหตุฉุกเฉิน"
+    },
+    {
+     "term": "allergy",
+     "pos": "noun",
+     "meaning_th": "อาการแพ้"
+    },
+    {
+     "term": "bedtime",
+     "pos": "noun",
+     "meaning_th": "เวลาเข้านอน"
+    },
+    {
+     "term": "consent",
+     "pos": "noun",
+     "meaning_th": "ความยินยอม"
+    },
+    {
+     "term": "favorite",
+     "pos": "adjective",
+     "meaning_th": "ที่ชื่นชอบ"
+    },
+    {
+     "term": "screen time",
+     "pos": "noun",
+     "meaning_th": "เวลาอยู่หน้าจอ"
+    }
+   ]
+  },
+  {
+   "ordinal": 117,
+   "theme_en": "Creating a product catalog",
+   "theme_th": "จัดทำแคตตาล็อกสินค้า",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "function as",
+     "pos": "phrase",
+     "meaning_th": "ทำหน้าที่เป็น"
+    },
+    {
+     "term": "act as",
+     "pos": "phrase",
+     "meaning_th": "ทำหน้าที่เป็น"
+    },
+    {
+     "term": "stand for",
+     "pos": "phrasal verb",
+     "meaning_th": "ใช้แทนความหมาย"
+    },
+    {
+     "term": "resemble",
+     "pos": "verb",
+     "meaning_th": "มีลักษณะคล้าย"
+    },
+    {
+     "term": "template",
+     "pos": "noun",
+     "meaning_th": "แม่แบบ"
+    },
+    {
+     "term": "logo",
+     "pos": "noun",
+     "meaning_th": "ตราสัญลักษณ์"
+    },
+    {
+     "term": "symbol",
+     "pos": "noun",
+     "meaning_th": "สัญลักษณ์"
+    },
+    {
+     "term": "sample",
+     "pos": "noun",
+     "meaning_th": "ตัวอย่าง"
+    },
+    {
+     "term": "mock-up",
+     "pos": "noun",
+     "meaning_th": "แบบจำลอง"
+    },
+    {
+     "term": "visual",
+     "pos": "adjective",
+     "meaning_th": "เกี่ยวกับภาพ"
+    }
+   ]
+  },
+  {
+   "ordinal": 120,
+   "theme_en": "Finishing a project handoff",
+   "theme_th": "ส่งต่องานโครงการให้เสร็จ",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "hand over",
+     "pos": "phrasal verb",
+     "meaning_th": "ส่งมอบ"
+    },
+    {
+     "term": "finalize",
+     "pos": "verb",
+     "meaning_th": "สรุปให้เสร็จ"
+    },
+    {
+     "term": "escalate",
+     "pos": "verb",
+     "meaning_th": "ส่งเรื่องให้ระดับสูงขึ้น"
+    },
+    {
+     "term": "milestone",
+     "pos": "noun",
+     "meaning_th": "หมุดหมายสำคัญ"
+    },
+    {
+     "term": "phase",
+     "pos": "noun",
+     "meaning_th": "ระยะ"
+    },
+    {
+     "term": "extension",
+     "pos": "noun",
+     "meaning_th": "การขยายเวลา"
+    },
+    {
+     "term": "overdue",
+     "pos": "adjective",
+     "meaning_th": "เลยกำหนด"
+    },
+    {
+     "term": "meanwhile",
+     "pos": "adverb",
+     "meaning_th": "ในระหว่างนั้น"
+    },
+    {
+     "term": "handover",
+     "pos": "noun",
+     "meaning_th": "การส่งมอบงาน"
+    },
+    {
+     "term": "transition",
+     "pos": "noun",
+     "meaning_th": "การเปลี่ยนผ่าน"
+    }
+   ]
+  },
+  {
+   "ordinal": 122,
+   "theme_en": "Arriving for a theater matinee",
+   "theme_th": "ไปชมละครรอบบ่ายให้ทัน",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "make it",
+     "pos": "phrase",
+     "meaning_th": "ไปทัน"
+    },
+    {
+     "term": "run late",
+     "pos": "phrase",
+     "meaning_th": "มาสาย"
+    },
+    {
+     "term": "set out",
+     "pos": "phrasal verb",
+     "meaning_th": "ออกเดินทาง"
+    },
+    {
+     "term": "usher",
+     "pos": "noun",
+     "meaning_th": "พนักงานนำชม"
+    },
+    {
+     "term": "curtain call",
+     "pos": "noun",
+     "meaning_th": "การออกมารับเสียงปรบมือ"
+    },
+    {
+     "term": "matinee",
+     "pos": "noun",
+     "meaning_th": "การแสดงรอบกลางวัน"
+    },
+    {
+     "term": "performance",
+     "pos": "noun",
+     "meaning_th": "การแสดง"
+    },
+    {
+     "term": "intermission",
+     "pos": "noun",
+     "meaning_th": "ช่วงพักการแสดง"
+    },
+    {
+     "term": "start time",
+     "pos": "noun",
+     "meaning_th": "เวลาเริ่ม"
+    },
+    {
+     "term": "showtime",
+     "pos": "noun",
+     "meaning_th": "เวลาเริ่มการแสดง"
+    }
+   ]
+  },
+  {
+   "ordinal": 127,
+   "theme_en": "Beach holiday in rainy weather",
+   "theme_th": "เที่ยวทะเลช่วงวันหยุดที่ฝนตก",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "sunbathe",
+     "pos": "verb",
+     "meaning_th": "อาบแดด"
+    },
+    {
+     "term": "sail",
+     "pos": "verb",
+     "meaning_th": "แล่นเรือ"
+    },
+    {
+     "term": "sightsee",
+     "pos": "verb",
+     "meaning_th": "เที่ยวชมสถานที่"
+    },
+    {
+     "term": "resort",
+     "pos": "noun",
+     "meaning_th": "รีสอร์ต"
+    },
+    {
+     "term": "shoreline",
+     "pos": "noun",
+     "meaning_th": "แนวชายฝั่ง"
+    },
+    {
+     "term": "raincoat",
+     "pos": "noun",
+     "meaning_th": "เสื้อกันฝน"
+    },
+    {
+     "term": "sunburn",
+     "pos": "noun",
+     "meaning_th": "ผิวไหม้แดด"
+    },
+    {
+     "term": "seaside",
+     "pos": "noun",
+     "meaning_th": "ชายทะเล"
+    },
+    {
+     "term": "humid",
+     "pos": "adjective",
+     "meaning_th": "ชื้น"
+    },
+    {
+     "term": "coastal",
+     "pos": "adjective",
+     "meaning_th": "บริเวณชายฝั่ง"
+    }
+   ]
+  },
+  {
+   "ordinal": 128,
+   "theme_en": "Sending a signed contract",
+   "theme_th": "ส่งสัญญาที่ลงนามแล้ว",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "receive",
+     "pos": "verb",
+     "meaning_th": "ได้รับ"
+    },
+    {
+     "term": "mail",
+     "pos": "verb",
+     "meaning_th": "ส่งทางไปรษณีย์"
+    },
+    {
+     "term": "mistype",
+     "pos": "verb",
+     "meaning_th": "พิมพ์ผิด"
+    },
+    {
+     "term": "scan",
+     "pos": "verb",
+     "meaning_th": "สแกน"
+    },
+    {
+     "term": "fax",
+     "pos": "verb",
+     "meaning_th": "ส่งแฟกซ์"
+    },
+    {
+     "term": "courier",
+     "pos": "noun",
+     "meaning_th": "บริษัทส่งเอกสาร"
+    },
+    {
+     "term": "digitally",
+     "pos": "adverb",
+     "meaning_th": "ทางดิจิทัล"
+    },
+    {
+     "term": "signature",
+     "pos": "noun",
+     "meaning_th": "ลายเซ็น"
+    },
+    {
+     "term": "invoice",
+     "pos": "noun",
+     "meaning_th": "ใบแจ้งหนี้"
+    },
+    {
+     "term": "handwritten",
+     "pos": "adjective",
+     "meaning_th": "เขียนด้วยลายมือ"
+    }
+   ]
+  },
+  {
+   "ordinal": 129,
+   "theme_en": "Explaining sales report changes",
+   "theme_th": "อธิบายการเปลี่ยนแปลงในรายงานยอดขาย",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "reason for",
+     "pos": "noun",
+     "meaning_th": "เหตุผลของ"
+    },
+    {
+     "term": "cause of",
+     "pos": "noun",
+     "meaning_th": "สาเหตุของ"
+    },
+    {
+     "term": "increase in",
+     "pos": "noun",
+     "meaning_th": "การเพิ่มขึ้นของ"
+    },
+    {
+     "term": "solution to",
+     "pos": "noun",
+     "meaning_th": "วิธีแก้ปัญหา"
+    },
+    {
+     "term": "demand for",
+     "pos": "noun",
+     "meaning_th": "ความต้องการ"
+    },
+    {
+     "term": "effect on",
+     "pos": "noun",
+     "meaning_th": "ผลกระทบต่อ"
+    },
+    {
+     "term": "link between",
+     "pos": "noun",
+     "meaning_th": "ความเชื่อมโยงระหว่าง"
+    },
+    {
+     "term": "contribute to",
+     "pos": "verb",
+     "meaning_th": "มีส่วนทำให้"
+    },
+    {
+     "term": "stem from",
+     "pos": "verb",
+     "meaning_th": "มีสาเหตุมาจาก"
+    },
+    {
+     "term": "come from",
+     "pos": "phrase",
+     "meaning_th": "มาจาก"
+    }
+   ]
+  },
+  {
+   "ordinal": 130,
+   "theme_en": "Celebrating a team award",
+   "theme_th": "ฉลองรางวัลของทีม",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "grateful for",
+     "pos": "adjective",
+     "meaning_th": "รู้สึกขอบคุณต่อ"
+    },
+    {
+     "term": "excited about",
+     "pos": "adjective",
+     "meaning_th": "ตื่นเต้นกับ"
+    },
+    {
+     "term": "pleased with",
+     "pos": "adjective",
+     "meaning_th": "พอใจกับ"
+    },
+    {
+     "term": "impressed by",
+     "pos": "adjective",
+     "meaning_th": "ประทับใจใน"
+    },
+    {
+     "term": "present",
+     "pos": "verb",
+     "meaning_th": "มอบให้"
+    },
+    {
+     "term": "nominate",
+     "pos": "verb",
+     "meaning_th": "เสนอชื่อ"
+    },
+    {
+     "term": "praise",
+     "pos": "verb",
+     "meaning_th": "กล่าวชื่นชม"
+    },
+    {
+     "term": "trophy",
+     "pos": "noun",
+     "meaning_th": "ถ้วยรางวัล"
+    },
+    {
+     "term": "applause",
+     "pos": "noun",
+     "meaning_th": "เสียงปรบมือ"
+    },
+    {
+     "term": "ceremony",
+     "pos": "noun",
+     "meaning_th": "พิธี"
+    }
+   ]
+  },
+  {
+   "ordinal": 131,
+   "theme_en": "Starting a new role",
+   "theme_th": "เริ่มต้นบทบาทใหม่ในที่ทำงาน",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "qualify for",
+     "pos": "phrase",
+     "meaning_th": "มีคุณสมบัติเหมาะกับ"
+    },
+    {
+     "term": "relate to",
+     "pos": "phrase",
+     "meaning_th": "เกี่ยวข้องกับ"
+    },
+    {
+     "term": "afraid of",
+     "pos": "adjective",
+     "meaning_th": "กลัว"
+    },
+    {
+     "term": "proud of",
+     "pos": "adjective",
+     "meaning_th": "ภูมิใจใน"
+    },
+    {
+     "term": "similar to",
+     "pos": "adjective",
+     "meaning_th": "คล้ายกับ"
+    },
+    {
+     "term": "different from",
+     "pos": "adjective",
+     "meaning_th": "แตกต่างจาก"
+    },
+    {
+     "term": "capable of",
+     "pos": "adjective",
+     "meaning_th": "สามารถทำได้"
+    },
+    {
+     "term": "aware of",
+     "pos": "adjective",
+     "meaning_th": "ตระหนักถึง"
+    },
+    {
+     "term": "promotion",
+     "pos": "noun",
+     "meaning_th": "การเลื่อนตำแหน่ง"
+    },
+    {
+     "term": "settle for",
+     "pos": "phrase",
+     "meaning_th": "ยอมรับสิ่งที่ด้อยกว่า"
+    }
+   ]
+  },
+  {
+   "ordinal": 133,
+   "theme_en": "Collecting medicine for a neighbor",
+   "theme_th": "ไปรับยาช่วยเพื่อนบ้านสูงวัย",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "care for",
+     "pos": "phrase",
+     "meaning_th": "ดูแล"
+    },
+    {
+     "term": "wait for",
+     "pos": "phrase",
+     "meaning_th": "รอ"
+    },
+    {
+     "term": "hear about",
+     "pos": "phrase",
+     "meaning_th": "ได้ข่าวเกี่ยวกับ"
+    },
+    {
+     "term": "prescription",
+     "pos": "noun",
+     "meaning_th": "ใบสั่งยา"
+    },
+    {
+     "term": "pickup",
+     "pos": "noun",
+     "meaning_th": "การไปรับของ"
+    },
+    {
+     "term": "elderly",
+     "pos": "adjective",
+     "meaning_th": "สูงวัย"
+    },
+    {
+     "term": "refill",
+     "pos": "noun",
+     "meaning_th": "การเติมยา"
+    },
+    {
+     "term": "dose",
+     "pos": "noun",
+     "meaning_th": "ขนาดยา"
+    },
+    {
+     "term": "supply",
+     "pos": "noun",
+     "meaning_th": "สิ่งของที่จัดหา"
+    },
+    {
+     "term": "pharmacist",
+     "pos": "noun",
+     "meaning_th": "เภสัชกร"
+    }
+   ]
+  },
+  {
+   "ordinal": 134,
+   "theme_en": "Choosing a new podcast",
+   "theme_th": "เลือกฟังพอดแคสต์เรื่องใหม่",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "think about",
+     "pos": "phrase",
+     "meaning_th": "คิดเกี่ยวกับ"
+    },
+    {
+     "term": "think of",
+     "pos": "phrase",
+     "meaning_th": "นึกถึง"
+    },
+    {
+     "term": "dream about",
+     "pos": "phrase",
+     "meaning_th": "ฝันเกี่ยวกับ"
+    },
+    {
+     "term": "talk about",
+     "pos": "phrase",
+     "meaning_th": "พูดคุยเกี่ยวกับ"
+    },
+    {
+     "term": "hear of",
+     "pos": "phrase",
+     "meaning_th": "เคยได้ยินชื่อ"
+    },
+    {
+     "term": "remind somebody of",
+     "pos": "phrase",
+     "meaning_th": "ทำให้นึกถึง"
+    },
+    {
+     "term": "subscribe to",
+     "pos": "phrase",
+     "meaning_th": "สมัครรับ"
+    },
+    {
+     "term": "podcast",
+     "pos": "noun",
+     "meaning_th": "พอดแคสต์"
+    },
+    {
+     "term": "trailer",
+     "pos": "noun",
+     "meaning_th": "ตัวอย่างรายการ"
+    },
+    {
+     "term": "plot",
+     "pos": "noun",
+     "meaning_th": "โครงเรื่อง"
+    }
+   ]
+  },
+  {
+   "ordinal": 137,
+   "theme_en": "Planning airport travel with friends",
+   "theme_th": "วางแผนเดินทางไปสนามบินกับเพื่อน",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "get on",
+     "pos": "phrasal verb",
+     "meaning_th": "ขึ้นรถหรือยานพาหนะ"
+    },
+    {
+     "term": "look up",
+     "pos": "phrasal verb",
+     "meaning_th": "ค้นหาข้อมูล"
+    },
+    {
+     "term": "take off",
+     "pos": "phrasal verb",
+     "meaning_th": "ถอดออก"
+    },
+    {
+     "term": "get along",
+     "pos": "phrasal verb",
+     "meaning_th": "เข้ากันได้"
+    },
+    {
+     "term": "check out",
+     "pos": "phrasal verb",
+     "meaning_th": "เช็กเอาต์"
+    },
+    {
+     "term": "put away",
+     "pos": "phrasal verb",
+     "meaning_th": "เก็บเข้าที่"
+    },
+    {
+     "term": "set aside",
+     "pos": "phrasal verb",
+     "meaning_th": "กันไว้"
+    },
+    {
+     "term": "timetable",
+     "pos": "noun",
+     "meaning_th": "ตารางเวลา"
+    },
+    {
+     "term": "departure",
+     "pos": "noun",
+     "meaning_th": "การออกเดินทาง"
+    },
+    {
+     "term": "terminal",
+     "pos": "noun",
+     "meaning_th": "อาคารผู้โดยสาร"
+    }
+   ]
+  },
+  {
+   "ordinal": 138,
+   "theme_en": "Checking into a small hotel",
+   "theme_th": "เข้าพักในโรงแรมขนาดเล็ก",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "check in",
+     "pos": "phrasal verb",
+     "meaning_th": "ลงทะเบียนเข้าพัก"
+    },
+    {
+     "term": "fill in",
+     "pos": "phrasal verb",
+     "meaning_th": "กรอกข้อมูล"
+    },
+    {
+     "term": "eat out",
+     "pos": "phrasal verb",
+     "meaning_th": "ออกไปกินข้าว"
+    },
+    {
+     "term": "stay over",
+     "pos": "phrasal verb",
+     "meaning_th": "ค้างคืน"
+    },
+    {
+     "term": "drop in",
+     "pos": "phrasal verb",
+     "meaning_th": "แวะมา"
+    },
+    {
+     "term": "reception",
+     "pos": "noun",
+     "meaning_th": "แผนกต้อนรับ"
+    },
+    {
+     "term": "registration",
+     "pos": "noun",
+     "meaning_th": "การลงทะเบียน"
+    },
+    {
+     "term": "vacancy",
+     "pos": "noun",
+     "meaning_th": "ห้องว่าง"
+    },
+    {
+     "term": "overnight",
+     "pos": "adverb",
+     "meaning_th": "ค้างคืน"
+    },
+    {
+     "term": "keycard",
+     "pos": "noun",
+     "meaning_th": "คีย์การ์ด"
+    }
+   ]
+  },
+  {
+   "ordinal": 139,
+   "theme_en": "Fixing a printer supply problem",
+   "theme_th": "แก้ปัญหาวัสดุสิ้นเปลืองของเครื่องพิมพ์",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "find out",
+     "pos": "phrasal verb",
+     "meaning_th": "ค้นพบ"
+    },
+    {
+     "term": "sort out",
+     "pos": "phrasal verb",
+     "meaning_th": "แก้ไขให้เรียบร้อย"
+    },
+    {
+     "term": "run out",
+     "pos": "phrasal verb",
+     "meaning_th": "หมดลง"
+    },
+    {
+     "term": "work out",
+     "pos": "phrasal verb",
+     "meaning_th": "หาทางแก้ได้"
+    },
+    {
+     "term": "turn out",
+     "pos": "phrasal verb",
+     "meaning_th": "กลายเป็นว่า"
+    },
+    {
+     "term": "supplies",
+     "pos": "noun",
+     "meaning_th": "วัสดุสิ้นเปลือง"
+    },
+    {
+     "term": "cartridge",
+     "pos": "noun",
+     "meaning_th": "ตลับหมึก"
+    },
+    {
+     "term": "ink",
+     "pos": "noun",
+     "meaning_th": "หมึกพิมพ์"
+    },
+    {
+     "term": "jam",
+     "pos": "noun",
+     "meaning_th": "กระดาษติด"
+    },
+    {
+     "term": "temporary",
+     "pos": "adjective",
+     "meaning_th": "ชั่วคราว"
+    }
+   ]
+  },
+  {
+   "ordinal": 140,
+   "theme_en": "Using appliances before leaving",
+   "theme_th": "ใช้เครื่องใช้ไฟฟ้าก่อนออกจากบ้าน",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "turn on",
+     "pos": "phrasal verb",
+     "meaning_th": "เปิดเครื่อง"
+    },
+    {
+     "term": "turn off",
+     "pos": "phrasal verb",
+     "meaning_th": "ปิดเครื่อง"
+    },
+    {
+     "term": "put on",
+     "pos": "phrasal verb",
+     "meaning_th": "สวมใส่"
+    },
+    {
+     "term": "power up",
+     "pos": "phrasal verb",
+     "meaning_th": "เปิดเครื่องให้ทำงาน"
+    },
+    {
+     "term": "shut down",
+     "pos": "phrasal verb",
+     "meaning_th": "ปิดระบบ"
+    },
+    {
+     "term": "unplug",
+     "pos": "verb",
+     "meaning_th": "ถอดปลั๊ก"
+    },
+    {
+     "term": "switch on",
+     "pos": "phrasal verb",
+     "meaning_th": "เปิดสวิตช์"
+    },
+    {
+     "term": "switch off",
+     "pos": "phrasal verb",
+     "meaning_th": "ปิดสวิตช์"
+    },
+    {
+     "term": "outlet",
+     "pos": "noun",
+     "meaning_th": "เต้ารับไฟฟ้า"
+    },
+    {
+     "term": "extension cord",
+     "pos": "noun",
+     "meaning_th": "สายพ่วงไฟฟ้า"
+    }
+   ]
+  }
+ ]
+}

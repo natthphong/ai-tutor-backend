@@ -6316,6 +6316,105 @@
                 "minutes"
               ]
             }
+          },
+          "ebook": {
+            "type": "object",
+            "description": "Learn Ebook part of today's plan: capped review first, then the next unit on the learning path.",
+            "properties": {
+              "total": {
+                "type": "integer"
+              },
+              "learned": {
+                "type": "integer"
+              },
+              "review_limit": {
+                "type": "integer"
+              },
+              "review_today": {
+                "type": "integer"
+              },
+              "levels": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "level": {
+                      "type": "string",
+                      "enum": [
+                        "A1",
+                        "A2",
+                        "B1",
+                        "B2"
+                      ]
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "learned": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "level",
+                    "total",
+                    "learned"
+                  ]
+                }
+              },
+              "next_unit": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "number": {
+                    "type": "integer"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "title_th": {
+                    "type": "string"
+                  },
+                  "level": {
+                    "type": "string",
+                    "enum": [
+                      "A1",
+                      "A2",
+                      "B1",
+                      "B2"
+                    ]
+                  },
+                  "path_order": {
+                    "type": "integer"
+                  },
+                  "theme_th": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "$ref": "#/components/schemas/EbookStatus"
+                  },
+                  "percent": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "id",
+                  "number",
+                  "title",
+                  "level",
+                  "status",
+                  "percent"
+                ]
+              }
+            },
+            "required": [
+              "total",
+              "learned",
+              "review_limit",
+              "review_today",
+              "levels"
+            ]
           }
         },
         "required": [
@@ -6877,6 +6976,26 @@
           },
           "original_book": {
             "$ref": "#/components/schemas/EbookOriginalBook"
+          },
+          "title_th": {
+            "type": "string"
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "A1",
+              "A2",
+              "B1",
+              "B2"
+            ]
+          },
+          "path_order": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 145
+          },
+          "theme_th": {
+            "type": "string"
           }
         },
         "required": [
@@ -6943,6 +7062,10 @@
             "type": "string",
             "enum": [
               "choice",
+              "fill",
+              "reorder",
+              "fix",
+              "translate",
               "write"
             ]
           },
@@ -6956,7 +7079,8 @@
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "Fillers for a choice item, or the shuffled words of a reorder item."
           }
         },
         "required": [
@@ -6968,7 +7092,7 @@
       },
       "EbookShadowLine": {
         "type": "string",
-        "description": "A verbatim English sentence from the lesson examples, selected for audio shadowing."
+        "description": "The English sentence of one listening item, repeated aloud after the learner has answered it by ear."
       },
       "EbookPracticeTask": {
         "type": "object",
@@ -6995,7 +7119,6 @@
         "required": [
           "prompt_en",
           "prompt_th",
-          "target_vocabulary",
           "success_criteria_th"
         ]
       },
@@ -7025,8 +7148,8 @@
           },
           "examples": {
             "type": "array",
-            "minItems": 3,
-            "maxItems": 3,
+            "minItems": 6,
+            "maxItems": 6,
             "items": {
               "$ref": "#/components/schemas/EbookExample"
             }
@@ -7041,8 +7164,8 @@
           },
           "quiz": {
             "type": "array",
-            "minItems": 5,
-            "maxItems": 5,
+            "minItems": 8,
+            "maxItems": 8,
             "items": {
               "$ref": "#/components/schemas/EbookQuizItem"
             }
@@ -7058,30 +7181,104 @@
           "speaking": {
             "$ref": "#/components/schemas/EbookPracticeTask"
           },
-          "listening": {
-            "$ref": "#/components/schemas/EbookPracticeTask"
-          },
           "concept_tags": {
             "type": "array",
             "items": {
               "type": "string"
             }
+          },
+          "path_order": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 145
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "A1",
+              "A2",
+              "B1",
+              "B2"
+            ]
+          },
+          "title_th": {
+            "type": "string"
+          },
+          "theme_en": {
+            "type": "string"
+          },
+          "theme_th": {
+            "type": "string"
+          },
+          "domain": {
+            "type": "string",
+            "enum": [
+              "everyday",
+              "work"
+            ]
+          },
+          "usage_th": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 2,
+            "maxItems": 4
+          },
+          "forms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EbookForm"
+            },
+            "minItems": 2,
+            "maxItems": 4
+          },
+          "signal_words": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "common_mistakes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EbookMistake"
+            },
+            "minItems": 2,
+            "maxItems": 3
+          },
+          "compare_th": {
+            "type": "string"
+          },
+          "listening_items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EbookListeningItem"
+            },
+            "minItems": 3,
+            "maxItems": 3
           }
         },
         "required": [
           "id",
           "unit_id",
           "ordinal",
+          "path_order",
+          "level",
           "title",
+          "title_th",
           "goal_th",
           "explanation_th",
           "pattern",
+          "usage_th",
+          "forms",
+          "common_mistakes",
           "examples",
           "vocabulary",
           "quiz",
+          "listening_items",
           "shadowing",
-          "speaking",
-          "listening"
+          "speaking"
         ]
       },
       "EbookOption": {
@@ -7110,7 +7307,11 @@
             "enum": [
               "write",
               "match",
-              "choice"
+              "choice",
+              "fill",
+              "reorder",
+              "fix",
+              "translate"
             ]
           },
           "prompt": {
@@ -7136,6 +7337,13 @@
           },
           "example": {
             "type": "boolean"
+          },
+          "tokens": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Shuffled words of a reorder item. Empty for every other kind."
           }
         },
         "required": [
@@ -7164,7 +7372,7 @@
           "examples": {
             "type": "array",
             "minItems": 3,
-            "maxItems": 3,
+            "maxItems": 6,
             "items": {
               "type": "object",
               "properties": {
@@ -7278,6 +7486,115 @@
                 "meaning"
               ]
             }
+          },
+          "title": {
+            "type": "string"
+          },
+          "title_th": {
+            "type": "string"
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "A1",
+              "A2",
+              "B1",
+              "B2"
+            ]
+          },
+          "path_order": {
+            "type": "integer"
+          },
+          "theme": {
+            "type": "string"
+          },
+          "theme_th": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Short Thai usage notes: when the pattern is used."
+          },
+          "forms": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "pattern": {
+                  "type": "string"
+                },
+                "sentence": {
+                  "type": "string"
+                },
+                "meaning": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "label",
+                "pattern",
+                "sentence",
+                "meaning"
+              ]
+            }
+          },
+          "signal_words": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "common_mistakes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EbookMistake"
+            }
+          },
+          "compare_th": {
+            "type": "string"
+          },
+          "listening_items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "sentence": {
+                  "type": "string",
+                  "description": "Sent for text-to-speech; the client hides it until the item is answered."
+                },
+                "question_th": {
+                  "type": "string"
+                },
+                "options": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EbookOption"
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "sentence",
+                "question_th",
+                "options"
+              ]
+            },
+            "description": "Listen-first comprehension items. All must be correct before a shadowing session can start."
+          },
+          "speaking_criteria": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
@@ -7378,6 +7695,57 @@
               {
                 "type": "null"
               }
+            ]
+          },
+          "recommended_unit_id": {
+            "type": "string",
+            "description": "Next unit on the A1-first learning path that is not completed yet."
+          },
+          "path": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "integer"
+              },
+              "learned": {
+                "type": "integer"
+              },
+              "review": {
+                "type": "integer"
+              },
+              "levels": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "level": {
+                      "type": "string",
+                      "enum": [
+                        "A1",
+                        "A2",
+                        "B1",
+                        "B2"
+                      ]
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "learned": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "level",
+                    "total",
+                    "learned"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "total",
+              "learned",
+              "levels"
             ]
           }
         },
@@ -7645,7 +8013,8 @@
         "required": [
           "request_id",
           "answers"
-        ]
+        ],
+        "description": "Answers keyed by quiz id (quiz-01..quiz-08) or listening id (listen-01..listen-03)."
       },
       "EbookMark": {
         "type": "object",
@@ -7688,6 +8057,10 @@
           "progress": {
             "type": "object",
             "additionalProperties": true
+          },
+          "listening_done": {
+            "type": "boolean",
+            "description": "True when every listening item of the unit has been answered correctly."
           }
         },
         "required": [
@@ -7815,6 +8188,77 @@
           "question",
           "question_th",
           "phrases"
+        ]
+      },
+      "EbookListeningItem": {
+        "type": "object",
+        "description": "A line heard before it is read. The answer and Thai meaning are returned by the check endpoint only.",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "audio_en": {
+            "type": "string"
+          },
+          "question_th": {
+            "type": "string"
+          },
+          "options_th": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 3,
+            "maxItems": 3
+          }
+        },
+        "required": [
+          "id",
+          "audio_en",
+          "question_th",
+          "options_th"
+        ]
+      },
+      "EbookForm": {
+        "type": "object",
+        "properties": {
+          "label_th": {
+            "type": "string"
+          },
+          "pattern": {
+            "type": "string"
+          },
+          "example_en": {
+            "type": "string"
+          },
+          "example_th": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "label_th",
+          "pattern",
+          "example_en",
+          "example_th"
+        ]
+      },
+      "EbookMistake": {
+        "type": "object",
+        "properties": {
+          "wrong": {
+            "type": "string"
+          },
+          "right": {
+            "type": "string"
+          },
+          "why_th": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "wrong",
+          "right",
+          "why_th"
         ]
       }
     }

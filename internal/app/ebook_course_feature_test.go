@@ -131,10 +131,10 @@ func TestEbookCourseQuizIsImmediateOwnerScopedAndIdempotent(t *testing.T) {
 	catalog := owner.call(200, "GET", "/ebook", nil)
 	unitID := ebookCourseString(ebookCourseObject(ebookCourseArray(catalog, "units", "lessons")[0]), "id", "unit_id")
 	detail := owner.call(200, "GET", "/ebook/units/"+unitID, nil)
-	lesson := ebookCourseObject(detail["lesson"])
-	quiz := ebookCourseArray(lesson, "quiz", "quiz_items")
-	if len(quiz) != 5 {
-		t.Fatalf("quiz items = %d, want 5", len(quiz))
+	lesson, _ := a.Course.Lesson(unitID)
+	quiz := ebookCourseArray(ebookCourseObject(detail["lesson"]), "quiz", "quiz_items")
+	if len(quiz) != 8 {
+		t.Fatalf("quiz items = %d, want 8", len(quiz))
 	}
 	quizID := ebookCourseString(ebookCourseObject(quiz[0]), "id", "quiz_id")
 	if quizID == "" {
@@ -157,8 +157,15 @@ func TestEbookCourseQuizIsImmediateOwnerScopedAndIdempotent(t *testing.T) {
 	if err := a.DB.QueryRow(context.Background(), `SELECT prompt FROM review_items r JOIN users u ON u.id=r.user_id WHERE u.username='ebook-owner' AND r.key LIKE 'ebook:%' ORDER BY r.created_at DESC LIMIT 1`).Scan(&reviewCue); err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(reviewCue, "ประโยคใดตรงกับความหมาย") || !strings.Contains(reviewCue, "\n1. ") {
-		t.Fatalf("review cue does not explain what to recall or show the choices: %q", reviewCue)
+	if !strings.Contains(reviewCue, "พูดทั้งประโยคเป็นภาษาอังกฤษ") || !strings.Contains(reviewCue, "___") {
+		t.Fatalf("review cue does not ask the learner to produce the sentence: %q", reviewCue)
+	}
+	if strings.Contains(reviewCue, courseFilledSentence(lesson.Quiz[0].PromptEN, lesson.Quiz[0].Answers[0])) {
+		t.Fatalf("review cue reveals the completed sentence: %q", reviewCue)
+	}
+	firstMark := ebookCourseObject(ebookCourseArray(first, "marks")[0])
+	if firstMark["correct"] != false || ebookCourseString(firstMark, "answer") != "" {
+		t.Fatalf("a wrong deterministic answer leaked the answer key: %#v", firstMark)
 	}
 	otherDetail := other.call(200, "GET", "/ebook/units/"+unitID, nil)
 	if progress := ebookCourseObject(otherDetail["progress"]); len(progress) != 0 {
@@ -169,7 +176,7 @@ func TestEbookCourseQuizIsImmediateOwnerScopedAndIdempotent(t *testing.T) {
 func TestEbookCourseQuizAcceptsPublicOptionIDAndFlexibleWriting(t *testing.T) {
 	a, owner, _, _ := ebookFixture(t)
 	fake := featureAI(a, func(w http.ResponseWriter, r *http.Request) {
-		response(w, `{"marks":[{"id":"quiz-03","correct":true,"reason_th":"สื่อความหมายถูกและใช้โครงสร้างเป้าหมายแล้ว","answer":"I am reviewing the client dashboard now."}]}`)
+		response(w, `{"marks":[{"id":"quiz-08","correct":true,"reason_th":"สื่อความหมายถูกและใช้โครงสร้างเป้าหมายแล้ว","answer":"I am reviewing the client dashboard now."}]}`)
 	})
 	defer fake.Close()
 
@@ -211,7 +218,7 @@ func TestEbookCourseQuizAcceptsPublicOptionIDAndFlexibleWriting(t *testing.T) {
 
 	writeResult := owner.call(200, "POST", "/ebook/units/"+unitID+"/check", map[string]any{
 		"request_id": uuid.NewString(),
-		"answers":    map[string]string{"quiz-03": "I am checking the dashboard right now."},
+		"answers":    map[string]string{"quiz-08": "A personal sentence that is not in the answer key."},
 	})
 	writeMarks := ebookCourseArray(writeResult, "marks")
 	if len(writeMarks) != 1 || ebookCourseObject(writeMarks[0])["correct"] != true {
@@ -334,6 +341,10 @@ func TestEbookShadowingUsesLessonLinesAndAudioOnlyMastery(t *testing.T) {
 
 	catalog := owner.call(200, "GET", "/ebook", nil)
 	unitID := ebookCourseString(ebookCourseObject(ebookCourseArray(catalog, "units", "lessons")[0]), "id", "unit_id")
+	if status, _, _ := ebookRaw(t, a, owner.token, "POST", "/ebook/units/"+unitID+"/sessions", map[string]any{"mode": "shadowing", "request_id": uuid.NewString()}); status != 409 {
+		t.Fatalf("shadowing started before the listening questions were answered: status %d", status)
+	}
+	ebookCoursePassListening(t, a, owner, unitID)
 	shadow := owner.call(201, "POST", "/ebook/units/"+unitID+"/sessions", map[string]any{"mode": "shadowing", "request_id": uuid.NewString()})
 	sessionID := ebookCourseString(shadow, "id", "session_id")
 	if sessionID == "" {
@@ -377,6 +388,24 @@ func TestEbookShadowingUsesLessonLinesAndAudioOnlyMastery(t *testing.T) {
 	completed := ebookCourseObject(ebookCourseObject(final["progress"])["completed_steps"])
 	if completed["shadowing"] != true {
 		t.Fatalf("three clear shadowing lines did not complete the step: %#v", final)
+	}
+}
+
+// ebookCoursePassListening answers every listen-first item so a shadowing
+// session may start.
+func ebookCoursePassListening(t *testing.T, a *App, client featureHTTP, unitID string) {
+	t.Helper()
+	lesson, ok := a.Course.Lesson(unitID)
+	if !ok {
+		t.Fatalf("course lesson %q is missing", unitID)
+	}
+	answers := map[string]string{}
+	for _, item := range lesson.Listening {
+		answers[item.ID] = item.AnswerTH
+	}
+	result := client.call(200, "POST", "/ebook/units/"+unitID+"/check", map[string]any{"request_id": uuid.NewString(), "answers": answers})
+	if result["listening_done"] != true {
+		t.Fatalf("correct listening answers did not open shadowing: %#v", result)
 	}
 }
 

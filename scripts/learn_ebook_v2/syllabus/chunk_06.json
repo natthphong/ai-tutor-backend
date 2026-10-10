@@ -1,0 +1,62 @@
+{
+ "units": [
+  {
+   "ordinal": 142,
+   "theme_en": "Giving a team presentation",
+   "theme_th": "การนำเสนองานให้ทีมฟัง",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "turn up",
+     "pos": "phrasal verb",
+     "meaning_th": "เพิ่มเสียง"
+    },
+    {
+     "term": "turn down",
+     "pos": "phrasal verb",
+     "meaning_th": "ลดเสียง"
+    },
+    {
+     "term": "speak up",
+     "pos": "phrasal verb",
+     "meaning_th": "พูดให้ดังขึ้น"
+    },
+    {
+     "term": "note down",
+     "pos": "phrasal verb",
+     "meaning_th": "จดบันทึก"
+    },
+    {
+     "term": "sum up",
+     "pos": "phrasal verb",
+     "meaning_th": "สรุปใจความ"
+    },
+    {
+     "term": "audience",
+     "pos": "noun",
+     "meaning_th": "ผู้ฟัง"
+    },
+    {
+     "term": "slide",
+     "pos": "noun",
+     "meaning_th": "สไลด์นำเสนอ"
+    },
+    {
+     "term": "volume",
+     "pos": "noun",
+     "meaning_th": "ระดับเสียง"
+    },
+    {
+     "term": "question",
+     "pos": "noun",
+     "meaning_th": "คำถาม"
+    },
+    {
+     "term": "brief",
+     "pos": "adjective",
+     "meaning_th": "สั้นกระชับ"
+    }
+   ]
+  }
+ ]
+}

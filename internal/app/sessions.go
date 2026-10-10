@@ -294,7 +294,7 @@ func (a *App) submitTurn(c *fiber.Ctx) error {
 	}
 	if bookID := textValue(s.State["ebook_unit_id"]); bookID != "" {
 		if lesson, ok := a.courseSessionLesson(s.State); ok {
-			task += "\nEbook topic: " + lesson.Title + "\nTarget grammar: " + lesson.Pattern + "\nTeaching: " + lesson.ExplanationTH + "\nGoal: " + lesson.Speaking.PromptEN + "\nAsk practical questions that require the learner to use this grammar in their own context twice. Accept valid equivalent wording. After success ask a different everyday follow-up. Spoken mastery needs real clear audio. Listening goal_met judges meaning, separately from grammar."
+			task += "\nEbook topic: " + lesson.Title + "\nUnit level: " + lesson.Level + " (keep every question and reply at or below this level; this learner started the course at A1)\nSituation: " + lesson.ThemeEN + "\nTarget grammar: " + lesson.Pattern + "\nTeaching: " + lesson.ExplanationTH + "\nGoal: " + lesson.Speaking.PromptEN + "\nAsk practical questions that require the learner to use this grammar in their own context twice. Accept valid equivalent wording. After success ask a different everyday follow-up. Spoken mastery needs real clear audio. Listening goal_met judges meaning, separately from grammar."
 		} else {
 			pack, err := a.ebookPack(c.UserContext(), bookID, textValue(s.State["ebook_version"]))
 			if err != nil {
@@ -634,6 +634,11 @@ func (a *App) submitEbookShadowing(c *fiber.Ctx, session Session) error {
 	if advanced {
 		unitID := textValue(state["ebook_unit_id"])
 		version := textValue(state["ebook_version"])
+		if ebookCourseKnownVersion(version) {
+			// A session opened on an earlier course release still records
+			// its result against the current release of the same lesson.
+			version = ebook.LearnEbookCourseVersion
+		}
 		seedState := map[string]any{}
 		if version == ebook.LearnEbookCourseVersion {
 			if lesson, ok := a.courseSessionLesson(state); ok {
@@ -652,10 +657,11 @@ func (a *App) submitEbookShadowing(c *fiber.Ctx, session Session) error {
 		}
 		progress := ebookCourseState(progressRaw)
 		ebookCourseMergeMap(progress, "completed_steps", map[string]bool{"shadowing": index >= len(lines)})
-		if index >= len(lines) {
-			progress["learned"] = ebookCourseAllSteps(progress)
-			if progress["learned"] == true {
-				progress["completed_at"] = time.Now().UTC().Format(time.RFC3339)
+		if index >= len(lines) && ebookCourseAllSteps(progress) {
+			if lesson, ok := a.courseSessionLesson(state); ok {
+				if err = a.ebookCourseMarkLearned(c.UserContext(), tx, user(c).ID, lesson, progress); err != nil {
+					return err
+				}
 			}
 		}
 		if _, err = tx.Exec(c.UserContext(), "UPDATE ebook_progress SET state=$1,updated_at=now() WHERE user_id=$2 AND unit_id=$3 AND version=$4", asJSON(progress), user(c).ID, unitID, version); err != nil {
@@ -726,8 +732,9 @@ func (a *App) completeSession(c *fiber.Ctx) error {
 				progress := ebookCourseState(progressRaw)
 				ebookCourseMergeMap(progress, "completed_steps", map[string]bool{field: true})
 				if ebookCourseAllSteps(progress) {
-					progress["learned"] = true
-					progress["completed_at"] = time.Now().UTC().Format(time.RFC3339)
+					if e = a.ebookCourseMarkLearned(c.UserContext(), tx, user(c).ID, lesson, progress); e != nil {
+						return e
+					}
 				}
 				if _, e = tx.Exec(c.UserContext(), "INSERT INTO ebook_progress(user_id,unit_id,version,state) VALUES($1,$2,$3,$4) ON CONFLICT(user_id,unit_id,version) DO UPDATE SET state=excluded.state,updated_at=now()", user(c).ID, ebookCourseStorageID(lesson), ebook.LearnEbookCourseVersion, asJSON(progress)); e != nil {
 					return e

@@ -1,0 +1,1 @@
+{"type":"object","additionalProperties":false,"required":["ordinal","quiz","listening"],"properties":{"ordinal":{"type":"integer"},"quiz":{"type":"array","items":{"type":"string"}},"listening":{"type":"array","items":{"type":"string"}}}}

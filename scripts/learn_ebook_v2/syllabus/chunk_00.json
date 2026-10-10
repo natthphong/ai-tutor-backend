@@ -1,0 +1,758 @@
+{
+ "units": [
+  {
+   "ordinal": 2,
+   "theme_en": "Getting Ready for Work",
+   "theme_th": "เตรียมตัวไปทำงาน",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "wake up",
+     "pos": "phrasal verb",
+     "meaning_th": "ตื่นนอน"
+    },
+    {
+     "term": "get dressed",
+     "pos": "phrase",
+     "meaning_th": "แต่งตัว"
+    },
+    {
+     "term": "brush",
+     "pos": "verb",
+     "meaning_th": "แปรง"
+    },
+    {
+     "term": "breakfast",
+     "pos": "noun",
+     "meaning_th": "อาหารเช้า"
+    },
+    {
+     "term": "coffee",
+     "pos": "noun",
+     "meaning_th": "กาแฟ"
+    },
+    {
+     "term": "shower",
+     "pos": "noun",
+     "meaning_th": "การอาบน้ำ"
+    },
+    {
+     "term": "early",
+     "pos": "adjective",
+     "meaning_th": "แต่เช้า"
+    },
+    {
+     "term": "leave",
+     "pos": "verb",
+     "meaning_th": "ออกจากบ้าน"
+    },
+    {
+     "term": "ready",
+     "pos": "adjective",
+     "meaning_th": "พร้อม"
+    },
+    {
+     "term": "commute",
+     "pos": "verb",
+     "meaning_th": "เดินทางไปทำงาน"
+    }
+   ]
+  },
+  {
+   "ordinal": 49,
+   "theme_en": "Customer Service Desk",
+   "theme_th": "เคาน์เตอร์บริการลูกค้า",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "ask",
+     "pos": "verb",
+     "meaning_th": "ถาม"
+    },
+    {
+     "term": "answer",
+     "pos": "verb",
+     "meaning_th": "ตอบ"
+    },
+    {
+     "term": "explain",
+     "pos": "verb",
+     "meaning_th": "อธิบาย"
+    },
+    {
+     "term": "ticket",
+     "pos": "noun",
+     "meaning_th": "ใบรับเรื่อง"
+    },
+    {
+     "term": "receipt",
+     "pos": "noun",
+     "meaning_th": "ใบเสร็จ"
+    },
+    {
+     "term": "refund",
+     "pos": "noun",
+     "meaning_th": "เงินคืน"
+    },
+    {
+     "term": "price",
+     "pos": "noun",
+     "meaning_th": "ราคา"
+    },
+    {
+     "term": "problem",
+     "pos": "noun",
+     "meaning_th": "ปัญหา"
+    },
+    {
+     "term": "helpful",
+     "pos": "adjective",
+     "meaning_th": "มีประโยชน์"
+    },
+    {
+     "term": "customer",
+     "pos": "noun",
+     "meaning_th": "ลูกค้า"
+    }
+   ]
+  },
+  {
+   "ordinal": 17,
+   "theme_en": "Family at Home",
+   "theme_th": "ครอบครัวที่บ้าน",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "belong",
+     "pos": "verb",
+     "meaning_th": "เป็นของ"
+    },
+    {
+     "term": "share",
+     "pos": "verb",
+     "meaning_th": "แบ่งปัน"
+    },
+    {
+     "term": "keep",
+     "pos": "verb",
+     "meaning_th": "เก็บไว้"
+    },
+    {
+     "term": "family",
+     "pos": "noun",
+     "meaning_th": "ครอบครัว"
+    },
+    {
+     "term": "sister",
+     "pos": "noun",
+     "meaning_th": "พี่สาวหรือน้องสาว"
+    },
+    {
+     "term": "brother",
+     "pos": "noun",
+     "meaning_th": "พี่ชายหรือน้องชาย"
+    },
+    {
+     "term": "room",
+     "pos": "noun",
+     "meaning_th": "ห้อง"
+    },
+    {
+     "term": "bag",
+     "pos": "noun",
+     "meaning_th": "กระเป๋า"
+    },
+    {
+     "term": "key",
+     "pos": "noun",
+     "meaning_th": "กุญแจ"
+    },
+    {
+     "term": "busy",
+     "pos": "adjective",
+     "meaning_th": "ยุ่ง"
+    }
+   ]
+  },
+  {
+   "ordinal": 84,
+   "theme_en": "Looking for an Apartment",
+   "theme_th": "กำลังหาห้องเช่า",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "rent",
+     "pos": "verb",
+     "meaning_th": "เช่า"
+    },
+    {
+     "term": "look for",
+     "pos": "phrasal verb",
+     "meaning_th": "มองหา"
+    },
+    {
+     "term": "live",
+     "pos": "verb",
+     "meaning_th": "อาศัยอยู่"
+    },
+    {
+     "term": "apartment",
+     "pos": "noun",
+     "meaning_th": "อพาร์ตเมนต์"
+    },
+    {
+     "term": "kitchen",
+     "pos": "noun",
+     "meaning_th": "ห้องครัว"
+    },
+    {
+     "term": "bathroom",
+     "pos": "noun",
+     "meaning_th": "ห้องน้ำ"
+    },
+    {
+     "term": "window",
+     "pos": "noun",
+     "meaning_th": "หน้าต่าง"
+    },
+    {
+     "term": "wall",
+     "pos": "noun",
+     "meaning_th": "กำแพง"
+    },
+    {
+     "term": "small",
+     "pos": "adjective",
+     "meaning_th": "เล็ก"
+    },
+    {
+     "term": "light",
+     "pos": "noun",
+     "meaning_th": "แสง"
+    }
+   ]
+  },
+  {
+   "ordinal": 71,
+   "theme_en": "Buying Fruit and Groceries",
+   "theme_th": "ซื้อผลไม้และของชำ",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "buy",
+     "pos": "verb",
+     "meaning_th": "ซื้อ"
+    },
+    {
+     "term": "choose",
+     "pos": "verb",
+     "meaning_th": "เลือก"
+    },
+    {
+     "term": "need",
+     "pos": "verb",
+     "meaning_th": "ต้องการ"
+    },
+    {
+     "term": "apple",
+     "pos": "noun",
+     "meaning_th": "แอปเปิล"
+    },
+    {
+     "term": "banana",
+     "pos": "noun",
+     "meaning_th": "กล้วย"
+    },
+    {
+     "term": "orange",
+     "pos": "noun",
+     "meaning_th": "ส้ม"
+    },
+    {
+     "term": "bread",
+     "pos": "noun",
+     "meaning_th": "ขนมปัง"
+    },
+    {
+     "term": "milk",
+     "pos": "noun",
+     "meaning_th": "นม"
+    },
+    {
+     "term": "tomato",
+     "pos": "noun",
+     "meaning_th": "มะเขือเทศ"
+    },
+    {
+     "term": "fresh",
+     "pos": "adjective",
+     "meaning_th": "สด"
+    }
+   ]
+  },
+  {
+   "ordinal": 72,
+   "theme_en": "Ordering at a Cafe",
+   "theme_th": "สั่งอาหารที่คาเฟ่",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "order",
+     "pos": "verb",
+     "meaning_th": "สั่งอาหาร"
+    },
+    {
+     "term": "pay",
+     "pos": "verb",
+     "meaning_th": "จ่ายเงิน"
+    },
+    {
+     "term": "bring",
+     "pos": "verb",
+     "meaning_th": "นำมาให้"
+    },
+    {
+     "term": "menu",
+     "pos": "noun",
+     "meaning_th": "เมนู"
+    },
+    {
+     "term": "table",
+     "pos": "noun",
+     "meaning_th": "โต๊ะ"
+    },
+    {
+     "term": "bill",
+     "pos": "noun",
+     "meaning_th": "ใบเรียกเก็บเงิน"
+    },
+    {
+     "term": "tea",
+     "pos": "noun",
+     "meaning_th": "ชา"
+    },
+    {
+     "term": "sandwich",
+     "pos": "noun",
+     "meaning_th": "แซนด์วิช"
+    },
+    {
+     "term": "cake",
+     "pos": "noun",
+     "meaning_th": "เค้ก"
+    },
+    {
+     "term": "hungry",
+     "pos": "adjective",
+     "meaning_th": "หิว"
+    }
+   ]
+  },
+  {
+   "ordinal": 85,
+   "theme_en": "Cooking Dinner at Home",
+   "theme_th": "ทำอาหารเย็นที่บ้าน",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "cook",
+     "pos": "verb",
+     "meaning_th": "ทำอาหาร"
+    },
+    {
+     "term": "add",
+     "pos": "verb",
+     "meaning_th": "ใส่เพิ่ม"
+    },
+    {
+     "term": "taste",
+     "pos": "verb",
+     "meaning_th": "ชิม"
+    },
+    {
+     "term": "rice",
+     "pos": "noun",
+     "meaning_th": "ข้าว"
+    },
+    {
+     "term": "egg",
+     "pos": "noun",
+     "meaning_th": "ไข่"
+    },
+    {
+     "term": "onion",
+     "pos": "noun",
+     "meaning_th": "หัวหอม"
+    },
+    {
+     "term": "salt",
+     "pos": "noun",
+     "meaning_th": "เกลือ"
+    },
+    {
+     "term": "oil",
+     "pos": "noun",
+     "meaning_th": "น้ำมัน"
+    },
+    {
+     "term": "vegetable",
+     "pos": "noun",
+     "meaning_th": "ผัก"
+    },
+    {
+     "term": "enough",
+     "pos": "adverb",
+     "meaning_th": "เพียงพอ"
+    }
+   ]
+  },
+  {
+   "ordinal": 26,
+   "theme_en": "Sports and Physical Ability",
+   "theme_th": "กีฬาและความสามารถทางกาย",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "swim",
+     "pos": "verb",
+     "meaning_th": "ว่ายน้ำ"
+    },
+    {
+     "term": "ride",
+     "pos": "verb",
+     "meaning_th": "ขี่"
+    },
+    {
+     "term": "climb",
+     "pos": "verb",
+     "meaning_th": "ปีน"
+    },
+    {
+     "term": "bike",
+     "pos": "noun",
+     "meaning_th": "จักรยาน"
+    },
+    {
+     "term": "pool",
+     "pos": "noun",
+     "meaning_th": "สระว่ายน้ำ"
+    },
+    {
+     "term": "strong",
+     "pos": "adjective",
+     "meaning_th": "แข็งแรง"
+    },
+    {
+     "term": "fast",
+     "pos": "adverb",
+     "meaning_th": "อย่างรวดเร็ว"
+    },
+    {
+     "term": "lesson",
+     "pos": "noun",
+     "meaning_th": "บทเรียน"
+    },
+    {
+     "term": "team",
+     "pos": "noun",
+     "meaning_th": "ทีม"
+    },
+    {
+     "term": "sport",
+     "pos": "noun",
+     "meaning_th": "กีฬา"
+    }
+   ]
+  },
+  {
+   "ordinal": 1,
+   "theme_en": "Things Happening at Home",
+   "theme_th": "สิ่งที่กำลังทำที่บ้าน",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "wash",
+     "pos": "verb",
+     "meaning_th": "ล้าง"
+    },
+    {
+     "term": "read",
+     "pos": "verb",
+     "meaning_th": "อ่าน"
+    },
+    {
+     "term": "watch",
+     "pos": "verb",
+     "meaning_th": "ดู"
+    },
+    {
+     "term": "dishes",
+     "pos": "noun",
+     "meaning_th": "จานชาม"
+    },
+    {
+     "term": "clothes",
+     "pos": "noun",
+     "meaning_th": "เสื้อผ้า"
+    },
+    {
+     "term": "book",
+     "pos": "noun",
+     "meaning_th": "หนังสือ"
+    },
+    {
+     "term": "television",
+     "pos": "noun",
+     "meaning_th": "โทรทัศน์"
+    },
+    {
+     "term": "floor",
+     "pos": "noun",
+     "meaning_th": "พื้น"
+    },
+    {
+     "term": "music",
+     "pos": "noun",
+     "meaning_th": "ดนตรี"
+    },
+    {
+     "term": "tired",
+     "pos": "adjective",
+     "meaning_th": "เหนื่อย"
+    }
+   ]
+  },
+  {
+   "ordinal": 121,
+   "theme_en": "Planning a Birthday Party",
+   "theme_th": "วางแผนงานวันเกิด",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "begin",
+     "pos": "verb",
+     "meaning_th": "เริ่ม"
+    },
+    {
+     "term": "finish",
+     "pos": "verb",
+     "meaning_th": "เสร็จสิ้น"
+    },
+    {
+     "term": "meet",
+     "pos": "verb",
+     "meaning_th": "พบกัน"
+    },
+    {
+     "term": "party",
+     "pos": "noun",
+     "meaning_th": "งานเลี้ยง"
+    },
+    {
+     "term": "weekend",
+     "pos": "noun",
+     "meaning_th": "วันสุดสัปดาห์"
+    },
+    {
+     "term": "holiday",
+     "pos": "noun",
+     "meaning_th": "วันหยุด"
+    },
+    {
+     "term": "lunchtime",
+     "pos": "noun",
+     "meaning_th": "เวลาอาหารกลางวัน"
+    },
+    {
+     "term": "midnight",
+     "pos": "noun",
+     "meaning_th": "เที่ยงคืน"
+    },
+    {
+     "term": "calendar",
+     "pos": "noun",
+     "meaning_th": "ปฏิทิน"
+    },
+    {
+     "term": "available",
+     "pos": "adjective",
+     "meaning_th": "ว่าง"
+    }
+   ]
+  },
+  {
+   "ordinal": 123,
+   "theme_en": "Meeting at the City Park",
+   "theme_th": "นัดพบกันที่สวนสาธารณะ",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "sit",
+     "pos": "verb",
+     "meaning_th": "นั่ง"
+    },
+    {
+     "term": "stand",
+     "pos": "verb",
+     "meaning_th": "ยืน"
+    },
+    {
+     "term": "walk",
+     "pos": "verb",
+     "meaning_th": "เดิน"
+    },
+    {
+     "term": "bench",
+     "pos": "noun",
+     "meaning_th": "ม้านั่ง"
+    },
+    {
+     "term": "gate",
+     "pos": "noun",
+     "meaning_th": "ประตูทางเข้า"
+    },
+    {
+     "term": "corner",
+     "pos": "noun",
+     "meaning_th": "หัวมุม"
+    },
+    {
+     "term": "entrance",
+     "pos": "noun",
+     "meaning_th": "ทางเข้า"
+    },
+    {
+     "term": "path",
+     "pos": "noun",
+     "meaning_th": "ทางเดิน"
+    },
+    {
+     "term": "nearby",
+     "pos": "adverb",
+     "meaning_th": "ใกล้เคียง"
+    },
+    {
+     "term": "tree",
+     "pos": "noun",
+     "meaning_th": "ต้นไม้"
+    }
+   ]
+  },
+  {
+   "ordinal": 109,
+   "theme_en": "Sending a Report at Work",
+   "theme_th": "ส่งรายงานที่ทำงาน",
+   "domain": "work",
+   "vocabulary": [
+    {
+     "term": "send",
+     "pos": "verb",
+     "meaning_th": "ส่ง"
+    },
+    {
+     "term": "print",
+     "pos": "verb",
+     "meaning_th": "พิมพ์"
+    },
+    {
+     "term": "check",
+     "pos": "verb",
+     "meaning_th": "ตรวจสอบ"
+    },
+    {
+     "term": "report",
+     "pos": "noun",
+     "meaning_th": "รายงาน"
+    },
+    {
+     "term": "file",
+     "pos": "noun",
+     "meaning_th": "ไฟล์"
+    },
+    {
+     "term": "email",
+     "pos": "noun",
+     "meaning_th": "อีเมล"
+    },
+    {
+     "term": "screen",
+     "pos": "noun",
+     "meaning_th": "หน้าจอ"
+    },
+    {
+     "term": "desk",
+     "pos": "noun",
+     "meaning_th": "โต๊ะทำงาน"
+    },
+    {
+     "term": "printer",
+     "pos": "noun",
+     "meaning_th": "เครื่องพิมพ์"
+    },
+    {
+     "term": "urgent",
+     "pos": "adjective",
+     "meaning_th": "เร่งด่วน"
+    }
+   ]
+  },
+  {
+   "ordinal": 5,
+   "theme_en": "Yesterday at a Friend's Home",
+   "theme_th": "เมื่อวานที่บ้านเพื่อน",
+   "domain": "everyday",
+   "vocabulary": [
+    {
+     "term": "visit",
+     "pos": "verb",
+     "meaning_th": "ไปเยี่ยม"
+    },
+    {
+     "term": "call",
+     "pos": "verb",
+     "meaning_th": "โทรหา"
+    },
+    {
+     "term": "stay",
+     "pos": "verb",
+     "meaning_th": "พักอยู่"
+    },
+    {
+     "term": "movie",
+     "pos": "noun",
+     "meaning_th": "ภาพยนตร์"
+    },
+    {
+     "term": "dinner",
+     "pos": "noun",
+     "meaning_th": "อาหารเย็น"
+    },
+    {
+     "term": "evening",
+     "pos": "noun",
+     "meaning_th": "ตอนเย็น"
+    },
+    {
+     "term": "friend",
+     "pos": "noun",
+     "meaning_th": "เพื่อน"
+    },
+    {
+     "term": "photo",
+     "pos": "noun",
+     "meaning_th": "รูปถ่าย"
+    },
+    {
+     "term": "game",
+     "pos": "noun",
+     "meaning_th": "เกม"
+    },
+    {
+     "term": "funny",
+     "pos": "adjective",
+     "meaning_th": "ตลก"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,283 @@
+{
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "ordinal",
+  "title",
+  "title_th",
+  "goal_th",
+  "explanation_th",
+  "pattern",
+  "usage_th",
+  "forms",
+  "signal_words",
+  "common_mistakes",
+  "compare_th",
+  "examples",
+  "vocabulary",
+  "quiz",
+  "listening",
+  "speaking",
+  "review"
+ ],
+ "properties": {
+  "ordinal": {
+   "type": "integer"
+  },
+  "title": {
+   "type": "string"
+  },
+  "title_th": {
+   "type": "string"
+  },
+  "goal_th": {
+   "type": "string"
+  },
+  "explanation_th": {
+   "type": "string"
+  },
+  "pattern": {
+   "type": "string"
+  },
+  "usage_th": {
+   "type": "array",
+   "items": {
+    "type": "string"
+   }
+  },
+  "forms": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "label_th",
+     "pattern",
+     "example_en",
+     "example_th"
+    ],
+    "properties": {
+     "label_th": {
+      "type": "string"
+     },
+     "pattern": {
+      "type": "string"
+     },
+     "example_en": {
+      "type": "string"
+     },
+     "example_th": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  "signal_words": {
+   "type": "array",
+   "items": {
+    "type": "string"
+   }
+  },
+  "common_mistakes": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "wrong",
+     "right",
+     "why_th"
+    ],
+    "properties": {
+     "wrong": {
+      "type": "string"
+     },
+     "right": {
+      "type": "string"
+     },
+     "why_th": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  "compare_th": {
+   "type": "string"
+  },
+  "examples": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "en",
+     "th"
+    ],
+    "properties": {
+     "en": {
+      "type": "string"
+     },
+     "th": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  "vocabulary": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "term",
+     "meaning_th",
+     "example_en",
+     "example_th"
+    ],
+    "properties": {
+     "term": {
+      "type": "string"
+     },
+     "meaning_th": {
+      "type": "string"
+     },
+     "example_en": {
+      "type": "string"
+     },
+     "example_th": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  "quiz": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "kind",
+     "prompt_en",
+     "prompt_th",
+     "options",
+     "answers",
+     "explanation_th"
+    ],
+    "properties": {
+     "kind": {
+      "type": "string",
+      "enum": [
+       "choice",
+       "fill",
+       "reorder",
+       "fix",
+       "translate",
+       "write"
+      ]
+     },
+     "prompt_en": {
+      "type": "string"
+     },
+     "prompt_th": {
+      "type": "string"
+     },
+     "options": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "answers": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "explanation_th": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  "listening": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "audio_en",
+     "meaning_th",
+     "question_th",
+     "options_th",
+     "answer_th"
+    ],
+    "properties": {
+     "audio_en": {
+      "type": "string"
+     },
+     "meaning_th": {
+      "type": "string"
+     },
+     "question_th": {
+      "type": "string"
+     },
+     "options_th": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "answer_th": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  "speaking": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "prompt_en",
+    "prompt_th",
+    "success_criteria_th"
+   ],
+   "properties": {
+    "prompt_en": {
+     "type": "string"
+    },
+    "prompt_th": {
+     "type": "string"
+    },
+    "success_criteria_th": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  "review": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "prompt_th",
+     "target_en",
+     "target_th"
+    ],
+    "properties": {
+     "prompt_th": {
+      "type": "string"
+     },
+     "target_en": {
+      "type": "string"
+     },
+     "target_th": {
+      "type": "string"
+     }
+    }
+   }
+  }
+ }
+}
