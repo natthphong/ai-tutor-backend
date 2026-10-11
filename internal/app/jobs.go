@@ -96,6 +96,8 @@ func (a *App) runJob(ctx context.Context) {
 		result, e = a.makeEbookPack(ctx, uid, p)
 	case "daily_meet":
 		result, e = a.makeDailyMeet(ctx, uid, p)
+	case "daily_sentences":
+		result, e = a.makeDailySentences(ctx, uid, p)
 	case "summary":
 		result, e = a.makeSummary(ctx, uid, p)
 	default:

@@ -377,3 +377,82 @@ func TestReviewSittingIsCappedAndStartsWithTheMostOverdue(t *testing.T) {
 		t.Fatalf("daily plan hid the real number of due items: %v", due)
 	}
 }
+
+// A learner can pass the speaking step before the shadowing half of step 4.
+// The unit must then stay unfinished with only shadowing missing, and finish
+// the moment the third line is shadowed.
+func TestEbookCourseSpeakingBeforeShadowingLeavesOnlyShadowingMissing(t *testing.T) {
+	a, owner, _, _ := ebookFixture(t)
+	defer ebookCoursePassingAI(a)()
+	lesson := a.Course.Path()[0]
+	answers := map[string]string{}
+	for _, quiz := range lesson.Quiz {
+		answers[quiz.ID] = quiz.Answers[0]
+	}
+	owner.call(200, "POST", "/ebook/units/"+lesson.ID+"/check", map[string]any{"request_id": uuid.NewString(), "answers": answers})
+	ebookCoursePassListening(t, a, owner, lesson.ID)
+	speak := owner.call(201, "POST", "/ebook/units/"+lesson.ID+"/sessions", map[string]any{"mode": "speak", "request_id": uuid.NewString()})
+	owner.audioTurn(ebookCourseString(speak, "id"), uuid.NewString())
+	owner.audioTurn(ebookCourseString(speak, "id"), uuid.NewString())
+
+	unit := ebookCourseUnit(owner.call(200, "GET", "/ebook", nil), lesson.ID)
+	if ebookCourseString(unit, "status") == "learned" || ebookCourseNumber(unit, "percent") != 80 {
+		t.Fatalf("unit with shadowing still open = %#v, want 80%% and not learned", unit)
+	}
+	completed := ebookCourseObject(ebookCourseObject(owner.call(200, "GET", "/ebook/units/"+lesson.ID, nil)["progress"])["completed_steps"])
+	if completed["speaking"] != true || completed["shadowing"] == true {
+		t.Fatalf("completed steps = %#v, want speaking done and shadowing open", completed)
+	}
+
+	shadow := owner.call(201, "POST", "/ebook/units/"+lesson.ID+"/sessions", map[string]any{"mode": "shadowing", "request_id": uuid.NewString()})
+	shadowID := ebookCourseString(shadow, "id")
+	var last map[string]any
+	for range lesson.Shadowing {
+		last = owner.audioTurn(shadowID, uuid.NewString())
+	}
+	if last["session_completed"] != true || ebookCourseNumber(last, "shadow_index") != len(lesson.Shadowing) {
+		t.Fatalf("last shadowing answer = %#v, want the session reported complete", last)
+	}
+	var status string
+	if err := a.DB.QueryRow(context.Background(), "SELECT status FROM learning_sessions WHERE id=$1", shadowID).Scan(&status); err != nil {
+		t.Fatal(err)
+	}
+	if status != "completed" {
+		t.Fatalf("finished shadowing session status = %q, want completed", status)
+	}
+	unit = ebookCourseUnit(owner.call(200, "GET", "/ebook", nil), lesson.ID)
+	if ebookCourseString(unit, "status") != "learned" || ebookCourseNumber(unit, "percent") != 100 {
+		t.Fatalf("unit after shadowing = %#v, want learned at 100%%", unit)
+	}
+	// Practising again starts a fresh session instead of reopening the finished one.
+	again := owner.call(201, "POST", "/ebook/units/"+lesson.ID+"/sessions", map[string]any{"mode": "shadowing", "request_id": uuid.NewString()})
+	if ebookCourseString(again, "id") == shadowID {
+		t.Fatal("a finished shadowing session was reopened")
+	}
+}
+
+// One hint must not block the rest of a speaking session: the hinted answer
+// does not count, but the two answers after it do.
+func TestEbookCourseSpeakingStillPassesAfterAHint(t *testing.T) {
+	a, owner, _, _ := ebookFixture(t)
+	defer ebookCoursePassingAI(a)()
+	lesson := a.Course.Path()[0]
+	speak := owner.call(201, "POST", "/ebook/units/"+lesson.ID+"/sessions", map[string]any{"mode": "speak", "request_id": uuid.NewString()})
+	speakID := ebookCourseString(speak, "id")
+	if _, err := a.DB.Exec(context.Background(), "UPDATE learning_sessions SET state=jsonb_set(state,'{hint_level}','2') WHERE id=$1", speakID); err != nil {
+		t.Fatal(err)
+	}
+	if hinted := owner.audioTurn(speakID, uuid.NewString()); hinted["independent"] != false || hinted["session_completed"] != false {
+		t.Fatalf("hinted answer = %#v, want it not to count", hinted)
+	}
+	if first := owner.audioTurn(speakID, uuid.NewString()); first["independent"] != true {
+		t.Fatalf("answer after a hinted one = %#v, want it to count as independent", first)
+	}
+	if second := owner.audioTurn(speakID, uuid.NewString()); second["session_completed"] != true {
+		t.Fatalf("second independent answer = %#v, want the session complete", second)
+	}
+	completed := ebookCourseObject(ebookCourseObject(owner.call(200, "GET", "/ebook/units/"+lesson.ID, nil)["progress"])["completed_steps"])
+	if completed["speaking"] != true {
+		t.Fatalf("completed steps = %#v, want speaking done", completed)
+	}
+}

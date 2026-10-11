@@ -204,6 +204,8 @@ func (a *App) routes() {
 	g.Post("/daily-meets", a.createDailyMeet)
 	g.Patch("/daily-meets/:id", a.updateDailyMeet)
 	g.Post("/daily-meets/:id/sessions", a.dailyMeetSession)
+	g.Post("/daily-meets/:id/analyze", limiter.New(limiter.Config{Max: 6, Expiration: time.Minute}), a.analyzeDailyMeet)
+	g.Post("/daily-meets/:id/speak", limiter.New(limiter.Config{Max: 40, Expiration: time.Minute}), a.speakDailyMeet)
 	g.Post("/sessions/:id/hints", a.hint)
 	g.Post("/sessions/:id/advance", a.advance)
 	g.Post("/sessions/:id/complete", a.completeSession)
@@ -241,10 +243,17 @@ func (a *App) authenticate(c *fiber.Ctx) error {
 func validID(id string) bool { _, e := uuid.Parse(id); return e == nil }
 func asJSON(v any) []byte    { b, _ := json.Marshal(v); return b }
 func textValue(v any) string { s, _ := v.(string); return s }
+
+// number reads a numeric state value. Values decoded from JSON are float64;
+// values set in the same request are still Go integers.
 func number(v any, def float64) float64 {
-	f, ok := v.(float64)
-	if !ok {
-		return def
+	switch n := v.(type) {
+	case float64:
+		return n
+	case int:
+		return float64(n)
+	case int64:
+		return float64(n)
 	}
-	return f
+	return def
 }

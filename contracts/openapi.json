@@ -5551,6 +5551,264 @@
           }
         }
       }
+    },
+    "/daily-meets/{id}/analyze": {
+      "post": {
+        "operationId": "analyze_daily_meet",
+        "responses": {
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Login required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Budget exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Gemini unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "job_id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "job_id"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "request_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                "required": [
+                  "request_id"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/daily-meets/{id}/speak": {
+      "post": {
+        "operationId": "speak_daily_meet",
+        "responses": {
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Login required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Budget exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Gemini unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DailySpeakResult"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "request_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "audio": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "target": {
+                    "type": "string",
+                    "description": "Sentence index, or \"all\" for the whole entry"
+                  },
+                  "level": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 3
+                  }
+                },
+                "required": [
+                  "request_id",
+                  "audio",
+                  "target",
+                  "level"
+                ]
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -8245,6 +8503,18 @@
                 "note"
               ]
             }
+          },
+          "sentences": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DailySentence"
+            }
+          },
+          "analyzed": {
+            "type": "boolean"
+          },
+          "drill": {
+            "$ref": "#/components/schemas/DailyDrill"
           }
         },
         "required": [
@@ -8375,6 +8645,122 @@
           "reset",
           "scope",
           "deleted"
+        ]
+      },
+      "DailyGrammar": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "title_th": {
+            "type": "string"
+          },
+          "level": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "title_th",
+          "level"
+        ]
+      },
+      "DailySentence": {
+        "type": "object",
+        "properties": {
+          "en": {
+            "type": "string"
+          },
+          "th": {
+            "type": "string"
+          },
+          "reading_th": {
+            "type": "string"
+          },
+          "grammar": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DailyGrammar"
+            }
+          }
+        },
+        "required": [
+          "en",
+          "th",
+          "reading_th",
+          "grammar"
+        ]
+      },
+      "DailyDrill": {
+        "type": "object",
+        "description": "Speaking progress on one entry. levels maps a sentence index to the hardest support level passed (1 reading aid, 2 text only, 3 from memory).",
+        "properties": {
+          "levels": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 3
+            }
+          },
+          "full_passed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "levels",
+          "full_passed"
+        ]
+      },
+      "DailySpeakResult": {
+        "type": "object",
+        "properties": {
+          "target": {
+            "type": "string"
+          },
+          "level": {
+            "type": "integer"
+          },
+          "passed": {
+            "type": "boolean"
+          },
+          "audio_clear": {
+            "type": "boolean"
+          },
+          "transcript": {
+            "type": "string"
+          },
+          "missing_words": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tip_th": {
+            "type": "string"
+          },
+          "pronunciation_th": {
+            "type": "string"
+          },
+          "drill": {
+            "$ref": "#/components/schemas/DailyDrill"
+          }
+        },
+        "required": [
+          "target",
+          "level",
+          "passed",
+          "audio_clear",
+          "transcript",
+          "missing_words",
+          "tip_th",
+          "pronunciation_th",
+          "drill"
         ]
       }
     }

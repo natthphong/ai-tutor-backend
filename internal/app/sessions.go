@@ -407,6 +407,10 @@ func (a *App) submitTurn(c *fiber.Ctx) error {
 	if s.Mode == "ebook" && s.State["last_pass"] == true {
 		s.State["step"] = step + 1
 		s.State["last_pass"] = false
+		// The next question starts without help. Without this, one hint
+		// kept every later answer of the session from counting as
+		// independent, and the speaking step could never be passed.
+		s.State["hint_level"] = 0
 	}
 	if s.Mode == "listening" {
 		understood := f.GoalMet && (p.Kind == "text" || f.AudioClear)
@@ -630,6 +634,14 @@ func (a *App) submitEbookShadowing(c *fiber.Ctx, session Session) error {
 	state["shadow_results"] = results
 	if _, err = tx.Exec(c.UserContext(), "UPDATE learning_sessions SET state=$1,updated_at=now() WHERE id=$2", asJSON(state), session.ID); err != nil {
 		return err
+	}
+	if advanced && index >= len(lines) {
+		// The last line passed: close the session so the next shadowing
+		// practice of this unit starts a new one instead of reopening it.
+		summary := fiber.Map{"attempts": index, "independent": 0, "mastered": false, "message": "พูดตามครบทุกประโยคแล้ว"}
+		if _, err = tx.Exec(c.UserContext(), "UPDATE learning_sessions SET status='completed',summary=$1,updated_at=now() WHERE id=$2", asJSON(summary), session.ID); err != nil {
+			return err
+		}
 	}
 	if advanced {
 		unitID := textValue(state["ebook_unit_id"])
