@@ -28,6 +28,18 @@ func TestDailySplitSentencesKeepsPunctuationAndOrder(t *testing.T) {
 	}
 }
 
+func TestDailyCleanReadingJoinsAMarkLeftAfterASyllableBreak(t *testing.T) {
+	for input, want := range map[string]string{
+		"ทู-เดย์ ไอ ฟิน-ิชท์ ฟิกซ์-ซิง": "ทู-เดย์ ไอ ฟินิชท์ ฟิกซ์-ซิง",
+		"เพ- ็น  ทู":              "เพ็น ทู",
+		"  ไอ ยู-ชวล-ลี เวค อัพ ": "ไอ ยู-ชวล-ลี เวค อัพ",
+	} {
+		if got := dailyCleanReading(input); got != want {
+			t.Errorf("dailyCleanReading(%q) = %q, want %q", input, got, want)
+		}
+	}
+}
+
 func TestDailyResplitKeepsAnalysisOfUnchangedSentences(t *testing.T) {
 	old := []DailySentence{{EN: "I fixed the bug.", TH: "ฉันแก้บั๊กแล้ว", Reading: "ไอ ฟิกซ์ เดอะ บั๊ก", Grammar: []DailyGrammar{{ID: "ebook-005"}}}, {EN: "QA will test it.", TH: "QA จะทดสอบ", Reading: "คิว-เอ วิล เทสต์ อิท"}}
 	same, analyzed := dailyResplit(old, "I fixed the bug. QA will test it.")

@@ -72,6 +72,15 @@ func dailySplitSentences(english string) []string {
 	return out
 }
 
+// A Thai vowel or tone mark cannot start a syllable. Models sometimes put the
+// syllable break before one ("ฟิน-ิชท์"), which renders as a broken glyph.
+var dailyOrphanMark = regexp.MustCompile(`[-\s]+([\x{0E31}\x{0E34}-\x{0E3A}\x{0E47}-\x{0E4E}])`)
+
+// dailyCleanReading tidies a Thai-script reading aid.
+func dailyCleanReading(reading string) string {
+	return dailyOrphanMark.ReplaceAllString(strings.Join(strings.Fields(reading), " "), "$1")
+}
+
 func dailySentenceKey(text string) string {
 	return strings.ToLower(strings.Join(strings.Fields(text), " "))
 }
@@ -119,7 +128,7 @@ func (a *App) dailyFinishSentences(raw []dailyRawSentence, english string) ([]Da
 		if en == "" || len(out) == dailyMaxSentences {
 			continue
 		}
-		sentence := DailySentence{EN: en, TH: strings.TrimSpace(item.TH), Reading: strings.TrimSpace(item.Reading), Grammar: []DailyGrammar{}}
+		sentence := DailySentence{EN: en, TH: strings.TrimSpace(item.TH), Reading: dailyCleanReading(item.Reading), Grammar: []DailyGrammar{}}
 		seen := map[string]bool{}
 		for _, id := range item.Units {
 			id = strings.TrimSpace(id)
